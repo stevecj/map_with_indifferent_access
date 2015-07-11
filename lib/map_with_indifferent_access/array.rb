@@ -1,6 +1,16 @@
 class MapWithIndifferentAccess
 
   class Array
+
+    def self.try_convert(from_obj)
+      if self === from_obj
+        from_obj
+      else
+        array = ::Array.try_convert( from_obj )
+        new( array ) if array
+      end
+    end
+
     attr_reader :inner_array
 
     def initialize(inner_array = [])
@@ -12,15 +22,11 @@ class MapWithIndifferentAccess
     end
 
     def [](index)
-      item = inner_array[index]
-      unless MapWithIndifferentAccess === item || self.class === item
-        if item.respond_to?( :to_hash )
-          item = MapWithIndifferentAccess.new( item )
-        elsif item.respond_to?( :to_ary )
-          item = self.class.new( item )
-        end
-      end
-      item
+      item = inner_array[ index ]
+
+      MapWithIndifferentAccess.try_convert( item ) ||
+        self.class.try_convert( item ) ||
+        item
     end
   end
 

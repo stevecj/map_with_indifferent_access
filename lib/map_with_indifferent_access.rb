@@ -3,6 +3,16 @@ require "map_with_indifferent_access/array"
 require 'forwardable'
 
 class MapWithIndifferentAccess
+
+  def self.try_convert(from_obj)
+    if self === from_obj
+      from_obj
+    else
+      hash = Hash.try_convert( from_obj )
+      new( hash ) if hash
+    end
+  end
+
   extend Forwardable
 
   attr_reader :inner_map
@@ -36,7 +46,9 @@ class MapWithIndifferentAccess
       inner_map.fetch( key, *more_args )
     end
 
-    item_read_value_for( value )
+    self.class.try_convert( value ) ||
+      self.class::Array.try_convert( value ) ||
+      value
   end
 
   def expect_arity(arity, *args)
@@ -77,21 +89,6 @@ class MapWithIndifferentAccess
       inner_map.key?( alt_key ) ? alt_key : given_key
     else
       given_key
-    end
-  end
-
-  def item_read_value_for(value)
-    if (
-      self.class        === value ||
-      self.class::Array === value
-    )
-      value
-    elsif value.respond_to?( :to_hash )
-      self.class.new( value )
-    elsif value.respond_to?( :to_ary )
-      self.class::Array.new( value )
-    else
-      value
     end
   end
 end

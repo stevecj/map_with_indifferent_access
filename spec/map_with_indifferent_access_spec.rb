@@ -5,6 +5,26 @@ describe MapWithIndifferentAccess do
     expect(MapWithIndifferentAccess::VERSION).not_to be nil
   end
 
+  it "can be converted from an instance of its class, returning the given map" do
+    map = described_class::try_convert( subject )
+    expect( map ).to equal( subject )
+  end
+
+  it "can be converted from a hash, wrapping the given hash" do
+    hash = {}
+
+    map = described_class::try_convert( hash )
+
+    expect( map ).to be_kind_of( described_class)
+    expect( map.inner_map ).to equal( hash )
+  end
+
+  it "cannot be converted from an arbitrary object" do
+    expect( described_class::try_convert( nil ) ).to be_nil
+    expect( described_class::try_convert( 1   ) ).to be_nil
+    expect( described_class::try_convert( []  ) ).to be_nil
+  end
+
   context "an instance constructed with no arguments" do
     it "Allows indexed read/write access to values" do
       subject[  1  ] = 'one'
