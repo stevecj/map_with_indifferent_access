@@ -44,4 +44,64 @@ describe MapWithIndifferentAccess::Array do
     array[3] = [:a, :b]
     expect( subject[3] ).to be_kind_of( described_class )
   end
+
+  it "allows items to be pushed onto its end" do
+    subject << 1
+    subject.push 2, 3
+    expect( subject.inner_array ).to eq( [1, 2, 3] )
+  end
+
+  it "provides number of entries via #length" do
+    subject.push( 1, {a: 2} )
+    expect( subject.length ).to eq( 2 )
+  end
+
+  it "has unequal instances via #== with wrapping-indifferently unequal item sequence" do
+    subject <<
+      1 <<
+      { a: 2 } <<
+      [ {'b' => 3} ]
+
+    other = described_class.new( [
+      1,
+      { 'a' => :too },
+      [ {b: 3} ]
+    ] )
+
+    expect( subject == other ).to eq( false )
+  end
+
+  it "has equal instances via #== with wrapping-indifferently equal item sequence" do
+    subject <<
+      1 <<
+      { a: 2 } <<
+      [ {'b' => 3} ]
+
+    other = described_class.new( [
+      1,
+      { 'a' => 2 },
+      [ {b: 3} ]
+    ] )
+
+    expect( subject == other ).to eq( true )
+  end
+
+  it "is enumerable over items" do
+    subject <<
+      1 <<
+      { a: 2 } <<
+      [ {'b' => 3} ]
+
+    items = []
+    subject.each do |item| ; items << item ; end
+
+    expect( items ).to eq( [
+      1,
+      MapWithIndifferentAccess.new(a: 2), 
+      MapWithIndifferentAccess::Array.new( [{b: 3}] )
+    ] )
+
+    expect( subject.entries ).to eq( items )
+  end
+
 end

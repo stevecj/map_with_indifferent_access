@@ -72,26 +72,47 @@ describe MapWithIndifferentAccess do
       expect( keys ).to eq( [1, 'two', :three] )
     end
 
-    it "has self-equality via #==" do
-      expect( subject ).to eq( subject )
-
+    it "has unequal instances via #== with key-symbol-string-indifferently unequal entry sets" do
       subject[  1     ] = 1
-      subject[ 'two'  ] = 2
+      subject[ 'two'  ] = [ {a: 4} ]
       subject[ :three ] = 3
-      expect( subject ).to eq( subject )
+
+      other = described_class.new
+      other[ 'three' ] = 3
+      other[ :two    ] = [ {a: :fore} ]
+      other[  1      ] = 1
+
+      expect( subject == other ).to eq( false )
     end
 
-    it "has equal instances via #== with key-symbol-string-indifferently same entries" do
+    it "has equal instances via #== with key-symbol-string-indifferently equal entry sets" do
       subject[  1     ] = 1
       subject[ 'two'  ] = 2
       subject[ :three ] = 3
 
       other = described_class.new
-      subject[ 'three' ] = 3
-      subject[ :two    ] = 2
-      subject[  1      ] = 1
+      other[ 'three' ] = 3
+      other[ :two    ] = 2
+      other[  1      ] = 1
 
       expect( subject == other ).to eq( true )
+    end
+
+    it "is enumerable over key/value pairs" do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+
+      entries = []
+      subject.each do |entry| ; entries << entry ; end
+
+      expect( entries ).to eq( [
+        [  1,     1 ],
+        [ 'two',  described_class.new(a: 1) ],
+        [ :three, described_class::Array.new([9]) ]
+      ] )
+
+      expect( subject.entries ).to eq( entries )
     end
   end
 

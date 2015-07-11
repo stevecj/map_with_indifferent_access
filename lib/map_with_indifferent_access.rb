@@ -14,8 +14,16 @@ class MapWithIndifferentAccess
   end
 
   extend Forwardable
+  include Enumerable
 
   attr_reader :inner_map
+
+  def_delegators(
+    :inner_map,
+    :length,
+    :size,
+    :each_key,
+  )
 
   def initialize(inner_map={})
     @inner_map = inner_map
@@ -51,31 +59,33 @@ class MapWithIndifferentAccess
       value
   end
 
-  def expect_arity(arity, *args)
-    unless arity === args.length
-      raise ArgumentError, "wrong number of arguments (#{args.length} for #{arity})"
-    end
-  end
-
   def ==(other)
     return true if equal?( other )
-    if other.respond_to?( :to_map_with_indifferent_access ) && other.respond_to?( :inner_map )
-      return true if inner_map == other.inner_map
-      return false if length == other.length
-      each do |(key,value)|
-        other_val = other.fetch(key) { return false }
-        return false unless value = other_val
-      end
+    other = self.class.try_convert( other )
+    return false unless other
+
+    return true if inner_map == other.inner_map
+    return false if length != other.length
+    each do |(key,value)|
+      other_val = other.fetch(key) { return false }
+      return false unless value == other_val
     end
+
     true
   end
 
-  def_delegators(
-    :inner_map,
-    :length,
-    :size,
-    :each_key,
-  )
+  def each
+    if block_given?
+      each_key.each do |key|
+        item = fetch( key )
+        value =
+          MapWithIndifferentAccess.try_convert( item ) ||
+          self.class.try_convert( item ) ||
+          item
+        yield [key, value]
+      end
+    end
+  end
 
   private
 
@@ -91,4 +101,11 @@ class MapWithIndifferentAccess
       given_key
     end
   end
+
+  def expect_arity(arity, *args)
+    unless arity === args.length
+      raise ArgumentError, "wrong number of arguments (#{args.length} for #{arity})"
+    end
+  end
+
 end
