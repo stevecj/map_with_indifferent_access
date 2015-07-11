@@ -25,8 +25,10 @@ class MapWithIndifferentAccess
     :each_key,
   )
 
-  def initialize(inner_map={})
-    @inner_map = inner_map
+  def initialize(basis={})
+    basis = basis.inner_map if self.class === basis
+    basis = basis.to_hash
+    @inner_map = basis
   end
 
   def[]=(key, value)

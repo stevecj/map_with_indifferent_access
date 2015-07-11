@@ -4,9 +4,40 @@ describe MapWithIndifferentAccess::Array do
   subject { described_class.new( array ) }
   let( :array ) { [] }
 
-  it "can be converted from an instance of its class, returning the given map" do
+  it "can be constructed as a wrapper around an existing array" do
+    inner_a = []
+    array = described_class.new( inner_a )
+    expect( array.inner_array ).to equal( inner_a )
+  end
+
+  it "can be constructed as a wrapper asound an implicitly-created hash" do
+    array = described_class.new
+    expect( array.inner_array ).to be_kind_of( Array )
+  end
+
+  it "can be constructed as a new wrapper around an existing wrapped array" do
+    inner_a = []
+    original_array = described_class.new( inner_a )
+    array = described_class.new( original_array )
+    expect( array ).not_to equal( original_array )
+    expect( array.inner_array ).to equal( inner_a )
+  end
+
+  it "cannot be constructed with an un-array-like argument to ::new" do
+    expect{
+      described_class.new( 1 )
+    }.to raise_exception( NoMethodError )
+  end
+
+  it "can be converted from an instance of its class, returning the given array" do
     map = described_class::try_convert( subject )
     expect( map ).to equal( subject )
+  end
+
+  it "cannot be converted from an un-array-like object" do
+    expect( described_class::try_convert( nil ) ).to be_nil
+    expect( described_class::try_convert( 1   ) ).to be_nil
+    expect( described_class::try_convert( {}  ) ).to be_nil
   end
 
   it "can be converted from an array, wrapping the given array" do
@@ -16,12 +47,6 @@ describe MapWithIndifferentAccess::Array do
 
     expect( hwia_array ).to be_kind_of( described_class)
     expect( hwia_array.inner_array ).to equal( array )
-  end
-
-  it "cannot be converted from an arbitrary object" do
-    expect( described_class::try_convert( nil ) ).to be_nil
-    expect( described_class::try_convert( 1   ) ).to be_nil
-    expect( described_class::try_convert( {}  ) ).to be_nil
   end
 
   it "delegates storing an item by index" do

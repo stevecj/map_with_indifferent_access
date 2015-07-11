@@ -5,6 +5,37 @@ describe MapWithIndifferentAccess do
     expect(MapWithIndifferentAccess::VERSION).not_to be nil
   end
 
+  it "can be constructed as a wrapper around an existing hash" do
+    hash = {}
+    map = described_class.new( hash )
+    expect( map.inner_map ).to equal( hash )
+  end
+
+  it "can be constructed as a wrapper asound an implicitly-created hash" do
+    map = described_class.new
+    expect( map.inner_map ).to be_kind_of( Hash )
+  end
+
+  it "can be constructed as a new wrapper around an existing wrapped hash" do
+    hash = {}
+    original_map = described_class.new( hash )
+    map = described_class.new( original_map )
+    expect( map ).not_to equal( original_map )
+    expect( map.inner_map ).to equal( hash )
+  end
+
+  it "cannot be constructed with an un-hash-like argument to ::new" do
+    expect{
+      described_class.new( 1 )
+    }.to raise_exception( NoMethodError )
+  end
+
+  it "cannot be converted from an un-hash-like object" do
+    expect( described_class::try_convert( nil ) ).to be_nil
+    expect( described_class::try_convert( 1   ) ).to be_nil
+    expect( described_class::try_convert( []  ) ).to be_nil
+  end
+
   it "can be converted from an instance of its class, returning the given map" do
     map = described_class::try_convert( subject )
     expect( map ).to equal( subject )
@@ -17,12 +48,6 @@ describe MapWithIndifferentAccess do
 
     expect( map ).to be_kind_of( described_class)
     expect( map.inner_map ).to equal( hash )
-  end
-
-  it "cannot be converted from an arbitrary object" do
-    expect( described_class::try_convert( nil ) ).to be_nil
-    expect( described_class::try_convert( 1   ) ).to be_nil
-    expect( described_class::try_convert( []  ) ).to be_nil
   end
 
   context "an instance constructed with no arguments" do

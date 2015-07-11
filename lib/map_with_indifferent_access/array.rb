@@ -24,8 +24,10 @@ class MapWithIndifferentAccess
       :push,
     )
 
-    def initialize(inner_array = [])
-      @inner_array = inner_array
+    def initialize(basis = [])
+      basis = basis.inner_array if self.class === basis
+      basis = basis.to_ary
+      @inner_array = basis
     end
 
     def []=(index, value)
