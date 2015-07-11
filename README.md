@@ -2,9 +2,8 @@
 
 A wrapper around Hash that treats string and symbol keys as interchangeable.
 
-Note:
-This gem is in early development stages and does not yet behave as described
-here.
+Note that this gem is still in early development stages and does not yet have
+any released versions.
 
 Behaves similarly to HashWithIndifferentAccess from ActiveSupport, but with
 the following differences.
@@ -12,12 +11,16 @@ the following differences.
 As of this writing, in order to have HashWithIndifferentAccess work as
 expected, it is necessary to load pretty much all of ActiveSupport, which
 modifies the behavior of other classes in ways that you might or might not
-want. MapWithIndifferentAccess does not do that.
+want. MapWithIndifferentAccess does not currently alter any of the standard
+Ruby classes, but might make some very careful changes to those in future
+versions.
 
-Similarly to HashWithIndifferentAccess, MapWithIndifferentAccess replaces Hash
-objects given as values with instances of MapWithIndifferentAccess. Since
-MapWithIndifferentAccess wraps the given hash rather than holding a copy of
-its data, it has fewer unexpected behaviors.
+When a Hash-type object is added as a value into a HashWithIndifferentAccess,
+it is converted into a new HashWithIndifferentAccess that is entirely
+independent of the provided object. When reading a Hash-type object from
+a MapWithIndifferentAccess, on the other hand, it is wrapped in a
+MapWithIndifferentAccess that remains consistent with the originally provided
+object.
 
 Code:
 
@@ -40,6 +43,14 @@ Code:
 Output:
 
     "BAR"
+
+When a Hash-type object is in an array that is a value within a
+HashWithIndifferentAccess, that object is automatically converted into a
+HashWithIndifferentAccess. When reading an array from a value in a
+MapWithIndifferentAccess, it is wrapped in a MapWithIndifferentAccess::Array
+which returns wrapped items for any Array-type or Hash-type items that are
+read from it.
+
 
 ## Installation
 
@@ -82,6 +93,11 @@ https://github.com/[USERNAME]/map_with_indifferent_access. This project is
 intended to be a safe, welcoming space for collaboration, and contributors are
 expected to adhere to the [Contributor Covenant](contributor-covenant.org) code
 of conduct.
+
+## To Do
+
+* Add more Hash-like behaviors to MapWithIndifferentAccess
+* Add more Array-like behaviors to MapWithIndifferentAccess::Array
 
 ## License
 
