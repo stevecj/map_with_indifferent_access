@@ -1,3 +1,3 @@
-module MapWithIndifferentAccess
+class MapWithIndifferentAccess
   VERSION = "0.1.0"
 end
