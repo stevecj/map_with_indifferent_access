@@ -21,6 +21,58 @@ describe MapWithIndifferentAccess do
       expect( subject[ :a  ] ).to eq( 'A' )
       expect( subject[ 'b' ] ).to eq( 'B' )
     end
+
+    it "provides Hash-like #fetch behavior with key symbol/string indifference" do
+      subject[  1  ] = 'one'
+      subject[ 'a' ] = 'A'
+      subject[ :b  ] = 'B'
+      expect( subject.fetch(  1  ) ).to eq( 'one' )
+      expect( subject.fetch( :a  ) ).to eq( 'A'   )
+      expect( subject.fetch( 'b' ) ).to eq( 'B'   )
+
+      expect{ subject.fetch('x') }.to raise_exception( KeyError )
+      expect( subject.fetch('x') { '-' } ).to eq( '-' )
+      expect( subject.fetch('x', '#') ).to eq( '#' )
+    end
+
+    it "provides its length/size" do
+      subject[  1  ] = 'one'
+      subject[ 'a' ] = 'A'
+      expect( subject.length ).to eq( 2 )
+      expect( subject.size   ).to eq( 2 )
+    end
+
+    it "enumerates keys in order added" do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = 2
+      subject[ :three ] = 3
+
+      keys = []
+      subject.each_key do |key| ; keys << key ; end
+      expect( keys ).to eq( [1, 'two', :three] )
+    end
+
+    it "has self-equality via #==" do
+      expect( subject ).to eq( subject )
+
+      subject[  1     ] = 1
+      subject[ 'two'  ] = 2
+      subject[ :three ] = 3
+      expect( subject ).to eq( subject )
+    end
+
+    it "has equal instances via #== with key-symbol-string-indifferently same entries" do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = 2
+      subject[ :three ] = 3
+
+      other = described_class.new
+      subject[ 'three' ] = 3
+      subject[ :two    ] = 2
+      subject[  1      ] = 1
+
+      expect( subject == other ).to eq( true )
+    end
   end
 
   context "An instance constructed with an existing Hash" do
