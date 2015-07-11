@@ -20,21 +20,25 @@ MapWithIndifferentAccess wraps the given hash rather than holding a copy of
 its data, it has fewer unexpected behaviors.
 
 Code:
+
     h = HashWithIndifferentAccess.new
     foo = ( h[:foo] ||= {} )
     foo[:bar] = 'BAR'
     puts h[:foo][:bar].inspect
 
 Output:
+
     nil
 
 Code:
+
     m = MapWithIndifferentAccess.new
     foo = ( m[:foo] ||= {} )
     foo[:bar] = 'BAR'
     puts m[:foo][:bar].inspect
 
 Output:
+
     "BAR"
 
 ## Installation
