@@ -12,82 +12,37 @@ class MapWithIndifferentAccess
   end
 
   def[]=(key, value)
-    if inner_map.key?( key )
-      # Use given key
-    elsif String === key
-      key_sym = key.to_sym
-      key = key_sym if inner_map.key?( key_sym )
-    elsif Symbol === key
-      key_string = "#{key}"
-      key = key_string if inner_map.key?( key_string )
-    end
+    key = indifferent_key_from( key )
     inner_map[key] = value
   end
 
   def[](key)
-    value = if inner_map.key?( key )
-      inner_map[ key ]
-    elsif String === key
-      inner_map[key.to_sym]
-    elsif Symbol === key
-      inner_map["#{key}"]
-    end
-    unless self.class === value || self.class::Array === value
-      if value.respond_to?( :to_hash )
-        value = self.class.new( value )
-      elsif value.respond_to?( :to_ary )
-        value = self.class::Array.new( value )
-      end
-    end
-    value
+    fetch(key, nil)
   end
 
   def fetch(key, *more_args)
-    unless (0..1) === more_args.length
-      raise ArgumentError, "wrong number of arguments (#{more_args.length + 1} for 1..2)"
-    end
+    expect_arity 1..2, key, *more_args
     if block_given? && !more_args.empty?
-      warn "#{__FILE__}:#{__LINE__}: warning: block supersedes default value argument"
+      warn "#{caller[0]}: warning: block supersedes default value argument"
     end
-    value = if inner_map.key?( key )
-      inner_map[ key ]
-    elsif String === key
-      key_sym = key.to_sym
-      if inner_map.key?( key_sym )
-        inner_map[ key_sym ]
-      elsif block_given?
-        yield key
-      elsif !more_args.empty?
-        more_args.first
-      else
-        raise KeyError, "key not found: #{key.inspect}"
-      end
-    elsif Symbol === key
-      key_string = "#{key}"
-      if inner_map.key?( key_string )
-        inner_map[ key_string ]
-      elsif block_given?
-        yield key
-      elsif !more_args.empty?
-        more_args.first
-      else
-        raise KeyError, "key not found: #{key.inspect}"
-      end
+
+    indifferent_key = indifferent_key_from( key )
+
+    value = if inner_map.key?( indifferent_key )
+      inner_map.fetch( indifferent_key )
     elsif block_given?
-      yield key
-    elsif !more_args.empty?
-      more_args.first
+      inner_map.fetch( key ) {|key| yield key }
     else
-      raise KeyError, "key not found: #{key.inspect}"
+      inner_map.fetch( key, *more_args )
     end
-    unless self.class === value || self.class::Array === value
-      if value.respond_to?( :to_hash )
-        value = self.class.new( value )
-      elsif value.respond_to?( :to_ary )
-        value = self.class::Array.new( value )
-      end
+
+    item_read_value_for( value )
+  end
+
+  def expect_arity(arity, *args)
+    unless arity === args.length
+      raise ArgumentError, "wrong number of arguments (#{args.length} for #{arity})"
     end
-    value
   end
 
   def ==(other)
@@ -110,4 +65,33 @@ class MapWithIndifferentAccess
     :each_key,
   )
 
+  private
+
+  def indifferent_key_from(given_key)
+    case given_key
+    when String
+      alt_key = inner_map.key?( given_key ) ? given_key : given_key.to_sym
+      inner_map.key?( alt_key ) ? alt_key : given_key
+    when Symbol
+      alt_key = inner_map.key?( given_key ) ? given_key : "#{given_key}"
+      inner_map.key?( alt_key ) ? alt_key : given_key
+    else
+      given_key
+    end
+  end
+
+  def item_read_value_for(value)
+    if (
+      self.class        === value ||
+      self.class::Array === value
+    )
+      value
+    elsif value.respond_to?( :to_hash )
+      self.class.new( value )
+    elsif value.respond_to?( :to_ary )
+      self.class::Array.new( value )
+    else
+      value
+    end
+  end
 end
