@@ -12,7 +12,7 @@ the following differences.
 As of this writing, in order to have HashWithIndifferentAccess work as
 expected, it is necessary to load pretty much all of ActiveSupport, which
 modifies the behavior of other classes in ways that you might or might not
-want.
+want. MapWithIndifferentAccess does not do that.
 
 Similarly to HashWithIndifferentAccess, MapWithIndifferentAccess replaces Hash
 objects given as values with instances of MapWithIndifferentAccess. Since
