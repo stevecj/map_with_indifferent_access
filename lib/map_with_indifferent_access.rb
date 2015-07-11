@@ -1,4 +1,5 @@
 require "map_with_indifferent_access/version"
+require "map_with_indifferent_access/array"
 
 class MapWithIndifferentAccess
   attr_reader :inner_map
@@ -21,12 +22,20 @@ class MapWithIndifferentAccess
   end
 
   def[](key)
-    if inner_map.key?( key )
+    value = if inner_map.key?( key )
       inner_map[ key ]
     elsif String === key
       inner_map[key.to_sym]
     elsif Symbol === key
       inner_map["#{key}"]
     end
+    unless self.class === value || self.class::Array === value
+      if value.respond_to?( :to_hash )
+        value = self.class.new( value )
+      elsif value.respond_to?( :to_ary )
+        value = self.class::Array.new( value )
+      end
+    end
+    value
   end
 end
