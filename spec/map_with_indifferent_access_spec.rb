@@ -22,4 +22,31 @@ describe MapWithIndifferentAccess do
       expect( subject[ 'b' ] ).to eq( 'B' )
     end
   end
+
+  context "An instance constructed with an existing Hash" do
+    subject { described_class.new(hash) }
+    let( :hash ) { {} }
+
+    it "Reflects later changes made to the existing hash" do
+      hash[ :foo ] = 123
+      expect( subject['foo'] ).to eq( 123 )
+    end
+
+    it "Reflects later changes back to the existing hash" do
+      subject[ :abc ] = 'ABC'
+      expect( hash[:abc] ).to eq('ABC')
+    end
+
+    it "Modifies the existing underlying entry with string/symbol indifference" do
+      hash[ :aaa  ] = 'A'
+      hash[ 'bbb' ] = 'B'
+      subject[ 'aaa' ] = 'AA'
+      subject[ :bbb  ] = 'BB'
+
+      expect( hash ).to eq( {
+        :aaa  => 'AA',
+        'bbb' => 'BB'
+      } )
+    end
+  end
 end
