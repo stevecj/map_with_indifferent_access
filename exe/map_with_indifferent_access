@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+
+require "map_with_indifferent_access"
