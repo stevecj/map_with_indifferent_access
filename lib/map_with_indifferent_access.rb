@@ -20,9 +20,10 @@ class MapWithIndifferentAccess
 
   def_delegators(
     :inner_map,
+    :clear,
+    :each_key,
     :length,
     :size,
-    :each_key,
   )
 
   def initialize(basis={})
@@ -89,6 +90,13 @@ class MapWithIndifferentAccess
         yield [key, value]
       end
     end
+  end
+
+  def assoc(obj)
+    obj = indifferent_key_from( obj )
+    entry = inner_map.assoc( obj )
+    entry[1] = fetch( entry[0] ) unless entry.nil?
+    entry
   end
 
   private

@@ -52,7 +52,7 @@ describe MapWithIndifferentAccess do
     expect( map.inner_map ).to equal( hash )
   end
 
-  it "Allows indexed read/write access to values" do
+  it "allows indexed read/write access to values" do
     subject[  1  ] = 'one'
     subject[ 'a' ] = 'A'
     subject[ :b  ] = 'B'
@@ -175,6 +175,48 @@ describe MapWithIndifferentAccess do
       :aaa  => 'AA',
       'bbb' => 'BB'
     } )
+  end
+
+  describe '#assoc' do
+    it "returns nil for am object that does not key/symbol indifferently == any map key" do
+      subject[ :aaa  ] = 'A'
+      subject[ 'bbb' ] = [ 'b' ]
+      expect( subject.assoc( :x ) ).to be_nil
+    end
+
+    it "finds mathcing key/value entry by == for a non-string-or-symbol object" do
+      subject[ :aaa  ] = 'A'
+      subject[  10   ] = [ 'b' ]
+
+      key, value = subject.assoc( 10.0 )
+
+      expect( key ).to eql( 10 )
+      expect( value ).to eq(
+        described_class::Array.new( [ 'b' ] )
+      )
+    end
+
+    it "finds matching key/value entry for key with string/symbol indifference" do
+      subject[ :aaa  ] = 'A'
+      subject[ :bbb  ] = [ 'b' ]
+
+      key, value = subject.assoc( 'bbb' )
+
+      expect( key ).to eql( :bbb )
+      expect( value ).to eq(
+        described_class::Array.new( [ 'b' ] )
+      )
+    end
+
+    it "removes all entries from inner hash map using #clear" do
+      inner_map[:a] = 1
+      inner_map[:b] = 2
+
+      subject.clear
+
+      expect( inner_map ).to be_empty
+    end
+
   end
 
 end
