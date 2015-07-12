@@ -13,6 +13,10 @@ class MapWithIndifferentAccess
     end
   end
 
+  def self.[](obj)
+    try_convert( obj ) || self::Array.try_convert( obj ) || obj
+  end
+
   extend Forwardable
   include Enumerable
 
@@ -40,7 +44,7 @@ class MapWithIndifferentAccess
   end
 
   def[](key)
-    fetch(key, nil)
+    fetch(key)
   end
 
   def fetch(key, *more_args)
@@ -59,9 +63,7 @@ class MapWithIndifferentAccess
       inner_map.fetch( key, *more_args )
     end
 
-    self.class.try_convert( value ) ||
-      self.class::Array.try_convert( value ) ||
-      value
+    self.class[ value ]
   end
 
   def ==(other)
@@ -82,20 +84,30 @@ class MapWithIndifferentAccess
   def each
     if block_given?
       each_key.each do |key|
-        item = fetch( key )
-        value =
-          MapWithIndifferentAccess.try_convert( item ) ||
-          self.class.try_convert( item ) ||
-          item
+        value = fetch( key )
+        value = self.class[ value ]
         yield [key, value]
       end
     end
   end
 
+  def delete(key)
+    key = indifferent_key_from( key )
+    value = if block_given?
+      inner_map.delete( key ) { |key| yield key }
+    else
+      inner_map.delete( key )
+    end
+    self.class[ value ]
+  end
+
   def assoc(obj)
     obj = indifferent_key_from( obj )
     entry = inner_map.assoc( obj )
-    entry[1] = fetch( entry[0] ) unless entry.nil?
+    unless entry.nil?
+      value = self.class[ entry[1] ]
+      entry[1] = value
+    end
     entry
   end
 

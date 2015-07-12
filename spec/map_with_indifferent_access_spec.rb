@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe MapWithIndifferentAccess do
-  let( :inner_map ) { subject.inner_map }
+  subject{ described_class.new( inner_map ) }
+  let( :inner_map ) { {} }
 
   it 'has a version number' do
     expect(MapWithIndifferentAccess::VERSION).not_to be nil
@@ -50,6 +51,40 @@ describe MapWithIndifferentAccess do
 
     expect( map ).to be_kind_of( described_class)
     expect( map.inner_map ).to equal( hash )
+  end
+
+  describe '::[]' do
+    it "returns the given object when not an Array, Hash, instance of self, or instance of self::Array" do
+      expect( described_class[  nil  ] ).to eq(  nil )
+      expect( described_class[ 'abc' ] ).to eq( 'abc' )
+      expect( described_class[  123  ] ).to eq(  123 )
+
+      timeval = Time.new(2010,11,16, 10,45,59)
+      expect( described_class[ timeval ] ).to eq( timeval )
+    end
+
+    it "returns a wrapped instance of the given Hash" do
+      given_hash = {a: 1}
+      result = described_class[ given_hash ]
+      expect( result.inner_map ).to equal( given_hash )
+    end
+
+    it "returns a wrapped instance of the given Array" do
+      given_array = [ 1, 2, 3 ]
+      result = described_class[ given_array ]
+      expect( result.inner_array ).to equal( given_array )
+    end
+
+    it "returns the given instance of MapWithIndifferentAccess" do
+      result = described_class[ subject ]
+      expect( result ).to equal( subject )
+    end
+
+    it "returns the given instance of MapWithIndifferentAccess::Array" do
+      given_array_wrapper = described_class::Array.new
+      result = described_class[ given_array_wrapper ]
+      expect( result ).to equal( given_array_wrapper )
+    end
   end
 
   it "allows indexed read/write access to values" do
@@ -175,6 +210,57 @@ describe MapWithIndifferentAccess do
       :aaa  => 'AA',
       'bbb' => 'BB'
     } )
+  end
+
+  describe '#delete' do
+    let( :inner_map ) { Hash.new(:the_default) }
+
+    describe "called without a block argument" do
+      it "deletes the entry and returns the value for a string/symbolically indifferent map key" do
+        inner_map[ :aaa  ] = { a: 1 }
+        inner_map[ 'bbb' ] = 'B'
+
+        result = subject.delete( 'aaa' )
+        expect( inner_map ).to eq( {'bbb' => 'B'} )
+        expect( result.inner_map ).to eq( {a: 1} )
+      end
+
+      it "deletes nothing and returns the \"default\" value for string/symbolically indifferent key mismatch" do
+        # Experimentally found that in Ruby 1.9.3-p545 and who knows
+        # what other versions,  Hash#delete always returns nil for a
+        # mismatched key and not the default value as documented.
+        # Here, we get the "default" value as returned by Hash#delete
+        # for thecurrent Ruby, so we can assert that we get that.
+        default_value = inner_map.delete( 'xxx' )
+
+        inner_map[ :aaa  ] = { a: 1 }
+        inner_map[ 'bbb' ] = 'B'
+
+        result = subject.delete( 'xxx' )
+        expect( inner_map ).to eq( {aaa: {a: 1}, 'bbb' => 'B'} )
+        expect( result ).to eq( default_value )
+      end
+    end
+
+    context "called with a block argument" do
+      it "deletes the entry and returns the value for a string/symbolically indifferent map key" do
+        inner_map[ :aaa  ] = { a: 1 }
+        inner_map[ 'bbb' ] = 'B'
+
+        result = subject.delete( 'aaa' ) { |key| "Nothing for #{key}" }
+        expect( inner_map ).to eq( {'bbb' => 'B'} )
+        expect( result.inner_map ).to eq( {a: 1} )
+      end
+
+      it "deletes nothing and returns the value from calling the block for string/symbolically indifferent key mismatch" do
+        inner_map[ :aaa  ] = { a: 1 }
+        inner_map[ 'bbb' ] = 'B'
+
+        result = subject.delete( 'xxx' ) { |key| "Nothing for #{key.inspect}" }
+        expect( inner_map ).to eq( {aaa: {a: 1}, 'bbb' => 'B'} )
+        expect( result ).to eq( 'Nothing for "xxx"' )
+      end
+    end
   end
 
   describe '#assoc' do
