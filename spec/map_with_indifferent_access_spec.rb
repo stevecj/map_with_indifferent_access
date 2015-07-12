@@ -29,7 +29,7 @@ describe MapWithIndifferentAccess do
   it "cannot be constructed with an un-hash-like argument to ::new" do
     expect{
       described_class.new( 1 )
-    }.to raise_exception( NoMethodError )
+    }.to raise_exception( ArgumentError )
   end
 
   it "cannot be converted from an un-hash-like object" do

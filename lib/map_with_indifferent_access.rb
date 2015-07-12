@@ -26,9 +26,11 @@ class MapWithIndifferentAccess
   )
 
   def initialize(basis={})
-    basis = basis.inner_map if self.class === basis
-    basis = basis.to_hash
-    @inner_map = basis
+    use_basis = basis
+    use_basis = basis.inner_map if self.class === basis
+    use_basis = Hash.try_convert( use_basis )
+    raise ArgumentError, "Could not convert #{basis.inspect} into a Hash" unless use_basis
+    @inner_map = use_basis
   end
 
   def[]=(key, value)
