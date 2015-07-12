@@ -113,12 +113,12 @@ describe MapWithIndifferentAccess do
 
   it "has equal instances via #== with key-symbol-string-indifferently equal entry sets" do
     subject[  1     ] = 1
-    subject[ 'two'  ] = 2
+    subject[ 'two'  ] = [ {a: 4} ]
     subject[ :three ] = 3
 
     other = described_class.new
     other[ 'three' ] = 3
-    other[ :two    ] = 2
+    other[ :two    ] = [ {'a' => 4} ]
     other[  1      ] = 1
 
     expect( subject == other ).to eq( true )
@@ -141,31 +141,31 @@ describe MapWithIndifferentAccess do
     expect( subject.entries ).to eq( entries )
   end
 
-  it "reflects later changes made to the existing hash" do
+  it "reflects later changes made to its inner hash map" do
     inner_map[ :foo ] = 123
     expect( subject['foo'] ).to eq( 123 )
   end
 
-  it "reflects later changes back to the existing hash" do
+  it "reflects later changes back to its inner hash map" do
     subject[ :abc ] = 'ABC'
     expect( inner_map[:abc] ).to eq('ABC')
   end
 
-  it "reflects hash-type values from the existing hash as wrapped" do
+  it "reflects hash-type values from its inner hash map as wrapped" do
     h = {}
     inner_map[:aaa] = h
     expect( subject[:aaa] ).to be_kind_of( described_class )
     expect( subject[:aaa].inner_map ).to equal( h )
   end
 
-  it "reflects array-type values from the existing hash as wrapped" do
+  it "reflects array-type values from its inner hash map as wrapped" do
     ary = []
     inner_map[:bbb] = ary
     expect( subject[:bbb] ).to be_kind_of( described_class::Array )
     expect( subject[:bbb].inner_array ).to equal( ary )
   end
 
-  it "modifies the existing underlying entry with string/symbol indifference" do
+  it "modifies the existing entry in its inner hash map with string/symbol indifference" do
     inner_map[ :aaa  ] = 'A'
     inner_map[ 'bbb' ] = 'B'
     subject[ 'aaa' ] = 'AA'

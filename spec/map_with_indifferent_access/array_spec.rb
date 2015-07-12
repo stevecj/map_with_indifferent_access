@@ -48,23 +48,23 @@ describe MapWithIndifferentAccess::Array do
     expect( array.inner_array ).to equal( given_array )
   end
 
-  it "delegates storing an item by index" do
+  it "stores an item by index into its inner array" do
     subject[3] = :abc
     expect( inner_array[3] ).to eq( :abc )
   end
 
-  it "delegates reading an item by index" do
+  it "reads an item by index from its inner array" do
     inner_array[2] = :abc
     expect( subject[2] ).to eq( :abc )
   end
 
-  it "reflects hash-type item by index as wrapped" do
+  it "reflects a hash-type item by index as wrapped" do
     inner_array[3] = {a: 1}
     expect( subject[3] ).to be_kind_of( MapWithIndifferentAccess )
     expect( subject[3].inner_map ).to eq( {a: 1} )
   end
 
-  it "reflects array-type item by index as wrapped" do
+  it "reflects an array-type item by index as wrapped" do
     inner_array[3] = [:a, :b]
     expect( subject[3] ).to be_kind_of( described_class )
   end
@@ -75,7 +75,7 @@ describe MapWithIndifferentAccess::Array do
     expect( subject.inner_array ).to eq( [1, 2, 3] )
   end
 
-  it "provides number of entries via #length" do
+  it "provides its number of entries via #length" do
     subject.push( 1, {a: 2} )
     expect( subject.length ).to eq( 2 )
   end
