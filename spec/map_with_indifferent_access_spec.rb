@@ -225,6 +225,32 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe '#each_value' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
+
+    it "provides enumeration of its values in same order as added when given a block" do
+      values = []
+      subject.each_value do |value| ; values << value ; end
+      expect( values.length ).to eq( 3 )
+      expect( values[0] ).to eq( 1 )
+      expect( values[1].inner_map ).to eq( { a: 1 } )
+      expect( values[2].inner_array ).to eq( [9] )
+    end
+
+    it "provides an enumerator over its values in same order as added when not given a block" do
+      enum = subject.each_value
+
+      expect( enum.next ).to eq( 1 )
+      expect( enum.next.inner_map ).to eq( { a: 1 } )
+      expect( enum.next.inner_array ).to eq( [9] )
+      expect{ enum.next }.to raise_exception( StopIteration )
+    end
+  end
+
   it "reflects later changes made to its inner hash map" do
     inner_map[ :foo ] = 123
     expect( subject['foo'] ).to eq( 123 )
