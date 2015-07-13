@@ -81,6 +81,10 @@ class MapWithIndifferentAccess
     true
   end
 
+  # @!method eql?(other)
+  # Inherited from [Object]. Returns `true` if the map and
+  # `other` are the same object.
+
   def each
     return enum_for(:each) unless block_given?
 

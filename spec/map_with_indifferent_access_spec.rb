@@ -168,6 +168,7 @@ describe MapWithIndifferentAccess do
 
     it "is enumerates over key/value pairs when given a block" do
       entries = []
+
       subject.each do |entry| ; entries << entry ; end
 
       expect( entries.length ).to eq( 3 )
@@ -219,9 +220,11 @@ describe MapWithIndifferentAccess do
 
     it "returns an enumerator over its keys in same order as added when not given a block" do
       enum = subject.each_key
+
       expect( enum.next ).to eq(  1     )
       expect( enum.next ).to eq( 'two'  )
       expect( enum.next ).to eq( :three )
+      expect{ enum.next }.to raise_exception( StopIteration )
     end
   end
 
@@ -234,7 +237,9 @@ describe MapWithIndifferentAccess do
 
     it "provides enumeration of its values in same order as added when given a block" do
       values = []
+
       subject.each_value do |value| ; values << value ; end
+
       expect( values.length ).to eq( 3 )
       expect( values[0] ).to eq( 1 )
       expect( values[1].inner_map ).to eq( { a: 1 } )
@@ -368,16 +373,23 @@ describe MapWithIndifferentAccess do
         described_class::Array.new( [ 'b' ] )
       )
     end
+  end
 
-    it "removes all entries from inner hash map using #clear" do
-      inner_map[:a] = 1
-      inner_map[:b] = 2
+  it "returns wrapped, flattened inner hash map data via #flatten" do
+    inner_map[ :a  ] = 1
+    inner_map[ :b  ] = [ 2, 22 ]
+    inner_map[ :c  ] = [ [3, 33], 333 ]
+    inner_map[ 'd' ] = { dd: 4 }
 
-      subject.clear
+  end
 
-      expect( inner_map ).to be_empty
-    end
+  it "removes all entries from inner hash map using #clear" do
+    inner_map[:a] = 1
+    inner_map[:b] = 2
 
+    subject.clear
+
+    expect( inner_map ).to be_empty
   end
 
 end
