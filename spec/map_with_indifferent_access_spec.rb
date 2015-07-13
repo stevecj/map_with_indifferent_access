@@ -159,21 +159,70 @@ describe MapWithIndifferentAccess do
     expect( subject == other ).to eq( true )
   end
 
-  it "is enumerable over key/value pairs" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = { a: 1 }
-    subject[ :three ] = [ 9 ]
+  describe '#each' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
 
-    entries = []
-    subject.each do |entry| ; entries << entry ; end
+    it "is enumerates over key/value pairs when given a block" do
+      entries = []
+      subject.each do |entry| ; entries << entry ; end
 
-    expect( entries ).to eq( [
-      [  1,     1 ],
-      [ 'two',  described_class.new(a: 1) ],
-      [ :three, described_class::Array.new([9]) ]
-    ] )
+      expect( entries.length ).to eq( 3 )
 
-    expect( subject.entries ).to eq( entries )
+      expect( entries[0] ).to eq( [1, 1] )
+
+      expect( entries[1][0] ).to eq( 'two' )
+      expect( entries[1][1].inner_map ).to eq( {a: 1} )
+
+      expect( entries[2][0] ).to eq( :three )
+      expect( entries[2][1].inner_array ).to eq( [9] )
+
+      expect( subject.entries ).to eq( entries )
+    end
+
+    it "returns an enumerator for key/value pairs when not given a block" do
+      enum = subject.each
+
+      expect( enum.next ).to eq( [1, 1] )
+
+      enum.next.tap do |entry|
+        expect( entry[0] ).to eq( 'two' )
+        expect( entry[1].inner_map ).to eq( {a: 1} )
+      end
+
+      enum.next.tap do |entry|
+        expect( entry[0] ).to eq( :three )
+        expect( entry[1].inner_array ).to eq( [9] )
+      end
+
+      expect{ enum.next }.to raise_exception( StopIteration )
+    end
+  end
+
+  describe '#each_key' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
+
+    it "provides enumeration of its keys in same order as added when given a block" do
+      keys = []
+      subject.each_key do |key| ; keys << key ; end
+      expect( keys ).to eq(
+        [1, 'two', :three]
+      )
+    end
+
+    it "returns an enumerator over its keys in same order as added when not given a block" do
+      enum = subject.each_key
+      expect( enum.next ).to eq(  1     )
+      expect( enum.next ).to eq( 'two'  )
+      expect( enum.next ).to eq( :three )
+    end
   end
 
   it "reflects later changes made to its inner hash map" do

@@ -82,14 +82,16 @@ class MapWithIndifferentAccess
   end
 
   def each
-    if block_given?
-      each_key.each do |key|
-        value = fetch( key )
-        value = self.class[ value ]
-        yield [key, value]
-      end
+    return enum_for(:each) unless block_given?
+
+    each_key.each do |key|
+      value = fetch( key )
+      value = self.class[ value ]
+      yield [key, value]
     end
   end
+
+  alias each_pair each
 
   def delete(key)
     key = indifferent_key_from( key )
