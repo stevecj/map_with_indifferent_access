@@ -87,209 +87,85 @@ describe MapWithIndifferentAccess do
     end
   end
 
-  it "allows indexed read/write access to values" do
-    subject[  1  ] = 'one'
-    subject[ 'a' ] = 'A'
-    subject[ :b  ] = 'B'
-    expect( subject[  1  ] ).to eq( 'one' )
-    expect( subject[ 'a' ] ).to eq( 'A'   )
-    expect( subject[ :b  ] ).to eq( 'B'   )
+  describe "indexed value access" do
+    it "allows read/write access to values by key" do
+      subject[  1  ] = 'one'
+      subject[ 'a' ] = 'A'
+      subject[ :b  ] = 'B'
+      expect( subject[  1  ] ).to eq( 'one' )
+      expect( subject[ 'a' ] ).to eq( 'A'   )
+      expect( subject[ :b  ] ).to eq( 'B'   )
+    end
+
+    it "treats string and symbol keys interchangeably" do
+      subject[ 'a' ] = 'A'
+      subject[ :b  ] = 'B'
+      expect( subject[ :a  ] ).to eq( 'A' )
+      expect( subject[ 'a' ] ).to eq( 'A' )
+      expect( subject[ 'b' ] ).to eq( 'B' )
+      expect( subject[ :b  ] ).to eq( 'B' )
+    end
+
+    it "updates existing entries with sting/symbol indifferent key matching" do
+      inner_map[ :aaa  ] = 1
+      inner_map[ :bbb  ] = 2
+      inner_map[ 'ccc' ] = 3
+      inner_map[ 'ddd' ] = 4
+
+      subject[ :aaa  ] = 'AAA'
+      subject[ 'bbb' ] = 'BBB'
+      subject[ :ccc  ] = 'CCC'
+      subject[ 'ddd' ] = 'DDD'
+
+      expect( inner_map ).to eq( {
+        :aaa  => 'AAA',
+        :bbb  => 'BBB',
+        'ccc' => 'CCC',
+        'ddd' => 'DDD'
+      } )
+    end
+
+    it "wraps hash-type values when reading" do
+      h = {}
+      inner_map[:aaa] = h
+      expect( subject[:aaa] ).to be_kind_of( described_class )
+      expect( subject[:aaa].inner_map ).to equal( h )
+    end
+
+    it "wraps array-type values when reading" do
+      ary = []
+      inner_map[:bbb] = ary
+      expect( subject[:bbb] ).to be_kind_of( described_class::Array )
+      expect( subject[:bbb].inner_array ).to equal( ary )
+    end
   end
 
-  it "treats string and symbol keys interchangeably" do
-    subject[ 'a' ] = 'A'
-    subject[ :b  ] = 'B'
-    expect( subject[ :a  ] ).to eq( 'A' )
-    expect( subject[ 'b' ] ).to eq( 'B' )
-  end
-
-  it "provides Hash-like #fetch behavior with key symbol/string indifference" do
-    subject[  1  ] = 'one'
-    subject[ 'a' ] = 'A'
-    subject[ :b  ] = 'B'
-    expect( subject.fetch(  1  ) ).to eq( 'one' )
-    expect( subject.fetch( :a  ) ).to eq( 'A'   )
-    expect( subject.fetch( 'b' ) ).to eq( 'B'   )
-
-    expect{ subject.fetch('x') }.to raise_exception( KeyError )
-    expect( subject.fetch('x') { '-' } ).to eq( '-' )
-    expect( subject.fetch('x', '#') ).to eq( '#' )
-  end
-
-  it "provides its length/size" do
-    subject[  1  ] = 'one'
-    subject[ 'a' ] = 'A'
-    expect( subject.length ).to eq( 2 )
-    expect( subject.size   ).to eq( 2 )
-  end
-
-  it "enumerates keys in order added" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = 2
-    subject[ :three ] = 3
-
-    keys = []
-    subject.each_key do |key| ; keys << key ; end
-    expect( keys ).to eq( [1, 'two', :three] )
-  end
-
-  it "has unequal instances via #== with key-symbol-string-indifferently unequal entry sets" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = [ {a: 4} ]
-    subject[ :three ] = 3
-
-    other = described_class.new
-    other[ 'three' ] = 3
-    other[ :two    ] = [ {a: :fore} ]
-    other[  1      ] = 1
-
-    expect( subject == other ).to eq( false )
-  end
-
-  it "has equal instances via #== with key-symbol-string-indifferently equal entry sets" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = [ {a: 4} ]
-    subject[ :three ] = 3
-
-    other = described_class.new
-    other[ 'three' ] = 3
-    other[ :two    ] = [ {'a' => 4} ]
-    other[  1      ] = 1
-
-    expect( subject == other ).to eq( true )
-  end
-
-  describe '#each' do
+  describe '#fetch' do
     before do
-      subject[  1     ] = 1
-      subject[ 'two'  ] = { a: 1 }
-      subject[ :three ] = [ 9 ]
+      inner_map[  1  ] = 'one'
+      inner_map[ 'a' ] = 'A'
+      inner_map[ :b  ] = 'B'
     end
 
-    it "is enumerates over key/value pairs when given a block" do
-      entries = []
-
-      subject.each do |entry| ; entries << entry ; end
-
-      expect( entries.length ).to eq( 3 )
-
-      expect( entries[0] ).to eq( [1, 1] )
-
-      expect( entries[1][0] ).to eq( 'two' )
-      expect( entries[1][1].inner_map ).to eq( {a: 1} )
-
-      expect( entries[2][0] ).to eq( :three )
-      expect( entries[2][1].inner_array ).to eq( [9] )
-
-      expect( subject.entries ).to eq( entries )
+    it "retrieves values by key with string/symbol indifference" do
+      expect( subject.fetch(  1  ) ).to eq( 'one' )
+      expect( subject.fetch( :a  ) ).to eq( 'A' )
+      expect( subject.fetch( 'a' ) ).to eq( 'A' )
+      expect( subject.fetch( :b  ) ).to eq( 'B' )
+      expect( subject.fetch( 'b' ) ).to eq( 'B' )
     end
 
-    it "returns an enumerator for key/value pairs when not given a block" do
-      enum = subject.each
-
-      expect( enum.next ).to eq( [1, 1] )
-
-      enum.next.tap do |entry|
-        expect( entry[0] ).to eq( 'two' )
-        expect( entry[1].inner_map ).to eq( {a: 1} )
-      end
-
-      enum.next.tap do |entry|
-        expect( entry[0] ).to eq( :three )
-        expect( entry[1].inner_array ).to eq( [9] )
-      end
-
-      expect{ enum.next }.to raise_exception( StopIteration )
-    end
-  end
-
-  describe '#each_key' do
-    before do
-      subject[  1     ] = 1
-      subject[ 'two'  ] = { a: 1 }
-      subject[ :three ] = [ 9 ]
+    it "raises a KeyError exception for string/symbolically indifferent key mismatch and no fallback" do
+      expect{ subject.fetch('x') }.to raise_exception( KeyError )
     end
 
-    it "provides enumeration of its keys in same order as added when given a block" do
-      keys = []
-      subject.each_key do |key| ; keys << key ; end
-      expect( keys ).to eq(
-        [1, 'two', :three]
-      )
+    it "returns the given default value for string/symbolically indifferent key mismatch" do
+      expect( subject.fetch('x', '#') ).to eq( '#' )
     end
 
-    it "returns an enumerator over its keys in same order as added when not given a block" do
-      enum = subject.each_key
-
-      expect( enum.next ).to eq(  1     )
-      expect( enum.next ).to eq( 'two'  )
-      expect( enum.next ).to eq( :three )
-      expect{ enum.next }.to raise_exception( StopIteration )
+    it "returns the block-call result for string/symbolically indifferent key mismatch" do
+      expect( subject.fetch('x') {|key| key.inspect } ).to eq( '"x"' )
     end
-  end
-
-  describe '#each_value' do
-    before do
-      subject[  1     ] = 1
-      subject[ 'two'  ] = { a: 1 }
-      subject[ :three ] = [ 9 ]
-    end
-
-    it "provides enumeration of its values in same order as added when given a block" do
-      values = []
-
-      subject.each_value do |value| ; values << value ; end
-
-      expect( values.length ).to eq( 3 )
-      expect( values[0] ).to eq( 1 )
-      expect( values[1].inner_map ).to eq( { a: 1 } )
-      expect( values[2].inner_array ).to eq( [9] )
-    end
-
-    it "provides an enumerator over its values in same order as added when not given a block" do
-      enum = subject.each_value
-
-      expect( enum.next ).to eq( 1 )
-      expect( enum.next.inner_map ).to eq( { a: 1 } )
-      expect( enum.next.inner_array ).to eq( [9] )
-      expect{ enum.next }.to raise_exception( StopIteration )
-    end
-  end
-
-  it "reflects later changes made to its inner hash map" do
-    inner_map[ :foo ] = 123
-    expect( subject['foo'] ).to eq( 123 )
-  end
-
-  it "reflects later changes back to its inner hash map" do
-    subject[ :abc ] = 'ABC'
-    expect( inner_map[:abc] ).to eq('ABC')
-  end
-
-  it "reflects hash-type values from its inner hash map as wrapped" do
-    h = {}
-    inner_map[:aaa] = h
-    expect( subject[:aaa] ).to be_kind_of( described_class )
-    expect( subject[:aaa].inner_map ).to equal( h )
-  end
-
-  it "reflects array-type values from its inner hash map as wrapped" do
-    ary = []
-    inner_map[:bbb] = ary
-    expect( subject[:bbb] ).to be_kind_of( described_class::Array )
-    expect( subject[:bbb].inner_array ).to equal( ary )
-  end
-
-  it "modifies the existing entry in its inner hash map with string/symbol indifference" do
-    inner_map[ :aaa  ] = 'A'
-    inner_map[ 'bbb' ] = 'B'
-    subject[ 'aaa' ] = 'AA'
-    subject[ :bbb  ] = 'BB'
-
-    expect( inner_map ).to eq( {
-      :aaa  => 'AA',
-      'bbb' => 'BB'
-    } )
   end
 
   describe '#delete' do
@@ -343,6 +219,155 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  it "removes all entries from inner hash map using #clear" do
+    inner_map[:a] = 1
+    inner_map[:b] = 2
+
+    subject.clear
+
+    expect( inner_map ).to be_empty
+  end
+
+  it "provides its length/size" do
+    subject[  1  ] = 'one'
+    subject[ 'a' ] = 'A'
+    expect( subject.length ).to eq( 2 )
+    expect( subject.size   ).to eq( 2 )
+  end
+
+  it "enumerates keys in order added" do
+    subject[  1     ] = 1
+    subject[ 'two'  ] = 2
+    subject[ :three ] = 3
+
+    keys = []
+    subject.each_key do |key| ; keys << key ; end
+    expect( keys ).to eq( [1, 'two', :three] )
+  end
+
+  it "has unequal instances via #== with key-symbol-string-indifferently unequal entry sets" do
+    subject[  1     ] = 1
+    subject[ 'two'  ] = [ {a: 4} ]
+    subject[ :three ] = 3
+
+    other = described_class.new
+    other[ 'three' ] = 3
+    other[ :two    ] = [ {a: :fore} ]
+    other[  1      ] = 1
+
+    expect( subject == other ).to eq( false )
+  end
+
+  it "has equal instances via #== with key-symbol-string-indifferently equal entry sets" do
+    subject[  1     ] = 1
+    subject[ 'two'  ] = [ {a: 4} ]
+    subject[ :three ] = 3
+
+    other = described_class.new
+    other[ 'three' ] = 3
+    other[ :two    ] = [ {'a' => 4} ]
+    other[  1      ] = 1
+
+    expect( subject == other ).to eq( true )
+  end
+
+  describe '#each' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
+
+    it "enumerates over key/value pairs w/ appropriately wrapped values when given a block" do
+      entries = []
+
+      subject.each do |entry| ; entries << entry ; end
+
+      expect( entries.length ).to eq( 3 )
+
+      expect( entries[0] ).to eq( [1, 1] )
+
+      expect( entries[1][0] ).to eq( 'two' )
+      expect( entries[1][1].inner_map ).to eq( {a: 1} )
+
+      expect( entries[2][0] ).to eq( :three )
+      expect( entries[2][1].inner_array ).to eq( [9] )
+
+      expect( subject.entries ).to eq( entries )
+    end
+
+    it "returns an enumerator for key/value pairs w/ appropriately wrapped values when not given a block" do
+      enum = subject.each
+
+      expect( enum.next ).to eq( [1, 1] )
+
+      enum.next.tap do |entry|
+        expect( entry[0] ).to eq( 'two' )
+        expect( entry[1].inner_map ).to eq( {a: 1} )
+      end
+
+      enum.next.tap do |entry|
+        expect( entry[0] ).to eq( :three )
+        expect( entry[1].inner_array ).to eq( [9] )
+      end
+
+      expect{ enum.next }.to raise_exception( StopIteration )
+    end
+  end
+
+  describe '#each_key' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
+
+    it "provides enumeration of its keys in same order as added when given a block" do
+      keys = []
+      subject.each_key do |key| ; keys << key ; end
+      expect( keys ).to eq(
+        [1, 'two', :three]
+      )
+    end
+
+    it "returns an enumerator over its keys in same order as added when not given a block" do
+      enum = subject.each_key
+
+      expect( enum.next ).to eq(  1     )
+      expect( enum.next ).to eq( 'two'  )
+      expect( enum.next ).to eq( :three )
+      expect{ enum.next }.to raise_exception( StopIteration )
+    end
+  end
+
+  describe '#each_value' do
+    before do
+      subject[  1     ] = 1
+      subject[ 'two'  ] = { a: 1 }
+      subject[ :three ] = [ 9 ]
+    end
+
+    it "provides enumeration of its appropriately-wrapped values in same order as added when given a block" do
+      values = []
+
+      subject.each_value do |value| ; values << value ; end
+
+      expect( values.length ).to eq( 3 )
+      expect( values[0] ).to eq( 1 )
+      expect( values[1].inner_map ).to eq( { a: 1 } )
+      expect( values[2].inner_array ).to eq( [9] )
+    end
+
+    it "provides an enumerator over its appropriately-wrapped values in same order as added when not given a block" do
+      enum = subject.each_value
+
+      expect( enum.next ).to eq( 1 )
+      expect( enum.next.inner_map ).to eq( { a: 1 } )
+      expect( enum.next.inner_array ).to eq( [9] )
+      expect{ enum.next }.to raise_exception( StopIteration )
+    end
+  end
+
   describe '#assoc' do
     it "returns nil for am object that does not key/symbol indifferently == any map key" do
       subject[ :aaa  ] = 'A'
@@ -381,15 +406,6 @@ describe MapWithIndifferentAccess do
     inner_map[ :c  ] = [ [3, 33], 333 ]
     inner_map[ 'd' ] = { dd: 4 }
 
-  end
-
-  it "removes all entries from inner hash map using #clear" do
-    inner_map[:a] = 1
-    inner_map[:b] = 2
-
-    subject.clear
-
-    expect( inner_map ).to be_empty
   end
 
 end
