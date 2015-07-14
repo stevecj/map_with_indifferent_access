@@ -13,8 +13,26 @@ class MapWithIndifferentAccess
     end
   end
 
-  def self.[](obj)
-    try_convert( obj ) || self::Array.try_convert( obj ) || obj
+  def self.try_deconstruct(obj)
+    self === obj ?
+      obj.inner_map :
+      nil
+  end
+
+  def self.<<(obj)
+    (
+      try_convert( obj ) ||
+      self::Array.try_convert( obj ) ||
+      obj
+    )
+  end
+
+  def self.>>(obj)
+    (
+      try_deconstruct(obj) ||
+      self::Array.try_deconstruct(obj) ||
+      obj
+    )
   end
 
   extend Forwardable
@@ -39,6 +57,7 @@ class MapWithIndifferentAccess
   end
 
   def[]=(key, value)
+    value = self.class >> value
     key = indifferent_key_from( key )
     inner_map[key] = value
   end
@@ -63,7 +82,7 @@ class MapWithIndifferentAccess
       inner_map.fetch( key, *more_args )
     end
 
-    self.class[ value ]
+    self.class << value
   end
 
   def ==(other)
@@ -90,7 +109,7 @@ class MapWithIndifferentAccess
 
     each_key do |key|
       value = fetch( key )
-      value = self.class[ value ]
+      value = self.class << value
       yield [key, value]
     end
   end
@@ -101,7 +120,7 @@ class MapWithIndifferentAccess
     return enum_for(:each_value) unless block_given?
 
     inner_map.each_value do |value|
-      value = self.class[ value ]
+      value = self.class << value
       yield value
     end
   end
@@ -113,14 +132,14 @@ class MapWithIndifferentAccess
     else
       inner_map.delete( key )
     end
-    self.class[ value ]
+    self.class << value
   end
 
   def assoc(obj)
     obj = indifferent_key_from( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
-      value = self.class[ entry[1] ]
+      value = self.class << entry[1]
       entry[1] = value
     end
     entry

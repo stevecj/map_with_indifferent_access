@@ -18,13 +18,17 @@ class MapWithIndifferentAccess
       end
     end
 
+    def self.try_deconstruct(obj)
+      self === obj ?
+        obj.inner_array :
+        nil
+    end
+
     attr_reader :inner_array
 
     def_delegators(
       :inner_array,
-      :<<,
       :length,
-      :push,
     )
 
     def initialize(basis = [])
@@ -34,12 +38,24 @@ class MapWithIndifferentAccess
     end
 
     def []=(index, value)
+      value = MWIA >> value
       inner_array[index] = value
     end
 
     def [](index)
       item = inner_array[ index ]
-      MWIA[ item ]
+      MWIA << item
+    end
+
+    def <<(value)
+      value = MWIA >> value
+      inner_array << value
+    end
+
+    def push(*values)
+      values.each do |value|
+        self << value
+      end
     end
 
     def ==(other)
@@ -55,7 +71,7 @@ class MapWithIndifferentAccess
 
     def each
       inner_array.each do |item|
-        item = MWIA[ item ]
+        item = MWIA << item
         yield item
       end
     end

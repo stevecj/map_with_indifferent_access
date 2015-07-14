@@ -28,6 +28,18 @@ describe MapWithIndifferentAccess::Array do
     }.to raise_exception( NoMethodError )
   end
 
+  it "deconstructs a wrapped-array instance to its inner array" do
+    result = described_class.try_deconstruct( subject )
+    expect( result ).to equal( subject.inner_array )
+  end
+
+  it "deconstructs an object other than a wrapped array to `nil`" do
+    expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
+    expect( described_class.try_deconstruct( true ) ).to eq( nil )
+    expect( described_class.try_deconstruct( 'xy' ) ).to eq( nil )
+    expect( described_class.try_deconstruct( {}   ) ).to eq( nil )
+  end
+
   it "can be converted from an instance of its class, returning the given array" do
     array = described_class::try_convert( subject )
     expect( array ).to equal( subject )
@@ -48,31 +60,64 @@ describe MapWithIndifferentAccess::Array do
     expect( array.inner_array ).to equal( given_array )
   end
 
-  it "stores an item by index into its inner array" do
-    subject[3] = :abc
-    expect( inner_array[3] ).to eq( :abc )
+  describe "indexed value access" do
+    it "stores an item by index into its inner array" do
+      subject[3] = :abc
+      expect( inner_array[3] ).to eq( :abc )
+    end
+
+    it "reads an item by index from its inner array" do
+      inner_array[2] = :abc
+      expect( subject[2] ).to eq( :abc )
+    end
+
+    it "reads a hash-type item by index as wrapped" do
+      inner_array[3] = {a: 1}
+      expect( subject[3] ).to be_kind_of( MapWithIndifferentAccess )
+      expect( subject[3].inner_map ).to eq( {a: 1} )
+    end
+
+    it "stores a the inner hash-map for a wrapped hash-map" do
+      map = MapWithIndifferentAccess.new
+      subject[2] = map
+      expect( inner_array[2] ).to equal( map.inner_map )
+    end
+
+    it "reads an array-type item by index as wrapped" do
+      inner_array[3] = [:a, :b]
+      expect( subject[3] ).to be_kind_of( described_class )
+    end
+
+    it "stores a the inner array for a wrapped array" do
+      wrapped_array = described_class.new
+      subject[2] = wrapped_array
+      expect( inner_array[2] ).to equal( wrapped_array.inner_array )
+    end
   end
 
-  it "reads an item by index from its inner array" do
-    inner_array[2] = :abc
-    expect( subject[2] ).to eq( :abc )
-  end
+  describe "#<< and #push" do
+    it "push items onto the end of the inner array" do
+      subject << 1
+      subject.push 2, 3
+      expect( subject.inner_array ).to eq( [1, 2, 3] )
+    end
 
-  it "reflects a hash-type item by index as wrapped" do
-    inner_array[3] = {a: 1}
-    expect( subject[3] ).to be_kind_of( MapWithIndifferentAccess )
-    expect( subject[3].inner_map ).to eq( {a: 1} )
-  end
+    it "unwrap given wrapped hash maps and wrapped arrays" do
+      wrapped_array = described_class.new
+      wrapped_hash_map = MapWithIndifferentAccess.new
 
-  it "reflects an array-type item by index as wrapped" do
-    inner_array[3] = [:a, :b]
-    expect( subject[3] ).to be_kind_of( described_class )
-  end
+      subject << wrapped_array
+      subject << wrapped_hash_map
+      subject.push \
+        wrapped_array,
+        wrapped_hash_map
 
-  it "allows items to be pushed onto its end" do
-    subject << 1
-    subject.push 2, 3
-    expect( subject.inner_array ).to eq( [1, 2, 3] )
+      expect( inner_array.length ).to eq( 4 )
+      expect( inner_array[0] ).to equal( wrapped_array.inner_array  )
+      expect( inner_array[1] ).to equal( wrapped_hash_map.inner_map )
+      expect( inner_array[2] ).to equal( wrapped_array.inner_array  )
+      expect( inner_array[3] ).to equal( wrapped_hash_map.inner_map )
+    end
   end
 
   it "provides its number of entries via #length" do

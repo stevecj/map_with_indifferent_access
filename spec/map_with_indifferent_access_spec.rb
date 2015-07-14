@@ -33,6 +33,18 @@ describe MapWithIndifferentAccess do
     }.to raise_exception( ArgumentError )
   end
 
+  it "deconstructs a map instance to its inner hash map" do
+    result = described_class.try_deconstruct( subject )
+    expect( result ).to equal( subject.inner_map )
+  end
+
+  it "deconstructs non-map objects to `nil`" do
+    expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
+    expect( described_class.try_deconstruct( true ) ).to eq( nil )
+    expect( described_class.try_deconstruct( 'xy' ) ).to eq( nil )
+    expect( described_class.try_deconstruct( {}   ) ).to eq( nil )
+  end
+
   it "cannot be converted from an un-hash-like object" do
     expect( described_class::try_convert( nil ) ).to be_nil
     expect( described_class::try_convert( 1   ) ).to be_nil
@@ -53,37 +65,55 @@ describe MapWithIndifferentAccess do
     expect( map.inner_map ).to equal( hash )
   end
 
-  describe '::[]' do
+  describe '::<<' do
     it "returns the given object when not an Array, Hash, instance of self, or instance of self::Array" do
-      expect( described_class[  nil  ] ).to eq(  nil )
-      expect( described_class[ 'abc' ] ).to eq( 'abc' )
-      expect( described_class[  123  ] ).to eq(  123 )
+      expect( described_class <<  nil  ).to eq(  nil  )
+      expect( described_class << 'abc' ).to eq( 'abc' )
+      expect( described_class <<  123  ).to eq(  123  )
 
       timeval = Time.new(2010,11,16, 10,45,59)
-      expect( described_class[ timeval ] ).to eq( timeval )
+      expect( described_class << timeval ).to eq( timeval )
     end
 
     it "returns a wrapped instance of the given Hash" do
       given_hash = {a: 1}
-      result = described_class[ given_hash ]
+      result = described_class << given_hash
       expect( result.inner_map ).to equal( given_hash )
     end
 
     it "returns a wrapped instance of the given Array" do
       given_array = [ 1, 2, 3 ]
-      result = described_class[ given_array ]
+      result = described_class << given_array
       expect( result.inner_array ).to equal( given_array )
     end
 
     it "returns the given instance of MapWithIndifferentAccess" do
-      result = described_class[ subject ]
+      result = described_class << subject
       expect( result ).to equal( subject )
     end
 
     it "returns the given instance of MapWithIndifferentAccess::Array" do
       given_array_wrapper = described_class::Array.new
-      result = described_class[ given_array_wrapper ]
+      result = described_class << given_array_wrapper
       expect( result ).to equal( given_array_wrapper )
+    end
+  end
+
+  describe '::>>' do
+    it "returns the given object when not a wrapped-hash map or wrapped array" do
+      expect( described_class >>  nil  ).to eq(  nil  )
+      expect( described_class >> 'abc' ).to eq( 'abc' )
+      expect( described_class >>  123  ).to eq(  123  )
+      expect( described_class >> [ 9 ] ).to eq( [ 9 ] )
+    end
+
+    it "returns the inner hash map from a given wrapped wrapped hash map" do
+      expect( described_class >> subject  ).to equal( subject.inner_map )
+    end
+
+    it "returns the inner array from a given wrapped wrapped array" do
+      wrapped_array = described_class::Array.new
+      expect( described_class >> wrapped_array ).to equal( wrapped_array.inner_array )
     end
   end
 
@@ -132,11 +162,23 @@ describe MapWithIndifferentAccess do
       expect( subject[:aaa].inner_map ).to equal( h )
     end
 
+    it "unwraps wrapped hash values when writing" do
+      stored_map = described_class.new
+      subject[:aaa] = stored_map
+      expect( inner_map[:aaa] ).to equal( stored_map.inner_map )
+    end
+
     it "wraps array-type values when reading" do
       ary = []
       inner_map[:bbb] = ary
       expect( subject[:bbb] ).to be_kind_of( described_class::Array )
       expect( subject[:bbb].inner_array ).to equal( ary )
+    end
+
+    it "unwraps wrapped array values when writing" do
+      stored_wrapped_array = described_class::Array.new
+      subject[:aaa] = stored_wrapped_array
+      expect( inner_map[:aaa] ).to equal( stored_wrapped_array.inner_array )
     end
   end
 
@@ -145,6 +187,8 @@ describe MapWithIndifferentAccess do
       inner_map[  1  ] = 'one'
       inner_map[ 'a' ] = 'A'
       inner_map[ :b  ] = 'B'
+      inner_map[ :x  ] = {}
+      inner_map[ :y  ] = []
     end
 
     it "retrieves values by key with string/symbol indifference" do
@@ -155,16 +199,21 @@ describe MapWithIndifferentAccess do
       expect( subject.fetch( 'b' ) ).to eq( 'B' )
     end
 
+    it "wraps a value that is a hash or an array" do
+      expect( subject.fetch( :x  ).inner_map   ).to equal( inner_map[:x] )
+      expect( subject.fetch( 'y' ).inner_array ).to equal( inner_map[:y] )
+    end
+
     it "raises a KeyError exception for string/symbolically indifferent key mismatch and no fallback" do
-      expect{ subject.fetch('x') }.to raise_exception( KeyError )
+      expect{ subject.fetch('q') }.to raise_exception( KeyError )
     end
 
     it "returns the given default value for string/symbolically indifferent key mismatch" do
-      expect( subject.fetch('x', '#') ).to eq( '#' )
+      expect( subject.fetch('q', '#') ).to eq( '#' )
     end
 
     it "returns the block-call result for string/symbolically indifferent key mismatch" do
-      expect( subject.fetch('x') {|key| key.inspect } ).to eq( '"x"' )
+      expect( subject.fetch('q') {|key| key.inspect } ).to eq( '"q"' )
     end
   end
 
