@@ -284,6 +284,20 @@ describe MapWithIndifferentAccess do
     expect( subject.size   ).to eq( 2 )
   end
 
+  it "indicates whether a key is present with string/symbol indifference" do
+    subject[  1  ] = 'one'
+    subject[ 'a' ] = 'A'
+    subject[ :b  ] = 'B'
+
+    expect( subject.key?(  2  ) ).to eq( false )
+    expect( subject.key?( 'c' ) ).to eq( false )
+    expect( subject.key?(  1  ) ).to eq( true  )
+    expect( subject.key?( :a  ) ).to eq( true  )
+    expect( subject.key?( 'a' ) ).to eq( true  )
+    expect( subject.key?( :b  ) ).to eq( true  )
+    expect( subject.key?( 'b' ) ).to eq( true  )
+  end
+
   it "enumerates keys in order added" do
     subject[  1     ] = 1
     subject[ 'two'  ] = 2
@@ -447,14 +461,6 @@ describe MapWithIndifferentAccess do
         described_class::Array.new( [ 'b' ] )
       )
     end
-  end
-
-  it "returns wrapped, flattened inner hash map data via #flatten" do
-    inner_map[ :a  ] = 1
-    inner_map[ :b  ] = [ 2, 22 ]
-    inner_map[ :c  ] = [ [3, 33], 333 ]
-    inner_map[ 'd' ] = { dd: 4 }
-
   end
 
 end

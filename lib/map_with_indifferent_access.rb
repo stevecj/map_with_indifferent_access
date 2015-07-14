@@ -44,6 +44,7 @@ class MapWithIndifferentAccess
     :inner_map,
     :clear,
     :each_key,
+    :keys,
     :length,
     :size,
   )
@@ -61,6 +62,8 @@ class MapWithIndifferentAccess
     key = indifferent_key_from( key )
     inner_map[key] = value
   end
+
+  alias store []=
 
   def[](key)
     fetch(key)
@@ -84,6 +87,21 @@ class MapWithIndifferentAccess
 
     self.class << value
   end
+
+  def key?(key)
+    case key
+    when String
+      inner_map.key?( key ) || inner_map.key?( key.to_sym )
+    when Symbol
+      inner_map.key?( key ) || inner_map.key?( "#{key}" )
+    else
+      inner_map.key?( key )
+    end
+  end
+
+  alias has_key? key?
+  alias include? key?
+  alias member?  key?
 
   def ==(other)
     return true if equal?( other )
