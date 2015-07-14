@@ -19,9 +19,14 @@ class MapWithIndifferentAccess
     end
 
     def self.try_deconstruct(obj)
-      self === obj ?
-        obj.inner_array :
+      if self === obj
+        obj.inner_array
+      elsif obj.respond_to?(:to_ary)
+        a = obj.to_ary
+        ::Array === a ? a : nil
+      else
         nil
+      end
     end
 
     attr_reader :inner_array

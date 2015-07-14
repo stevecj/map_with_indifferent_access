@@ -33,7 +33,13 @@ describe MapWithIndifferentAccess::Array do
     expect( result ).to equal( subject.inner_array )
   end
 
-  it "deconstructs an object other than a wrapped array to `nil`" do
+  it "deconstructs an Array to itself" do
+    array = []
+    result = described_class.try_deconstruct( array )
+    expect( result ).to equal( array )
+  end
+
+  it "deconstructs an object other than an array or wrapped array to `nil`" do
     expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
     expect( described_class.try_deconstruct( true ) ).to eq( nil )
     expect( described_class.try_deconstruct( 'xy' ) ).to eq( nil )

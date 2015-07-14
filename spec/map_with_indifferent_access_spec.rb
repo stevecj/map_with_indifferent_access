@@ -38,11 +38,17 @@ describe MapWithIndifferentAccess do
     expect( result ).to equal( subject.inner_map )
   end
 
-  it "deconstructs non-map objects to `nil`" do
+  it "deconstructs a hash instance to itself" do
+    hash = {}
+    result = described_class.try_deconstruct( hash )
+    expect( result ).to equal( hash )
+  end
+
+  it "deconstructs objects that are not map or Hash type as `nil`" do
     expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
     expect( described_class.try_deconstruct( true ) ).to eq( nil )
     expect( described_class.try_deconstruct( 'xy' ) ).to eq( nil )
-    expect( described_class.try_deconstruct( {}   ) ).to eq( nil )
+    expect( described_class.try_deconstruct( []   ) ).to eq( nil )
   end
 
   it "cannot be converted from an un-hash-like object" do
@@ -460,6 +466,63 @@ describe MapWithIndifferentAccess do
       expect( value ).to eq(
         described_class::Array.new( [ 'b' ] )
       )
+    end
+  end
+
+  describe '#merge' do
+    it "returns a new instance with its entries supplemented/replaced by those in the given hash map" do
+      subject[1] = 11
+      subject[2] = 22
+      subject[:a] = 'A'
+      subject[:b] = 'B'
+
+      result = subject.merge( {
+         1 => 111,
+         3 => 333,
+        :a => 'AA'
+      } )
+
+      expect( result.inner_map ).to eq( {
+         1 => 111,
+         2 => 22,
+         3 => 333,
+        :a => 'AA',
+        :b => 'B'
+      } )
+    end
+
+    it "returns a new instance with entries merged from the inner hash map of the given map" do
+      inner_map[1] = 11
+
+      merge_source_map = described_class.new(
+        2 => { a: {b: 1} }
+      )
+
+      result = subject.merge( merge_source_map )
+
+      expect( result.inner_map ).to eq( {
+         1 => 11,
+         2 => { a: {b: 1} }
+      } )
+    end
+
+    it "replaces values in keys that match with string/symbol indifference" do
+      subject[ :a  ] = 'A'
+      subject[ 'b' ] = 'B'
+      subject[ 'c' ] = 'C'
+
+      result = subject.merge( {
+        'a' => 'AA',
+        :b  => 'BB',
+        :d  => 'DD'
+      } )
+
+      expect( result.inner_map ).to eq( {
+        :a  => 'AA',
+        'b' => 'BB',
+        'c' => 'C',
+        :d  => 'DD'
+      } )
     end
   end
 

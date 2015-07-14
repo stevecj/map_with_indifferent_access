@@ -14,9 +14,14 @@ class MapWithIndifferentAccess
   end
 
   def self.try_deconstruct(obj)
-    self === obj ?
-      obj.inner_map :
+    if self === obj
+      obj.inner_map
+    elsif obj.respond_to?(:to_hash)
+      h = obj.to_hash
+      Hash === h ? h : nil
+    else
       nil
+    end
   end
 
   def self.<<(obj)
@@ -161,6 +166,16 @@ class MapWithIndifferentAccess
       entry[1] = value
     end
     entry
+  end
+
+  def merge(other)
+    other_hash = self.class.try_deconstruct(other)
+    raise TypeError, "Can't convert #{other.class} into Hash" unless other_hash
+    self.class.new( inner_map.dup ).tap do |result|
+      other_hash.each do |(k,v)|
+        result[k] = v
+      end
+    end
   end
 
   private
