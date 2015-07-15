@@ -169,13 +169,15 @@ class MapWithIndifferentAccess
   end
 
   def merge(other)
+    result = self.class.new( inner_map )
+    result.merge!( other )
+  end
+
+  def merge!(other)
     other_hash = self.class.try_deconstruct(other)
     raise TypeError, "Can't convert #{other.class} into Hash" unless other_hash
-    self.class.new( inner_map.dup ).tap do |result|
-      other_hash.each do |(k,v)|
-        result[k] = v
-      end
-    end
+    other_hash.each do |(k,v)| ; self[k] = v ; end
+    self
   end
 
   private

@@ -469,60 +469,82 @@ describe MapWithIndifferentAccess do
     end
   end
 
-  describe '#merge' do
-    it "returns a new instance with its entries supplemented/replaced by those in the given hash map" do
-      subject[1] = 11
-      subject[2] = 22
-      subject[:a] = 'A'
-      subject[:b] = 'B'
-
-      result = subject.merge( {
-         1 => 111,
-         3 => 333,
-        :a => 'AA'
-      } )
-
-      expect( result.inner_map ).to eq( {
-         1 => 111,
-         2 => 22,
-         3 => 333,
-        :a => 'AA',
-        :b => 'B'
-      } )
+  describe 'map-merging' do
+    before do
+      inner_map[  1  ] =  11
+      inner_map[ 'a' ] = 'AA'
+      inner_map[ 'b' ] = 'BB'
+      inner_map[ :c  ] = 'CC'
+      inner_map[ :d  ] = 'DD'
     end
 
-    it "returns a new instance with entries merged from the inner hash map of the given map" do
-      inner_map[1] = 11
+    context "given an argument with string/symbol indifferently different keys" do
+      let( :hash ) { {
+         2  =>  222,
+        'e' => 'EEE',
+        :f  => 'FFF'
+      } }
+      let( :expected_inner_map ) { {
+         1 => 11,  'a' => 'AA',  'b' => 'BB', :c => 'CC', :d => 'DD',
+         2 => 222, 'e' => 'EEE', :f  => 'FFF'
+      } }
 
-      merge_source_map = described_class.new(
-        2 => { a: {b: 1} }
-      )
+      it "returns a new map with entries from the map and the given hash using #merge" do
+        result = subject.merge( hash )
+        expect( result.inner_map ).to eq( expected_inner_map )
+      end
 
-      result = subject.merge( merge_source_map )
+      it "returns a new map with entries from the map and the inner hash-map of the given map using #merge" do
+        map = described_class.new( hash )
+        result = subject.merge( map )
+        expect( result.inner_map ).to eq( expected_inner_map )
+      end
 
-      expect( result.inner_map ).to eq( {
-         1 => 11,
-         2 => { a: {b: 1} }
-      } )
+      it "adds entries from the given hash into itself using #merge!" do
+        subject.merge! hash
+        expect( subject.inner_map ).to eq( expected_inner_map )
+      end
+
+      it "adds entries from the inner hash-map of the given hash into itself using #merge!" do
+        map = described_class.new( hash )
+        subject.merge! map
+        expect( subject.inner_map ).to eq( expected_inner_map )
+      end
     end
 
-    it "replaces values in keys that match with string/symbol indifference" do
-      subject[ :a  ] = 'A'
-      subject[ 'b' ] = 'B'
-      subject[ 'c' ] = 'C'
+    context "given an argument with string/symbol indifferently same keys" do
+      let( :hash ) { {
+         1  =>  111,
+        'a' => 'AAA', :b  => 'BBB',
+        'c' => 'CCC', :d  => 'DDD'
+      } }
+      let( :expected_inner_map ) { {
+          1 => 111,
+         'a' => 'AAA', 'b' => 'BBB',
+         :c  => 'CCC', :d  => 'DDD'
+      } }
 
-      result = subject.merge( {
-        'a' => 'AA',
-        :b  => 'BB',
-        :d  => 'DD'
-      } )
+      it "returns a new map with entries from the map and values from the given hash using #merge" do
+        result = subject.merge( hash )
+        expect( result.inner_map ).to eq( expected_inner_map )
+      end
 
-      expect( result.inner_map ).to eq( {
-        :a  => 'AA',
-        'b' => 'BB',
-        'c' => 'C',
-        :d  => 'DD'
-      } )
+      it "returns a new map with entries from the map and values from the inner hash-map of the given map using #merge" do
+        map = described_class.new( hash )
+        result = subject.merge( map )
+        expect( result.inner_map ).to eq( expected_inner_map )
+      end
+
+      it "replaces values of its entries with those from the given hash into itself using #merge!" do
+        subject.merge! hash
+        expect( subject.inner_map ).to eq( expected_inner_map )
+      end
+
+      it "replaces values of its entries with those from the nner hash map of the given map into itself using #merge!" do
+        map = described_class.new( hash )
+        subject.merge! map
+        expect( subject.inner_map ).to eq( expected_inner_map )
+      end
     end
   end
 
