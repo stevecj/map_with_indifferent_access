@@ -50,6 +50,7 @@ class MapWithIndifferentAccess
     :clear,
     :default=,
     :each_key,
+    :empty?,
     :keys,
     :length,
     :size,

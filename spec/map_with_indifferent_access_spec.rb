@@ -364,30 +364,43 @@ describe MapWithIndifferentAccess do
     expect( subject.default.inner_array ).to eq( [nil, {}]  )
   end
 
-  it "has unequal instances via #== with key-symbol-string-indifferently unequal entry sets" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = [ {a: 4} ]
-    subject[ :three ] = 3
+  describe '#==' do
+    let( :inner_map ) { {
+      :a  => 1,
+      'b' => 2,
+      'c' => { :cc => 33, 'ccc' => 333 },
+      :d  => [ 4, { 'dd' => 44, :ddd => 444 } ]
+    } }
+    let( :similar_hash ) { {
+      'a' => 1,
+      :b  => 2,
+      :c  => { :cc => 33, :ccc => 333 },
+      'd' => [ 4, { 'dd' => 44, 'ddd' => 444 } ]
+    } }
+    let( :dissimilar_hash ) { {
+      :a  => 1,
+      'b' => 2,
+      'c' => { :cc => 33, 'ccc' => 999 }, # Only distinction: 999 vs 333
+      :d  => [ 4, { 'dd' => 44, :ddd => 444 } ]
+    } }
 
-    other = described_class.new
-    other[ 'three' ] = 3
-    other[ :two    ] = [ {a: :fore} ]
-    other[  1      ] = 1
+    it "returns false given a map that is different w/ key string/symbolic indifference" do
+      map = described_class.new( dissimilar_hash )
+      expect( subject == map ).to eq( false )
+    end
 
-    expect( subject == other ).to eq( false )
-  end
+    it "returns false given a Hash that is different w/ key string/symbolic indifference" do
+      expect( subject == dissimilar_hash ).to eq( false )
+    end
 
-  it "has equal instances via #== with key-symbol-string-indifferently equal entry sets" do
-    subject[  1     ] = 1
-    subject[ 'two'  ] = [ {a: 4} ]
-    subject[ :three ] = 3
+    it "returns true given a map that is the same w/ key string/symbolic indifference" do
+      map = described_class.new( similar_hash )
+      expect( subject == map ).to eq( true )
+    end
 
-    other = described_class.new
-    other[ 'three' ] = 3
-    other[ :two    ] = [ {'a' => 4} ]
-    other[  1      ] = 1
-
-    expect( subject == other ).to eq( true )
+    it "returns true given a Hash that is the same w/ key string/symbolic indifference" do
+      expect( subject == similar_hash ).to eq( true )
+    end
   end
 
   describe '#each' do
