@@ -253,6 +253,50 @@ describe MapWithIndifferentAccess do
       end
     end
 
+    describe '#delete_if' do
+      before do
+        inner_map[ 'a' ] = 'AAA'
+        inner_map[ :b  ] = {}
+        inner_map[ :c  ] = []
+        inner_map[ :d  ] = 4
+      end
+
+      it "passes each key/value to the given block and deletes entries for which the block returns true" do
+        subject.delete_if { |key,value|
+          String === key ||
+          value.respond_to?( :inner_map ) ||
+          value.respond_to?( :inner_array )
+        }
+
+        expect( inner_map ).to eq( { d: 4 } )
+      end
+
+      it "returns an enumerator over key/value pairs and deletes entries for which true is fed to the enumerator with no block given" do
+        enum = subject.delete_if
+
+        expect( enum.next ).to eq( [ 'a', 'AAA' ] )
+
+        enum.next.tap do |(key,value)|
+          expect( key ).to eq( :b )
+          expect( value.inner_map ).to eq( {} )
+        end
+        enum.feed true
+
+        enum.next.tap do |(key,value)|
+          expect( key ).to eq( :c )
+          expect( value.inner_array ).to eq( [] )
+        end
+        enum.feed true
+
+        expect( enum.next ).to eq( [ :d, 4 ] )
+
+        expect( inner_map ).to eq( {
+          'a' => 'AAA',
+          :d  =>  4
+        } )
+      end
+    end
+
     context "called with a block argument" do
       it "deletes the entry and returns the value for a string/symbolically indifferent map key" do
         inner_map[ :aaa  ] = { a: 1 }

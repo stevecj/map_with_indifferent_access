@@ -164,6 +164,15 @@ class MapWithIndifferentAccess
     self.class << value
   end
 
+  def delete_if
+    return enum_for(:delete_if) unless block_given?
+
+    inner_map.delete_if do |key,value|
+      value = self.class << value
+      yield key, value
+    end
+  end
+
   def assoc(obj)
     obj = indifferent_key_from( obj )
     entry = inner_map.assoc( obj )
