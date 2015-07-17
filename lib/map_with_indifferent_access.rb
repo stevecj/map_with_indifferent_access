@@ -48,6 +48,7 @@ class MapWithIndifferentAccess
   def_delegators(
     :inner_map,
     :clear,
+    :default=,
     :each_key,
     :keys,
     :length,
@@ -107,6 +108,11 @@ class MapWithIndifferentAccess
   alias has_key? key?
   alias include? key?
   alias member?  key?
+
+  def default(key=nil)
+    inner_default = inner_map.default( key )
+    self.class << inner_default
+  end
 
   def ==(other)
     return true if equal?( other )

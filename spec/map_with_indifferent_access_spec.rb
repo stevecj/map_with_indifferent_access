@@ -314,6 +314,12 @@ describe MapWithIndifferentAccess do
     expect( keys ).to eq( [1, 'two', :three] )
   end
 
+  it "Returns the default value for the case where the given key does not match an entry using #default" do
+    inner_map.default_proc = ->(hash, key) { key ? "#{key.inspect} in #{hash.inspect}" : [key, hash] }
+    expect( subject.default(:a)         ).to eq( ":a in {}" )
+    expect( subject.default.inner_array ).to eq( [nil, {}]  )
+  end
+
   it "has unequal instances via #== with key-symbol-string-indifferently unequal entry sets" do
     subject[  1     ] = 1
     subject[ 'two'  ] = [ {a: 4} ]
