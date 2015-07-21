@@ -111,11 +111,7 @@ class MapWithIndifferentAccess
   alias member?  key?
 
   def key(value)
-    value = self.class << value
-    entry = inner_map.detect { |(k,v)|
-      v = self.class << v
-      value == v
-    }
+    entry = rassoc( value )
     entry ? entry.first : nil
   end
 
@@ -200,6 +196,20 @@ class MapWithIndifferentAccess
       entry[1] = value
     end
     entry
+  end
+
+  def rassoc(value)
+    value = self.class << value
+    entry = inner_map.detect { |(k,v)|
+      v = self.class << v
+      value == v
+    }
+    if entry
+      entry[1] = self.class << entry[1]
+      entry
+    else
+      nil
+    end
   end
 
   def merge(other)

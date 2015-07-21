@@ -594,6 +594,51 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe '#rassoc' do
+    before do
+      inner_map[  1  ] = 1
+      inner_map[ :b  ] = { :bb  => 'B' }
+      inner_map[ 'c' ] = [ {'cc' => 'C'} ]
+      inner_map[ :d  ] = 'D'
+    end
+
+    it "returns nil for a value dissimilar to any value in the map" do
+      result = subject.rassoc(2)
+      expect( result ).to eq( nil )
+    end
+
+    it "returns the key/value pair for an arbitrary type of value in the map" do
+      result = subject.rassoc( 'D' )
+      expect( result ).to eq( [:d, 'D'] )
+    end
+
+    it "returns the key/wrapped-value for a value equivalent to a hash/map value in the map" do
+      hash = { 'bb' => 'B' }
+      map = described_class.new( hash )
+
+      result = subject.rassoc( hash )
+      expect( result.first ).to eq( :b )
+      expect( result.last.inner_map ).to eq( {:bb => 'B'} )
+
+      result = subject.rassoc( map )
+      expect( result.first ).to eq( :b )
+      expect( result.last.inner_map ).to eq( {:bb => 'B'} )
+    end
+
+    it "returns the key/wrapped-value for a value equivalent to an array or wrapped-array value in the map" do
+      array = [ {:cc => 'C'} ]
+      wrapped_array = described_class::Array.new( array )
+
+      result = subject.rassoc( array )
+      expect( result.first ).to eq( 'c' )
+      expect( result.last.inner_array ).to eq( [ {'cc' => 'C'} ] )
+
+      result = subject.rassoc( wrapped_array )
+      expect( result.first ).to eq( 'c' )
+      expect( result.last.inner_array ).to eq( [ {'cc' => 'C'} ] )
+    end
+  end
+
   describe 'map-merging' do
     before do
       inner_map[  1  ] =  11
