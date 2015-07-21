@@ -289,6 +289,7 @@ describe MapWithIndifferentAccess do
         enum.feed true
 
         expect( enum.next ).to eq( [ :d, 4 ] )
+        enum.feed false
 
         expect( inner_map ).to eq( {
           'a' => 'AAA',
@@ -297,23 +298,51 @@ describe MapWithIndifferentAccess do
       end
     end
 
-    context "called with a block argument" do
-      it "deletes the entry and returns the value for a string/symbolically indifferent map key" do
-        inner_map[ :aaa  ] = { a: 1 }
-        inner_map[ 'bbb' ] = 'B'
-
-        result = subject.delete( 'aaa' ) { |key| "Nothing for #{key}" }
-        expect( inner_map ).to eq( {'bbb' => 'B'} )
-        expect( result.inner_map ).to eq( {a: 1} )
+    describe '#keep_if' do
+      before do
+        inner_map[ 'a' ] = 'AAA'
+        inner_map[ :b  ] = {}
+        inner_map[ :c  ] = []
+        inner_map[ :d  ] = 4
       end
 
-      it "deletes nothing and returns the value from calling the block for string/symbolically indifferent key mismatch" do
-        inner_map[ :aaa  ] = { a: 1 }
-        inner_map[ 'bbb' ] = 'B'
+      it "passes each key/value to the given block and deletes entries for which the block returns false" do
+        subject.keep_if { |key,value|
+          String === key ||
+          Numeric === value ||
+          Hash === value ||
+          Array === value
+        }
 
-        result = subject.delete( 'xxx' ) { |key| "Nothing for #{key.inspect}" }
-        expect( inner_map ).to eq( {aaa: {a: 1}, 'bbb' => 'B'} )
-        expect( result ).to eq( 'Nothing for "xxx"' )
+        expect( inner_map ).to eq( {
+          'a' => 'AAA',
+          :d  =>  4
+        } )
+      end
+
+      it "returns an enumerator over key/value pairs and deletes entries for which true is fed to the enumerator with no block given" do
+        enum = subject.keep_if
+
+        expect( enum.next ).to eq( [ 'a', 'AAA' ] )
+        enum.feed true
+
+        enum.next.tap do |(key,value)|
+          expect( key ).to eq( :b )
+          expect( value.inner_map ).to eq( {} )
+        end
+
+        enum.next.tap do |(key,value)|
+          expect( key ).to eq( :c )
+          expect( value.inner_array ).to eq( [] )
+        end
+
+        expect( enum.next ).to eq( [ :d, 4 ] )
+        enum.feed true
+
+        expect( inner_map ).to eq( {
+          'a' => 'AAA',
+          :d  =>  4
+        } )
       end
     end
   end

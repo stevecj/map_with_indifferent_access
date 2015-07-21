@@ -174,6 +174,15 @@ class MapWithIndifferentAccess
     end
   end
 
+  def keep_if
+    return enum_for(:keep_if) unless block_given?
+
+    inner_map.keep_if do |key,value|
+      value = self.class << value
+      yield key, value
+    end
+  end
+
   def assoc(obj)
     obj = indifferent_key_from( obj )
     entry = inner_map.assoc( obj )
