@@ -253,6 +253,39 @@ describe MapWithIndifferentAccess do
       end
     end
 
+    describe '#key' do
+      before do
+        inner_map[  1  ] = 1
+        inner_map[ :b  ] = { :bb  => 'B' }
+        inner_map[ 'c' ] = [ {'cc' => 'C'} ]
+        inner_map[ :d  ] = 'D'
+      end
+
+      it "returns nil for a value dissimilar to any value in the map" do
+        result = subject.key(2)
+        expect( result ).to eq( nil )
+      end
+
+      it "returns the key for an arbitrary type of value in the map" do
+        result = subject.key( 'D' )
+        expect( result ).to eq( :d )
+      end
+
+      it "returns the key for a value equivalent to a hash/map value in the map" do
+        hash = { 'bb' => 'B' }
+        map = described_class.new( hash )
+        expect( subject.key( hash ) ).to eq( :b )
+        expect( subject.key( map  ) ).to eq( :b )
+      end
+
+      it "returns the key for a value equivalent to an array or wrapped-array value in the map" do
+        array = [ {:cc => 'C'} ]
+        wrapped_array = described_class::Array.new( array )
+        expect( subject.key( array         ) ).to eq( 'c' )
+        expect( subject.key( wrapped_array ) ).to eq( 'c' )
+      end
+    end
+
     describe '#delete_if' do
       before do
         inner_map[ 'a' ] = 'AAA'

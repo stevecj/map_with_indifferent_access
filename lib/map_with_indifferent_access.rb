@@ -110,6 +110,15 @@ class MapWithIndifferentAccess
   alias include? key?
   alias member?  key?
 
+  def key(value)
+    value = self.class << value
+    entry = inner_map.detect { |(k,v)|
+      v = self.class << v
+      value == v
+    }
+    entry ? entry.first : nil
+  end
+
   def default(key=nil)
     inner_default = inner_map.default( key )
     self.class << inner_default
