@@ -71,7 +71,7 @@ describe MapWithIndifferentAccess do
     expect( map.inner_map ).to equal( hash )
   end
 
-  describe '::<<' do
+  describe '::valueize / ::<<' do
     it "returns the given object when not an Array, Hash, instance of self, or instance of self::Array" do
       expect( described_class <<  nil  ).to eq(  nil  )
       expect( described_class << 'abc' ).to eq( 'abc' )
@@ -105,7 +105,7 @@ describe MapWithIndifferentAccess do
     end
   end
 
-  describe '::>>' do
+  describe '::unvalueize / ::>>' do
     it "returns the given object when not a wrapped-hash map or wrapped array" do
       expect( described_class >>  nil  ).to eq(  nil  )
       expect( described_class >> 'abc' ).to eq( 'abc' )
@@ -120,6 +120,34 @@ describe MapWithIndifferentAccess do
     it "returns the inner array from a given wrapped wrapped array" do
       wrapped_array = described_class::Array.new
       expect( described_class >> wrapped_array ).to equal( wrapped_array.inner_array )
+    end
+  end
+
+  describe '#internalize_key' do
+    before do
+      inner_map[  1  ] = 'one'
+      inner_map[ 'a' ] = 'A'
+      inner_map[ :b  ] = 'B'
+    end
+
+    it "returns the given value not matching any existing key" do
+      expect( subject.internalize_key(  2  ) ).to eq(  2  )
+      expect( subject.internalize_key( 'c' ) ).to eq( 'c' )
+      expect( subject.internalize_key( :d  ) ).to eq( :d  )
+    end
+
+    it "returns the given value equal to an existing key" do
+      expect( subject.internalize_key(  1  ) ).to eq(  1  )
+      expect( subject.internalize_key( 'a' ) ).to eq( 'a' )
+      expect( subject.internalize_key( :b  ) ).to eq( :b  )
+    end
+
+    it "returns the existing String-type key matching a given Symbol-type value" do
+      expect( subject.internalize_key(:a) ).to eq('a')
+    end
+
+    it "returns the existing Symbol-type key matching a given string-type value" do
+      expect( subject.internalize_key('b') ).to eq(:b )
     end
   end
 

@@ -3,45 +3,53 @@ require "map_with_indifferent_access/array"
 require 'forwardable'
 
 class MapWithIndifferentAccess
-
-  def self.try_convert(from_obj)
-    if self === from_obj
-      from_obj
-    else
-      hash = Hash.try_convert( from_obj )
-      new( hash ) if hash
-    end
-  end
-
-  def self.try_deconstruct(obj)
-    if self === obj
-      obj.inner_map
-    elsif obj.respond_to?(:to_hash)
-      h = obj.to_hash
-      Hash === h ? h : nil
-    else
-      nil
-    end
-  end
-
-  def self.<<(obj)
-    (
-      try_convert( obj ) ||
-      self::Array.try_convert( obj ) ||
-      obj
-    )
-  end
-
-  def self.>>(obj)
-    (
-      try_deconstruct(obj) ||
-      self::Array.try_deconstruct(obj) ||
-      obj
-    )
-  end
+  module ClassBehavior ; end
+  extend ClassBehavior
 
   extend Forwardable
   include Enumerable
+
+  module ClassBehavior
+    def try_convert(from_obj)
+      if self === from_obj
+        from_obj
+      else
+        hash = Hash.try_convert( from_obj )
+        new( hash ) if hash
+      end
+    end
+
+    def try_deconstruct(obj)
+      if self === obj
+        obj.inner_map
+      elsif obj.respond_to?(:to_hash)
+        h = obj.to_hash
+        Hash === h ? h : nil
+      else
+        nil
+      end
+    end
+
+    def valueize(obj)
+      (
+        try_convert( obj ) ||
+        self::Array.try_convert( obj ) ||
+        obj
+      )
+    end
+
+    alias << valueize
+
+    def unvalueize(obj)
+      (
+        try_deconstruct(obj) ||
+        self::Array.try_deconstruct(obj) ||
+        obj
+      )
+    end
+
+    alias >> unvalueize
+  end
 
   attr_reader :inner_map
 
@@ -64,9 +72,22 @@ class MapWithIndifferentAccess
     @inner_map = use_basis
   end
 
+  def internalize_key(given_key)
+    case given_key
+    when String
+      alt_key = inner_map.key?( given_key ) ? given_key : given_key.to_sym
+      inner_map.key?( alt_key ) ? alt_key : given_key
+    when Symbol
+      alt_key = inner_map.key?( given_key ) ? given_key : "#{given_key}"
+      inner_map.key?( alt_key ) ? alt_key : given_key
+    else
+      given_key
+    end
+  end
+
   def[]=(key, value)
     value = self.class >> value
-    key = indifferent_key_from( key )
+    key = internalize_key( key )
     inner_map[key] = value
   end
 
@@ -82,7 +103,7 @@ class MapWithIndifferentAccess
       warn "#{caller[0]}: warning: block supersedes default value argument"
     end
 
-    indifferent_key = indifferent_key_from( key )
+    indifferent_key = internalize_key( key )
 
     value = if inner_map.key?( indifferent_key )
       inner_map.fetch( indifferent_key )
@@ -161,7 +182,7 @@ class MapWithIndifferentAccess
   end
 
   def delete(key)
-    key = indifferent_key_from( key )
+    key = internalize_key( key )
     value = if block_given?
       inner_map.delete( key ) { |key| yield key }
     else
@@ -189,7 +210,7 @@ class MapWithIndifferentAccess
   end
 
   def assoc(obj)
-    obj = indifferent_key_from( obj )
+    obj = internalize_key( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
       value = self.class << entry[1]
@@ -225,19 +246,6 @@ class MapWithIndifferentAccess
   end
 
   private
-
-  def indifferent_key_from(given_key)
-    case given_key
-    when String
-      alt_key = inner_map.key?( given_key ) ? given_key : given_key.to_sym
-      inner_map.key?( alt_key ) ? alt_key : given_key
-    when Symbol
-      alt_key = inner_map.key?( given_key ) ? given_key : "#{given_key}"
-      inner_map.key?( alt_key ) ? alt_key : given_key
-    else
-      given_key
-    end
-  end
 
   def expect_arity(arity, *args)
     unless arity === args.length
