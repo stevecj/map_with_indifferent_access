@@ -94,7 +94,9 @@ class MapWithIndifferentAccess
   alias store []=
 
   def[](key)
-    fetch(key)
+    indifferent_key = internalize_key( key )
+    value = inner_map[indifferent_key]
+    self.class << value
   end
 
   def fetch(key, *more_args)
