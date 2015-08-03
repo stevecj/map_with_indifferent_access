@@ -21,7 +21,7 @@ class MapWithIndifferentAccess
     def self.try_deconstruct(obj)
       if self === obj
         obj.inner_array
-      elsif obj.respond_to?(:to_ary)
+      elsif obj.respond_to?(:to_ary )
         a = obj.to_ary
         ::Array === a ? a : nil
       else
@@ -44,7 +44,7 @@ class MapWithIndifferentAccess
 
     def []=(index, value)
       value = MWIA >> value
-      inner_array[index] = value
+      inner_array[ index ] = value
     end
 
     def [](index)

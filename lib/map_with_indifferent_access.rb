@@ -22,7 +22,7 @@ class MapWithIndifferentAccess
     def try_deconstruct(obj)
       if self === obj
         obj.inner_map
-      elsif obj.respond_to?(:to_hash)
+      elsif obj.respond_to?(:to_hash )
         h = obj.to_hash
         Hash === h ? h : nil
       else
@@ -42,8 +42,8 @@ class MapWithIndifferentAccess
 
     def unvalueize(obj)
       (
-        try_deconstruct(obj) ||
-        self::Array.try_deconstruct(obj) ||
+        try_deconstruct( obj ) ||
+        self::Array.try_deconstruct( obj ) ||
         obj
       )
     end
@@ -88,21 +88,21 @@ class MapWithIndifferentAccess
   def[]=(key, value)
     value = self.class >> value
     key = internalize_key( key )
-    inner_map[key] = value
+    inner_map[ key ] = value
   end
 
   alias store []=
 
   def[](key)
     indifferent_key = internalize_key( key )
-    value = inner_map[indifferent_key]
+    value = inner_map[ indifferent_key ]
     self.class << value
   end
 
   def fetch(key, *more_args)
     expect_arity 1..2, key, *more_args
     if block_given? && !more_args.empty?
-      warn "#{caller[0]}: warning: block supersedes default value argument"
+      warn "#{caller[ 0 ]}: warning: block supersedes default value argument"
     end
 
     indifferent_key = internalize_key( key )
@@ -123,7 +123,7 @@ class MapWithIndifferentAccess
     when String
       inner_map.key?( key ) || inner_map.key?( key.to_sym )
     when Symbol
-      inner_map.key?( key ) || inner_map.key?( "#{key}" )
+      inner_map.key?( key ) || inner_map.key?("#{key}")
     else
       inner_map.key?( key )
     end
@@ -138,7 +138,7 @@ class MapWithIndifferentAccess
     entry ? entry.first : nil
   end
 
-  def default(key=nil)
+  def default(key = nil)
     inner_default = inner_map.default( key )
     self.class << inner_default
   end
@@ -150,7 +150,7 @@ class MapWithIndifferentAccess
 
     return true if inner_map == other.inner_map
     return false if length != other.length
-    each do |(key,value)|
+    each do |(key, value)|
       other_val = other.fetch(key) { return false }
       return false unless value == other_val
     end
@@ -163,7 +163,7 @@ class MapWithIndifferentAccess
   # `other` are the same object.
 
   def each
-    return enum_for(:each) unless block_given?
+    return enum_for(:each ) unless block_given?
 
     each_key do |key|
       value = fetch( key )
@@ -194,9 +194,9 @@ class MapWithIndifferentAccess
   end
 
   def delete_if
-    return enum_for(:delete_if) unless block_given?
+    return enum_for(:delete_if ) unless block_given?
 
-    inner_map.delete_if do |key,value|
+    inner_map.delete_if do |key, value|
       value = self.class << value
       yield key, value
     end
@@ -205,7 +205,7 @@ class MapWithIndifferentAccess
   def keep_if
     return enum_for(:keep_if) unless block_given?
 
-    inner_map.keep_if do |key,value|
+    inner_map.keep_if do |key, value|
       value = self.class << value
       yield key, value
     end
@@ -215,20 +215,20 @@ class MapWithIndifferentAccess
     obj = internalize_key( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
-      value = self.class << entry[1]
-      entry[1] = value
+      value = self.class << entry[ 1 ]
+      entry[ 1 ] = value
     end
     entry
   end
 
   def rassoc(value)
     value = self.class << value
-    entry = inner_map.detect { |(k,v)|
+    entry = inner_map.detect { |(k, v)|
       v = self.class << v
       value == v
     }
     if entry
-      entry[1] = self.class << entry[1]
+      entry[ 1 ] = self.class << entry[ 1 ]
       entry
     else
       nil
@@ -243,7 +243,7 @@ class MapWithIndifferentAccess
   def merge!(other)
     other_hash = self.class.try_deconstruct(other)
     raise TypeError, "Can't convert #{other.class} into Hash" unless other_hash
-    other_hash.each do |(k,v)| ; self[k] = v ; end
+    other_hash.each do |(k, v)| ; self[ k ] = v ; end
     self
   end
 
