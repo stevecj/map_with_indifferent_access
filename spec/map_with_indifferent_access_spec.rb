@@ -597,6 +597,22 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe '#has_value?' do
+    before do
+      inner_map[ 1 ] = 1
+      inner_map[:b ] = {:bb  => 'B'}
+    end
+
+    it "returns false for a value, the valuization of which is != the valuization of any value in the inner-map hash" do
+      expect( subject.has_value?( 2 ) ).to eq( false )
+    end
+
+    it "returns true for a value, the valuization of which is == the valuization of any value in the inner-map hash" do
+      map = described_class.new( {'bb' => 'B'} )
+      expect( subject.has_value?( map ) ).to eq( true )
+    end
+  end
+
   describe 'map-merging' do
     before do
       inner_map[ 1 ] =  11

@@ -221,6 +221,11 @@ class MapWithIndifferentAccess
     entry
   end
 
+  def has_value?(value)
+    value = self.class << value
+    each_value.any? { |v| v == value }
+  end
+
   def rassoc(value)
     value = self.class << value
     entry = inner_map.detect { |(k, v)|
