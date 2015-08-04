@@ -298,6 +298,10 @@ class MapWithIndifferentAccess
     self
   end
 
+  def invert
+    self.class.new( inner_map.invert )
+  end
+
   private
 
   def expect_arity(arity, *args)

@@ -834,4 +834,21 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  it "returns from #invert, a new map of the inversion of the inner-map hash" do
+    inner_map.merge! \
+      :a    => 'AA',
+      'BB'  => :b,
+      [ 3 ] => { x: 3 }
+
+    expected_invs_inner_map = {
+      'AA'     => :a,
+      :b       => 'BB',
+      { x: 3 } => [ 3 ]
+    }
+
+    inversion = subject.invert
+
+    expect( inversion.inner_map ).to eq( expected_invs_inner_map )
+  end
+
 end
