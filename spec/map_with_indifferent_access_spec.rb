@@ -280,90 +280,101 @@ describe MapWithIndifferentAccess do
       end
     end
 
-    describe "conditional deletion/keeping of entries" do
+    describe "conditional deletion/retaining of entries" do
       before do
         inner_map['a'] = 'AAA'
         inner_map[:b ] =  {}
         inner_map[:c ] =  []
         inner_map[:d ] =  4
+        inner_map[:e ] =  5
       end
 
-      describe '#delete_if' do
-        it "passes the key and valuized-value of each entry the given block and those for which the block returns true" do
-          subject.delete_if { |key,value|
-            String === key ||
-            value.respond_to?(:inner_map   ) ||
-            value.respond_to?(:inner_array )
+      shared_examples "deletes/retains entries" do |subj_method, delete_on, retain_on|
+        it "passes the key and valuized-value of each entry the given block and deletes those for which the block returns #{delete_on}" do
+          subject.send(subj_method){ |key,value|
+            delete_it = 
+              String === key ||
+              value.respond_to?(:inner_map   ) ||
+              value.respond_to?(:inner_array ) ||
+              key == :e
+            delete_it ? delete_on : retain_on
           }
 
           expect( inner_map ).to eq( { d: 4 } )
         end
 
-        it "with no block given, returns an enumerator over key, valuized-value pairs from entries and delted those for which true is fed to the enumerator" do
-          enum = subject.delete_if
+        it "with no block given, returns an enumerator over key, valuized-value pairs from entries and deletes those for which #{delete_on} is fed to the enumerator" do
+          enum = subject.send(subj_method)
 
           expect( enum.next ).to eq( ['a', 'AAA'] )
+          enum.feed retain_on
 
           enum.next.tap do |(key,value)|
             expect( key ).to eq(:b )
             expect( value.inner_map ).to eq( {} )
           end
-          enum.feed true
+          enum.feed delete_on
 
           enum.next.tap do |(key,value)|
             expect( key ).to eq(:c )
             expect( value.inner_array ).to eq( [] )
           end
-          enum.feed true
+          enum.feed delete_on
 
           expect( enum.next ).to eq( [:d, 4 ] )
-          enum.feed false
+          enum.feed retain_on
+
+          expect( enum.next ).to eq( [:e, 5 ] )
+          enum.feed delete_on
+
+          expect{ enum.next }.to raise_exception( StopIteration )
 
           expect( inner_map ).to eq( {
             'a' => 'AAA',
             :d  =>  4
           } )
+        end
+
+        it "returns the target when a block is given that sometimes returns #{delete_on}" do
+          result = subject.delete_if{ |key,value| value == 4 ? delete_on : retain_on  }
+          expect( result ).to equal subject
+        end
+      end
+
+      describe '#delete_if' do
+        include_examples "deletes/retains entries", :delete_if, true, false
+
+        it "returns the target when a block is given that never returns true" do
+          result = subject.delete_if{ |*| false }
+          expect( result ).to equal subject
+        end
+
+      end
+
+      describe '#reject!' do
+        include_examples "deletes/retains entries", :reject!, true, false
+
+        it "returns nil when a block is given that never returns true" do
+          result = subject.reject!{ |*| false }
+          expect( result ).to be_nil
         end
       end
 
       describe '#keep_if' do
-        it "passes each key/value to the given block and deletes entries for which the block returns true" do
-          subject.keep_if { |key,value|
-            String === key ||
-            Numeric === value ||
-            Hash === value ||
-            Array === value
-          }
+        include_examples "deletes/retains entries", :keep_if, false, true
 
-          expect( inner_map ).to eq( {
-            'a' => 'AAA',
-            :d  =>  4
-          } )
+        it "returns the target when a block is given that never returns false" do
+          result = subject.keep_if{ |*| true }
+          expect( result ).to equal subject
         end
+      end
 
-        it "with no block given, returns an enumerator over key, valuized-value pairs from entries and delted those for which false is fed to the enumerator" do
-          enum = subject.keep_if
+      describe '#select!' do
+        include_examples "deletes/retains entries", :keep_if, false, true
 
-          expect( enum.next ).to eq( ['a', 'AAA'] )
-          enum.feed true
-
-          enum.next.tap do |(key,value)|
-            expect( key ).to eq(:b )
-            expect( value.inner_map ).to eq( {} )
-          end
-
-          enum.next.tap do |(key,value)|
-            expect( key ).to eq(:c )
-            expect( value.inner_array ).to eq( [] )
-          end
-
-          expect( enum.next ).to eq( [:d, 4 ] )
-          enum.feed true
-
-          expect( inner_map ).to eq( {
-            'a' => 'AAA',
-            :d  =>  4
-          } )
+        it "returns nil target when a block is given that never returns false" do
+          result = subject.select!{ |*| true }
+          expect( result ).to be_nil
         end
       end
     end

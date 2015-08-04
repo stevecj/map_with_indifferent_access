@@ -193,6 +193,19 @@ class MapWithIndifferentAccess
     self.class << value
   end
 
+  def reject!
+    return enum_for(:reject! ) unless block_given?
+
+    has_rejections = false
+    delete_if{ |key, value|
+      is_rejected = yield( key, value )
+      has_rejections ||= is_rejected
+      is_rejected
+    }
+
+    has_rejections ? self : nil
+  end
+
   def delete_if
     return enum_for(:delete_if ) unless block_given?
 
@@ -200,15 +213,32 @@ class MapWithIndifferentAccess
       value = self.class << value
       yield key, value
     end
+
+    self
+  end
+
+  def select!
+    return enum_for(:select! ) unless block_given?
+
+    has_rejections = false
+    keep_if{ |key, value|
+      is_selected = yield( key, value )
+      has_rejections ||= ! is_selected
+      is_selected
+    }
+
+    has_rejections ? self : nil
   end
 
   def keep_if
-    return enum_for(:keep_if) unless block_given?
+    return enum_for(:keep_if ) unless block_given?
 
     inner_map.keep_if do |key, value|
       value = self.class << value
       yield key, value
     end
+
+    self
   end
 
   def assoc(obj)
