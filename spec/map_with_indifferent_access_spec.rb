@@ -222,6 +222,81 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe '#tainted?' do
+    it "returns false when its inner-map hash is not tainted" do
+      expect( subject.tainted? ).to eq( false )
+    end
+
+    it "returns true when its inner-map hash is tainted" do
+      inner_map.taint
+      expect( subject.tainted? ).to eq( true )
+    end
+  end
+
+  describe '#taint' do
+    before do
+      subject.taint
+    end
+
+    it "causes its inner-map hash to be tainted" do
+      expect( inner_map ).to be_tainted
+    end
+  end
+
+  describe '#untaint' do
+    before do
+      inner_map.taint
+      subject.untaint
+    end
+
+    it "causes its inner-map hass to be untainted" do
+      expect( inner_map ).not_to be_tainted
+    end
+  end
+
+  describe '#untrusted?' do
+    it "returns false when its inner-map hash is trusted" do
+      expect( subject.untrusted? ).to eq( false )
+    end
+
+    it "returns true when its inner-map hash is not trusted" do
+      inner_map.untrust
+      expect( subject.untrusted? ).to eq( true )
+    end
+  end
+
+  describe '#trust' do
+    before do
+      inner_map.untrust
+      subject.trust
+    end
+
+    it "causes its inner-map hash to be trusted" do
+      expect( inner_map ).not_to be_untrusted
+    end
+  end
+
+  describe '#untrust' do
+    before do
+      subject.untrust
+    end
+
+    it "causes its inner-map hash to be untrusted" do
+      expect( inner_map ).to be_untrusted
+    end
+  end
+
+  describe '#frozen?' do
+    it "returns false when its inner-map hash is not frozen" do
+      expect( subject.frozen? ).to eq( false )
+    end
+
+    it "returns true when its inner-map hash is frozen" do
+      inner_map.freeze
+      expect( subject.frozen? ).to eq( true )
+    end
+  end
+
   describe '#delete' do
     let(:inner_map ) { Hash.new(:the_default ) }
 

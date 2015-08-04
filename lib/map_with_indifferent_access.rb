@@ -61,7 +61,15 @@ class MapWithIndifferentAccess
     :empty?,
     :keys,
     :length,
+    :rehash,
     :size,
+    :frozen?,
+    :tainted?,
+    :taint,
+    :untaint,
+    :untrusted?,
+    :untrust,
+    :trust,
   )
 
   def initialize(basis={})
@@ -71,6 +79,14 @@ class MapWithIndifferentAccess
     raise ArgumentError, "Could not convert #{basis.inspect} into a Hash" unless use_basis
     @inner_map = use_basis
   end
+
+  # @!method frozen?(other)
+  # reflects the frozen-ness of its inner-map Hash.  When true,
+  # the map behaves as if frozen in most respects, but not all.
+  # One difference is that Ruby will not allow defining new
+  # instance methods to truly frozen object, but such methods
+  # may be added to a map instance when its #frozen? method
+  # returns true.
 
   def internalize_key(given_key)
     case given_key
