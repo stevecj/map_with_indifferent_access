@@ -306,4 +306,14 @@ class MapWithIndifferentAccess
     end
   end
 
+  def initialize_dup(orig)
+    super
+    @inner_map = inner_map.dup
+  end
+
+  def initialize_clone(orig)
+    super
+    @inner_map = inner_map.clone
+  end
+
 end
