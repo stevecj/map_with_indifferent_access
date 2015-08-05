@@ -753,6 +753,27 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe "#replace" do
+    it "replaces the contents of the inner-map hash with the contents of the map-deconstruction of the given object" do
+      inner_map.merge original: 'contents'
+      replacement_data = described_class.new(
+        :new => 'stuff',
+        'More new' => :stuff
+      )
+
+      result = subject.replace( replacement_data )
+
+      expect( subject.inner_map ).to eq( {
+        :new => 'stuff',
+        'More new' => :stuff
+      } )
+    end
+
+    it "returns the target map object" do
+      expect( subject.replace( {'a' => 'aa'} ) ).to equal( subject )
+    end
+  end
+
   describe '#assoc' do
     it "returns nil for a key value, the internalization of which != any key in the inner-map hash" do
       subject[:aaa ] = 'A'

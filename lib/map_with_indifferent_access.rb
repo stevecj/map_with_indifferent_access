@@ -273,6 +273,12 @@ class MapWithIndifferentAccess
     self
   end
 
+  def replace(other)
+    other_d = self.class.try_deconstruct( other ) || other
+    inner_map.replace other_d
+    return self
+  end
+
   def assoc(obj)
     obj = internalize_key( obj )
     entry = inner_map.assoc( obj )
