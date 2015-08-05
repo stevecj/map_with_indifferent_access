@@ -209,8 +209,16 @@ class MapWithIndifferentAccess
     self.class << value
   end
 
+  def reject
+    return enum_for(:reject ) unless block_given?
+
+    dup.delete_if{ |key, value|
+      yield( key, value )
+    }
+  end
+
   def reject!
-    return enum_for(:reject! ) unless block_given?
+    return enum_for(:reject!) unless block_given?
 
     has_rejections = false
     delete_if{ |key, value|
@@ -233,8 +241,16 @@ class MapWithIndifferentAccess
     self
   end
 
+  def select
+    return enum_for(:select ) unless block_given?
+
+    dup.keep_if{ |key, value|
+      yield( key, value )
+    }
+  end
+
   def select!
-    return enum_for(:select! ) unless block_given?
+    return enum_for(:select!) unless block_given?
 
     has_rejections = false
     keep_if{ |key, value|
