@@ -320,6 +320,18 @@ class MapWithIndifferentAccess
     self
   end
 
+  def shift
+    if inner_map.empty?
+      self.class.valueize( inner_map.shift )
+    else
+      inner_result = inner_map.shift
+      [
+        inner_result[0],
+        self.class.valueize( inner_result[1] )
+      ]
+    end
+  end
+
   def invert
     self.class.new( inner_map.invert )
   end

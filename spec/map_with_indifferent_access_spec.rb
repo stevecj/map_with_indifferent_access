@@ -222,6 +222,9 @@ describe MapWithIndifferentAccess do
     end
   end
 
+  describe "#shift" do
+  end
+
   describe '#tainted?' do
     it "returns false when its inner-map hash is not tainted" do
       expect( subject.tainted? ).to eq( false )
@@ -924,6 +927,29 @@ describe MapWithIndifferentAccess do
           expect( subject.inner_map ).to eq( expected_inner_map )
         end
       end
+    end
+  end
+
+  describe '#shift' do
+    it "returns the valuization of the inner-map hash's default value for an empty map" do
+      # Yes, this does seem like WAT!? but is analogous to the
+      # documented and actual behavior of Hash#shift, so we're
+      # being consistent with that WAT.
+      inner_map.default = { a: 1 }
+      result = subject.shift
+      expect( result.inner_map ).to eq( { a: 1 } )
+    end
+
+    it "removes an entry from the inner-map hash, returning an array of the key and valuized value of that entry." do
+      inner_map.merge! \
+        a: { value_for: :a },
+        b: { value_for: :b }
+
+      result = subject.shift
+      expect( subject.length ).to eq( 1 )
+
+      expect( result.first ).to eq(:a ).or eq(:b )
+      expect( result.last.inner_map ).to eq( { value_for: result.first } )
     end
   end
 
