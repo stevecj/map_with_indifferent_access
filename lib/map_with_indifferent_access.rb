@@ -309,16 +309,26 @@ class MapWithIndifferentAccess
   end
 
   def merge(other)
-    result = self.class.new( inner_map )
-    result.merge!( other )
+    if block_given?
+      dup.merge!( other ){ |*args| yield *args }
+    else
+      dup.merge!( other )
+    end
   end
 
   def merge!(other)
-    other_hash = self.class.try_deconstruct(other)
-    raise TypeError, "Can't convert #{other.class} into Hash" unless other_hash
-    other_hash.each do |(k, v)| ; self[ k ] = v ; end
+    other.each_pair do |(key, value)|
+      key = internalize_key( key )
+      if block_given? && inner_map.key?(key)
+        self[key] = yield( key, self[key], value )
+      else
+        self[key] = value
+      end
+    end
     self
   end
+
+  alias update merge!
 
   def shift
     if inner_map.empty?

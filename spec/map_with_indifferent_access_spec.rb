@@ -845,86 +845,118 @@ describe MapWithIndifferentAccess do
 
   describe 'map-merging' do
     before do
-      inner_map[ 1 ] =  11
-      inner_map['a'] = 'AA'
-      inner_map['b'] = 'BB'
-      inner_map[:c ] = 'CC'
-      inner_map[:d ] = 'DD'
+      inner_map.merge! \
+         1  => 'one',
+        'a' => {:aa => 'AA'},
+        :b  => 'B'
     end
 
-    context "given an argument with keys, the target-internalizations of which do not match keys in the inner-map hash" do
-      let( :hash ) { {
-         2  =>  222,
-        'e' => 'EEE',
-        :f  => 'FFF'
-      } }
-      let( :expected_inner_map ) { {
-         1 => 11,  'a' => 'AA',  'b' => 'BB', :c => 'CC', :d => 'DD',
-         2 => 222, 'e' => 'EEE', :f  => 'FFF'
-      } }
+    let(:given_map ) { double(:given_map ) }
 
-      describe '#merge' do
-        it "returns a new map with entries from the target map and the given hash" do
-          result = subject.merge( hash )
-          expect( result.inner_map ).to eq( expected_inner_map )
-        end
-
-        it "returns a new map with entries from the target map and the inner hash-map of the given map" do
-          map = described_class.new( hash )
-          result = subject.merge( map )
-          expect( result.inner_map ).to eq( expected_inner_map )
-        end
+    context "given a mqp-analog argument with keys, the target-internalizations of which do not match keys in the inner-map hash" do
+      before do
+        first_pair  = ['c', 'C']
+        second_pair = [:d , described_class.new('dd' => 'DD') ]
+        allow( given_map ).to receive(:each_pair ).
+          and_yield( first_pair ).
+          and_yield( second_pair )
       end
 
-      describe '#!merge' do
-        it "adds entries from the given hash into itself" do
-          subject.merge! hash
-          expect( subject.inner_map ).to eq( expected_inner_map )
-        end
-
-        it "adds entries from the inner hash-map of the given hash into itself" do
-          map = described_class.new( hash )
-          subject.merge! map
-          expect( subject.inner_map ).to eq( expected_inner_map )
-        end
-      end
-    end
-
-    context "given an argument with keys, the target-internalizations of which match keys in the inner-map hash" do
-      let( :hash ) { {
-         1  =>  111,
-        'a' => 'AAA', :b  => 'BBB',
-        'c' => 'CCC', :d  => 'DDD'
+      let(:expected_merged_inner_map ) { {
+         1  => 'one',
+        'a' => {:aa => 'AA'},
+        :b  => 'B',
+        'c' => 'C',
+        :d  => {'dd' => 'DD'}
       } }
-      let( :expected_inner_map ) { {
-          1 => 111,
-         'a' => 'AAA', 'b' => 'BBB',
-         :c  => 'CCC', :d  => 'DDD'
-      } }
-
-      describe '#merge' do
-        it "returns a new map with entries from the map and values from the given hash" do
-          result = subject.merge( hash )
-          expect( result.inner_map ).to eq( expected_inner_map )
-        end
-
-        it "returns a new map with entries from the map and values from the inner hash-map of the given map" do
-          map = described_class.new( hash )
-          result = subject.merge( map )
-          expect( result.inner_map ).to eq( expected_inner_map )
-        end
-      end
 
       describe '#merge!' do
-        it "replaces values of its entries with those from the matches in the given hash into itself" do
-          subject.merge! hash
-          expect( subject.inner_map ).to eq( expected_inner_map )
+        it "stores the un-valuization of the value for the key from each entry in the given object" do
+          subject.merge! given_map
+          expect( inner_map ).to eq( expected_merged_inner_map )
         end
 
-        it "replaces values of its entries with those from the matches in the inner-map hash of the given map into itself" do
-          map = described_class.new( hash )
-          subject.merge! map
-          expect( subject.inner_map ).to eq( expected_inner_map )
+        it "returns the target map object" do
+          expect( subject.merge!(given_map) ).to equal( subject )
+        end
+
+        it "does not invoke a given block" do
+          subject.merge!(given_map){
+            fail "block was called"
+          }
+        end
+      end
+
+      describe '#merge' do
+        it "returns a new map with inner-map hash having entries from the target and entries for keys with un-valuized values from the given object" do
+          merge_result = subject.merge( given_map )
+          expect( merge_result.inner_map ).not_to equal( subject.inner_map )
+          expect( merge_result.inner_map ).to eq( expected_merged_inner_map )
+        end
+
+        it "does not invoke a given block" do
+          subject.merge(given_map){
+            fail "block was called"
+          }
+        end
+      end
+    end
+
+    context "given a mqp-analog argument with keys, the target-internalizations of which match keys in the inner-map hash" do
+      before do
+        first_pair  = [ 1 , 'uno']
+        second_pair = [:a , 'A' ]
+        third_pair  = ['b',  described_class.new('bb' => 'BB') ]
+        allow( given_map ).to receive(:each_pair ).
+          and_yield( first_pair ).
+          and_yield( second_pair ).
+          and_yield( third_pair )
+      end
+
+      let(:expected_merged_inner_map ) { {
+         1  => 'uno',
+        'a' => 'A',
+        :b  => {'bb' => 'BB'}
+      } }
+
+      describe '#merge!' do
+        it "stores the un-valuization of the value for the target-internalization of the key from each entry in the given object" do
+          subject.merge! given_map
+          expect( inner_map ).to eq( expected_merged_inner_map )
+        end
+
+        it "returns the target map object" do
+          expect( subject.merge!(given_map) ).to equal( subject )
+        end
+
+        it "passes to the block, the internalized key and valuized values from corresponding entries in the target and given, then stores the un-valuization of the block result into the target's inner-map" do
+          subject.merge!( given_map ){ |key, old_val, new_val|
+            described_class.new( key => [ old_val, new_val ] )
+          }
+          expect( subject.inner_map ).to eq( {
+             1  => { 1  => ['one', 'uno'] },
+            'a' => {'a' => [described_class.new('aa' => 'AA'), 'A'] },
+            :b  => {:b  => ['B', described_class.new('bb' => 'BB')] }
+          } )
+        end
+      end
+
+      describe '#merge' do
+        it "returns a new map with entries having keys from the target and un-valuizations of values from entries in the given object with matching target-internalized keys" do
+          merge_result = subject.merge( given_map )
+          expect( merge_result.inner_map ).not_to equal( subject.inner_map )
+          expect( merge_result.inner_map ).to eq( expected_merged_inner_map )
+        end
+
+        it "for each duplicate internalized key, passes the internalized key and valuized values from corresponding entries in the target and given, then produces a reult entry with internal the un-valuization of the block result in the result's inner-map" do
+          merge_result = subject.merge( given_map ){ |key, old_val, new_val|
+            described_class.new( key => [ old_val, new_val ] )
+          }
+          expect( merge_result.inner_map ).to eq( {
+             1  => { 1  => ['one', 'uno'] },
+            'a' => {'a' => [described_class.new('aa' => 'AA'), 'A'] },
+            :b  => {:b  => ['B', described_class.new('bb' => 'BB')] }
+          } )
         end
       end
     end
