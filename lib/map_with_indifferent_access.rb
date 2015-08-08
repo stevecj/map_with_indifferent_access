@@ -88,7 +88,7 @@ class MapWithIndifferentAccess
   # may be added to a map instance when its #frozen? method
   # returns true.
 
-  def internalize_key(given_key)
+  def conform_key(given_key)
     case given_key
     when String
       alt_key = inner_map.key?( given_key ) ? given_key : given_key.to_sym
@@ -103,15 +103,15 @@ class MapWithIndifferentAccess
 
   def[]=(key, value)
     value = self.class >> value
-    key = internalize_key( key )
+    key = conform_key( key )
     inner_map[ key ] = value
   end
 
   alias store []=
 
   def[](key)
-    indifferent_key = internalize_key( key )
-    value = inner_map[ indifferent_key ]
+    key = conform_key( key )
+    value = inner_map[ key ]
     self.class << value
   end
 
@@ -121,10 +121,10 @@ class MapWithIndifferentAccess
       warn "#{caller[ 0 ]}: warning: block supersedes default value argument"
     end
 
-    indifferent_key = internalize_key( key )
+    conformed_key = conform_key( key )
 
-    value = if inner_map.key?( indifferent_key )
-      inner_map.fetch( indifferent_key )
+    value = if inner_map.key?( conformed_key )
+      inner_map.fetch( conformed_key )
     elsif block_given?
       inner_map.fetch( key ) {|key| yield key }
     else
@@ -200,7 +200,7 @@ class MapWithIndifferentAccess
   end
 
   def delete(key)
-    key = internalize_key( key )
+    key = conform_key( key )
     value = if block_given?
       inner_map.delete( key ) { |key| yield key }
     else
@@ -280,7 +280,7 @@ class MapWithIndifferentAccess
   end
 
   def assoc(obj)
-    obj = internalize_key( obj )
+    obj = conform_key( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
       value = self.class << entry[ 1 ]
@@ -318,7 +318,7 @@ class MapWithIndifferentAccess
 
   def merge!(other)
     other.each_pair do |(key, value)|
-      key = internalize_key( key )
+      key = conform_key( key )
       if block_given? && inner_map.key?(key)
         self[key] = yield( key, self[key], value )
       else

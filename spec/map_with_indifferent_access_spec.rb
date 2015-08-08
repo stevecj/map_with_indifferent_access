@@ -123,7 +123,7 @@ describe MapWithIndifferentAccess do
     end
   end
 
-  describe '#internalize_key' do
+  describe '#conform_key' do
     before do
       inner_map[ 1 ] = 'one'
       inner_map['a'] = 'A'
@@ -131,28 +131,28 @@ describe MapWithIndifferentAccess do
     end
 
     it "returns the given value not matching any existing key" do
-      expect( subject.internalize_key( 2 ) ).to eq( 2 )
-      expect( subject.internalize_key('c') ).to eq('c')
-      expect( subject.internalize_key(:d ) ).to eq(:d )
+      expect( subject.conform_key( 2 ) ).to eq( 2 )
+      expect( subject.conform_key('c') ).to eq('c')
+      expect( subject.conform_key(:d ) ).to eq(:d )
     end
 
     it "returns the given value equal to an existing key" do
-      expect( subject.internalize_key( 1 ) ).to eq( 1 )
-      expect( subject.internalize_key('a') ).to eq('a')
-      expect( subject.internalize_key(:b ) ).to eq(:b )
+      expect( subject.conform_key( 1 ) ).to eq( 1 )
+      expect( subject.conform_key('a') ).to eq('a')
+      expect( subject.conform_key(:b ) ).to eq(:b )
     end
 
     it "returns the existing String-type key matching a given Symbol-type value" do
-      expect( subject.internalize_key(:a ) ).to eq('a')
+      expect( subject.conform_key(:a ) ).to eq('a')
     end
 
     it "returns the existing Symbol-type key matching a given string-type value" do
-      expect( subject.internalize_key('b') ).to eq(:b )
+      expect( subject.conform_key('b') ).to eq(:b )
     end
   end
 
   describe "indexed value access" do
-    it "creates a new entry for an external key with no internalized match" do
+    it "creates a new entry for an external key with no conformed match" do
       subject['a'] = 'A'
       subject[:b ] = 'B'
       expect( inner_map ).to eq( {
@@ -161,7 +161,7 @@ describe MapWithIndifferentAccess do
       } )
     end
 
-    it "updates the value of an existing entry by external key with internalized match" do
+    it "updates the value of an existing entry by external key with conformed match" do
       subject['v'] = 'V'
       subject[:v ] = 'Vee'
       expect( inner_map ).to eq( {'v' => 'Vee'} )
@@ -174,12 +174,12 @@ describe MapWithIndifferentAccess do
       } )
     end
 
-    it "retrieves the inner-map hash's default value for an external key with no internalized match" do
+    it "retrieves the inner-map hash's default value for an external key with no conformed match" do
       inner_map.default_proc = ->(h,k) { "~#{k}~" }
       expect( subject['xyz'] ).to eq('~xyz~')
     end
 
-    it "retrieves the value of the matching entry from the inner-map has by internalized key" do
+    it "retrieves the value of the matching entry from the inner-map has by conformed key" do
       inner_map['a'] = 5
       expect( subject[:a ] ).to eq( 5 )
     end
@@ -199,7 +199,7 @@ describe MapWithIndifferentAccess do
       inner_map[:y ] =  []
     end
 
-    it "retrieves the value of the matching entry from the inner-map hash by internalized key" do
+    it "retrieves the value of the matching entry from the inner-map hash by conformed key" do
       inner_map['a'] = 5
       expect( subject.fetch(:a ) ).to eq( 5 )
     end
@@ -209,15 +209,15 @@ describe MapWithIndifferentAccess do
       expect( subject.fetch( 1 ).inner_map ).to eq( {'a' => 9 } )
     end
 
-    it "raises a KeyError exception for an internalized-key mismatch and no fallback" do
+    it "raises a KeyError exception for an conformed-key mismatch and no fallback" do
       expect{ subject.fetch('q') }.to raise_exception( KeyError )
     end
 
-    it "returns the given default value for an internalized-key mismatch" do
+    it "returns the given default value for an conformed-key mismatch" do
       expect( subject.fetch('q', '#') ).to eq('#')
     end
 
-    it "returns the block-call result for an internalized-key mismatch" do
+    it "returns the block-call result for an conformed-key mismatch" do
       expect( subject.fetch('q') {|key| key.inspect } ).to eq('"q"')
     end
   end
@@ -387,7 +387,7 @@ describe MapWithIndifferentAccess do
         expect( result.inner_map ).to eq( { a: 1 } )
       end
 
-      it "deletes nothing and returns the \"default\" value for an internalized-key mismatch" do
+      it "deletes nothing and returns the \"default\" value for an conformed-key mismatch" do
         # Experimentally found that in Ruby 1.9.3-p545 and who knows
         # what other versions,  Hash#delete always returns nil for a
         # mismatched key and not the default value as per the Ruby
@@ -423,7 +423,7 @@ describe MapWithIndifferentAccess do
     expect( subject.size   ).to eq( 2 )
   end
 
-  it "indicates whether the internalization of a given key is present in the inner-map hash" do
+  it "indicates whether the conformation of a given key is present in the inner-map hash" do
     subject[ 1 ] = 'one'
     subject['a'] = 'A'
 
@@ -443,7 +443,7 @@ describe MapWithIndifferentAccess do
     expect( keys ).to eq( [ 1, 'two', :three ] )
   end
 
-  it "#default returns the default value for the case where the internalization of the given key does not match an entry" do
+  it "#default returns the default value for the case where the conformation of the given key does not match an entry" do
     inner_map.default_proc = ->(hash, key) { key ? "#{key.inspect} in #{hash.inspect}" : [ key, hash ] }
     expect( subject.default(:a )         ).to eq(":a in {}")
     expect( subject.default.inner_array ).to eq( [ nil, {} ]  )
@@ -778,7 +778,7 @@ describe MapWithIndifferentAccess do
   end
 
   describe '#assoc' do
-    it "returns nil for a key value, the internalization of which != any key in the inner-map hash" do
+    it "returns nil for a key value, the conformation of which != any key in the inner-map hash" do
       subject[:aaa ] = 'A'
       subject['bbb'] = ['b']
       expect( subject.assoc(:x ) ).to be_nil
@@ -794,7 +794,7 @@ describe MapWithIndifferentAccess do
       expect( value.inner_array ).to eq( ['b'] )
     end
 
-    it "finds matching key/value entry for the internalization of the given key" do
+    it "finds matching key/value entry for the conformation of the given key" do
       subject[:aaa ] = 'A'
       subject[:bbb ] = ['b']
 
@@ -853,7 +853,7 @@ describe MapWithIndifferentAccess do
 
     let(:given_map ) { double(:given_map ) }
 
-    context "given a mqp-analog argument with keys, the target-internalizations of which do not match keys in the inner-map hash" do
+    context "given a mqp-analog argument with keys, the target-conformations of which do not match keys in the inner-map hash" do
       before do
         first_pair  = ['c', 'C']
         second_pair = [:d , described_class.new('dd' => 'DD') ]
@@ -902,7 +902,7 @@ describe MapWithIndifferentAccess do
       end
     end
 
-    context "given a mqp-analog argument with keys, the target-internalizations of which match keys in the inner-map hash" do
+    context "given a mqp-analog argument with keys, the target-conformations of which match keys in the inner-map hash" do
       before do
         first_pair  = [ 1 , 'uno']
         second_pair = [:a , 'A' ]
@@ -920,7 +920,7 @@ describe MapWithIndifferentAccess do
       } }
 
       describe '#merge!' do
-        it "stores the un-valuization of the value for the target-internalization of the key from each entry in the given object" do
+        it "stores the un-valuization of the value for the target-conformations of the key from each entry in the given object" do
           subject.merge! given_map
           expect( inner_map ).to eq( expected_merged_inner_map )
         end
@@ -929,7 +929,7 @@ describe MapWithIndifferentAccess do
           expect( subject.merge!(given_map) ).to equal( subject )
         end
 
-        it "passes to the block, the internalized key and valuized values from corresponding entries in the target and given, then stores the un-valuization of the block result into the target's inner-map" do
+        it "passes to the block, the conformed key and valuized values from corresponding entries in the target and given, then stores the un-valuization of the block result into the target's inner-map" do
           subject.merge!( given_map ){ |key, old_val, new_val|
             described_class.new( key => [ old_val, new_val ] )
           }
@@ -942,13 +942,13 @@ describe MapWithIndifferentAccess do
       end
 
       describe '#merge' do
-        it "returns a new map with entries having keys from the target and un-valuizations of values from entries in the given object with matching target-internalized keys" do
+        it "returns a new map with entries having keys from the target and un-valuizations of values from entries in the given object with matching target-conformed keys" do
           merge_result = subject.merge( given_map )
           expect( merge_result.inner_map ).not_to equal( subject.inner_map )
           expect( merge_result.inner_map ).to eq( expected_merged_inner_map )
         end
 
-        it "for each duplicate internalized key, passes the internalized key and valuized values from corresponding entries in the target and given, then produces a reult entry with internal the un-valuization of the block result in the result's inner-map" do
+        it "for each duplicate conformed key, passes the conformed key and valuized values from corresponding entries in the target and given, then produces a reult entry with internal the un-valuization of the block result in the result's inner-map" do
           merge_result = subject.merge( given_map ){ |key, old_val, new_val|
             described_class.new( key => [ old_val, new_val ] )
           }
