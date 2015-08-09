@@ -3,6 +3,8 @@ require 'forwardable'
 class MapWithIndifferentAccess
 
   class Array
+    include MapWithIndifferentAccess::WithConveniences
+
     extend Forwardable
     include Enumerable
 

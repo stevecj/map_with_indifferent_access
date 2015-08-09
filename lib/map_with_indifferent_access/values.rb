@@ -1,6 +1,8 @@
 class MapWithIndifferentAccess
 
   module Values
+    include MapWithIndifferentAccess::WithConveniences
+
     extend self
 
     def externalize(obj)

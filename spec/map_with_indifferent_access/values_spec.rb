@@ -1,8 +1,9 @@
 require 'spec_helper'
 
-class MapWithIndifferentAccess
+module MWIA_ValuesSpec
+  include MapWithIndifferentAccess::WithConveniences
 
-describe MapWithIndifferentAccess::Values do
+  describe MapWithIndifferentAccess::Values do
 
     describe '#externalize / #>>' do
       it "returns the given object when not an Array, Hash, MWIA, or MWIA::Array" do

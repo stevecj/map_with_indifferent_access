@@ -1,7 +1,10 @@
 require 'spec_helper'
 
+module MapWithIndifferentAccessSpec
+  include MapWithIndifferentAccess::WithConveniences
+
 describe MapWithIndifferentAccess do
-  subject{ described_class.new( inner_map ) }
+  subject{ MWIA.new( inner_map ) }
   let( :inner_map ) { {} }
 
   it 'has a version number' do
@@ -10,64 +13,64 @@ describe MapWithIndifferentAccess do
 
   it "can be constructed as a wrapper around an existing hash" do
     hash = {}
-    map = described_class.new( hash )
+    map = MWIA.new( hash )
     expect( map.inner_map ).to equal( hash )
   end
 
   it "can be constructed as a wrapper asound an implicitly-created hash" do
-    map = described_class.new
+    map = MWIA.new
     expect( map.inner_map ).to be_kind_of( Hash )
   end
 
   it "can be constructed as a new wrapper around an existing wrapped hash" do
     hash = {}
-    original_map = described_class.new( hash )
-    map = described_class.new( original_map )
+    original_map = MWIA.new( hash )
+    map = MWIA.new( original_map )
     expect( map ).not_to equal( original_map )
     expect( map.inner_map ).to equal( hash )
   end
 
   it "cannot be constructed with an un-hash-like argument to ::new" do
     expect{
-      described_class.new( 1 )
+      MWIA.new( 1 )
     }.to raise_exception( ArgumentError )
   end
 
   it "deconstructs a map instance to its inner hash map" do
-    result = described_class.try_deconstruct( subject )
+    result = MWIA.try_deconstruct( subject )
     expect( result ).to equal( subject.inner_map )
   end
 
   it "deconstructs a hash instance to itself" do
     hash = {}
-    result = described_class.try_deconstruct( hash )
+    result = MWIA.try_deconstruct( hash )
     expect( result ).to equal( hash )
   end
 
   it "deconstructs objects that are not map or Hash type as `nil`" do
-    expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
-    expect( described_class.try_deconstruct( true ) ).to eq( nil )
-    expect( described_class.try_deconstruct('xy'  ) ).to eq( nil )
-    expect( described_class.try_deconstruct( []   ) ).to eq( nil )
+    expect( MWIA.try_deconstruct( 10   ) ).to eq( nil )
+    expect( MWIA.try_deconstruct( true ) ).to eq( nil )
+    expect( MWIA.try_deconstruct('xy'  ) ).to eq( nil )
+    expect( MWIA.try_deconstruct( []   ) ).to eq( nil )
   end
 
   it "cannot be converted from an un-hash-like object" do
-    expect( described_class::try_convert( nil ) ).to be_nil
-    expect( described_class::try_convert( 1   ) ).to be_nil
-    expect( described_class::try_convert( []  ) ).to be_nil
+    expect( MWIA::try_convert( nil ) ).to be_nil
+    expect( MWIA::try_convert( 1   ) ).to be_nil
+    expect( MWIA::try_convert( []  ) ).to be_nil
   end
 
   it "can be converted from an instance of its class, returning the given map" do
-    map = described_class::try_convert( subject )
+    map = MWIA::try_convert( subject )
     expect( map ).to equal( subject )
   end
 
   it "can be converted from a hash, wrapping the given hash" do
     hash = {}
 
-    map = described_class::try_convert( hash )
+    map = MWIA::try_convert( hash )
 
-    expect( map ).to be_kind_of( described_class)
+    expect( map ).to be_kind_of( MWIA )
     expect( map.inner_map ).to equal( hash )
   end
 
@@ -116,7 +119,7 @@ describe MapWithIndifferentAccess do
     end
 
     it "internalizes the given value when storing" do
-      subject[ 1 ] = described_class.new( a: 5 )
+      subject[ 1 ] = MWIA.new( a: 5 )
       expect( inner_map ).to eq( {
         1 => { a: 5 }
       } )
@@ -124,7 +127,7 @@ describe MapWithIndifferentAccess do
 
     it "retrieves the externalization of the inner-map hash's default value for an external key with no conformed match" do
       inner_map.default_proc = ->(h,k) { { key: k } }
-      expect( subject['xyz'] ).to eq( described_class.new( key: 'xyz' ) )
+      expect( subject['xyz'] ).to eq( MWIA.new( key: 'xyz' ) )
     end
 
     it "retrieves the externalization of the value of the matching entry from the inner-map has by conformed key" do
@@ -158,7 +161,7 @@ describe MapWithIndifferentAccess do
 
     it "returns the externalization of block-call result for a conformed-key mismatch" do
       result = subject.fetch('q') {|key| { key: key } }
-      expect( result ).to eq( described_class.new( key: 'q' ) )
+      expect( result ).to eq( MWIA.new( key: 'q' ) )
     end
   end
 
@@ -308,7 +311,7 @@ describe MapWithIndifferentAccess do
 
     it "returns the key for an entry vith externalized-value equal to externalization of the given value" do
       hash = {'bb' => 'B'}
-      map = described_class.new( hash )
+      map = MWIA.new( hash )
       expect( subject.key( hash ) ).to eq(:b )
       expect( subject.key( map  ) ).to eq(:b )
     end
@@ -410,7 +413,7 @@ describe MapWithIndifferentAccess do
     } }
 
     it "returns false given a map that is different w/ key string/symbolic indifference" do
-      map = described_class.new( dissimilar_hash )
+      map = MWIA.new( dissimilar_hash )
       expect( subject == map ).to eq( false )
     end
 
@@ -419,7 +422,7 @@ describe MapWithIndifferentAccess do
     end
 
     it "returns true given a map that is the same w/ key string/symbolic indifference" do
-      map = described_class.new( similar_hash )
+      map = MWIA.new( similar_hash )
       expect( subject == map ).to eq( true )
     end
 
@@ -699,7 +702,7 @@ describe MapWithIndifferentAccess do
   describe "#replace" do
     it "replaces the contents of the inner-map hash with the contents of the map-deconstruction of the given object" do
       inner_map.merge original: 'contents'
-      replacement_data = described_class.new(
+      replacement_data = MWIA.new(
         :new => 'stuff',
         'More new' => :stuff
       )
@@ -742,7 +745,7 @@ describe MapWithIndifferentAccess do
 
       expect( key ).to eql(:bbb )
       expect( value ).to eq(
-        described_class::Array.new( ['b'] )
+        MWIA::Array.new( ['b'] )
       )
     end
   end
@@ -759,7 +762,7 @@ describe MapWithIndifferentAccess do
     end
 
     it "returns the key, externalization-value pair for an entry with externalization-value == the externalization of the given value" do
-      map = described_class.new( {'bb' => 'B'} )
+      map = MWIA.new( {'bb' => 'B'} )
 
       result = subject.rassoc( map )
       expect( result.first ).to eq(:b )
@@ -778,7 +781,7 @@ describe MapWithIndifferentAccess do
     end
 
     it "returns true for a value, the externalization of which is == the externalization of any value in the inner-map hash" do
-      map = described_class.new( {'bb' => 'B'} )
+      map = MWIA.new( {'bb' => 'B'} )
       expect( subject.has_value?( map ) ).to eq( true )
     end
   end
@@ -796,7 +799,7 @@ describe MapWithIndifferentAccess do
     context "given a mqp-analog argument with keys, the target-conformations of which do not match keys in the inner-map hash" do
       before do
         first_pair  = ['c', 'C']
-        second_pair = [:d , described_class.new('dd' => 'DD') ]
+        second_pair = [:d , MWIA.new('dd' => 'DD') ]
         allow( given_map ).to receive(:each_pair ).
           and_yield( first_pair ).
           and_yield( second_pair )
@@ -846,7 +849,7 @@ describe MapWithIndifferentAccess do
       before do
         first_pair  = [ 1 , 'uno']
         second_pair = [:a , 'A' ]
-        third_pair  = ['b',  described_class.new('bb' => 'BB') ]
+        third_pair  = ['b',  MWIA.new('bb' => 'BB') ]
         allow( given_map ).to receive(:each_pair ).
           and_yield( first_pair ).
           and_yield( second_pair ).
@@ -871,12 +874,12 @@ describe MapWithIndifferentAccess do
 
         it "passes to the block, the conformed key and externalized values from corresponding entries in the target and given, then stores the internalizations of the block result into the target's inner-map" do
           subject.merge!( given_map ){ |key, old_val, new_val|
-            described_class.new( key => [ old_val, new_val ] )
+            MWIA.new( key => [ old_val, new_val ] )
           }
           expect( subject.inner_map ).to eq( {
              1  => { 1  => ['one', 'uno'] },
-            'a' => {'a' => [described_class.new('aa' => 'AA'), 'A'] },
-            :b  => {:b  => ['B', described_class.new('bb' => 'BB')] }
+            'a' => {'a' => [ MWIA.new('aa' => 'AA'), 'A'] },
+            :b  => {:b  => ['B', MWIA.new('bb' => 'BB')] }
           } )
         end
       end
@@ -890,12 +893,12 @@ describe MapWithIndifferentAccess do
 
         it "for each duplicate conformed key, passes the conformed key and externalized values from corresponding entries in the target and given, then produces a reult entry with internal the internalization of the block result in the result's inner-map" do
           merge_result = subject.merge( given_map ){ |key, old_val, new_val|
-            described_class.new( key => [ old_val, new_val ] )
+            MWIA.new( key => [ old_val, new_val ] )
           }
           expect( merge_result.inner_map ).to eq( {
              1  => { 1  => ['one', 'uno'] },
-            'a' => {'a' => [described_class.new('aa' => 'AA'), 'A'] },
-            :b  => {:b  => ['B', described_class.new('bb' => 'BB')] }
+            'a' => {'a' => [ MWIA.new('aa' => 'AA'), 'A'] },
+            :b  => {:b  => ['B', MWIA.new('bb' => 'BB')] }
           } )
         end
       end
@@ -941,5 +944,7 @@ describe MapWithIndifferentAccess do
 
     expect( inversion.inner_map ).to eq( expected_invs_inner_map )
   end
+
+end
 
 end

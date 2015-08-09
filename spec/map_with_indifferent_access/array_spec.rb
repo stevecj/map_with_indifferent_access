@@ -1,6 +1,9 @@
 require 'spec_helper'
 
-describe MapWithIndifferentAccess::Array do
+module MWIA_ArraySpec
+  include MapWithIndifferentAccess::WithConveniences
+
+describe MWIA::Array do
   let( :inner_array ) { subject.inner_array }
 
   it "can be constructed as a wrapper around an existing array" do
@@ -68,21 +71,21 @@ describe MapWithIndifferentAccess::Array do
 
   describe "indexed value access" do
     it "stores the internalization of a given item by the given index into its inner array" do
-      map = MapWithIndifferentAccess.new
+      map = MWIA.new
       subject[ 2 ] = map
       expect( inner_array[ 2 ] ).to equal( map.inner_map )
     end
 
     it "reads the externalization of the item by index from its inner array" do
       inner_array[ 3 ] = { a: 1 }
-      expect( subject[ 3 ] ).to be_kind_of( MapWithIndifferentAccess )
+      expect( subject[ 3 ] ).to be_kind_of( MWIA )
       expect( subject[ 3 ].inner_map ).to eq( { a: 1 } )
     end
   end
 
   describe "#push" do
     it "push the internalization of given items onto the end of the inner array" do
-      wrapped_hash_map = MapWithIndifferentAccess.new
+      wrapped_hash_map = MWIA.new
 
       subject << 1
       subject << wrapped_hash_map
@@ -168,11 +171,13 @@ describe MapWithIndifferentAccess::Array do
 
     expect( items ).to eq( [
       1,
-      MapWithIndifferentAccess.new( a: 2 ), 
-      MapWithIndifferentAccess::Array.new( [ { b: 3 } ] )
+      MWIA.new( a: 2 ), 
+      MWIA::Array.new( [ { b: 3 } ] )
     ] )
 
     expect( subject.entries ).to eq( items )
   end
+
+end
 
 end
