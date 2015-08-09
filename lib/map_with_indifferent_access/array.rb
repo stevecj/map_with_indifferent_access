@@ -49,6 +49,18 @@ class MapWithIndifferentAccess
       MWIA::Values >> item
     end
 
+    alias at []
+
+    def fetch(index, *args)
+      item =
+        if block_given?
+          inner_array.fetch( index, *args ){ |idx| yield idx }
+        else
+          inner_array.fetch( index, *args )
+        end
+      MWIA::Values >> item
+    end
+
     def <<(value)
       value = MWIA::Values << value
       inner_array << value

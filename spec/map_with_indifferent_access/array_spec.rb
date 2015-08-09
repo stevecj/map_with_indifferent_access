@@ -96,6 +96,32 @@ describe MapWithIndifferentAccess::Array do
     end
   end
 
+  describe '#fetch' do
+    it "reads the externalization of the item by index from its inner array" do
+      inner_array[ 3 ] = { a: 1 }
+      result = subject.fetch( 3 )
+      expect( result.inner_map ).to eq( { a: 1 } )
+    end
+
+    it "raises an IndexError for an out-of-bounds index with no default or block argument given" do
+      inner_array << 0 << 1
+      expect{ subject.fetch 2 }.to raise_exception( IndexError )
+      expect{ subject.fetch -3 }.to raise_exception( IndexError )
+    end
+
+    it "returns the externalization of the given default value for an out-of-bounds index" do
+      inner_array << 0 << 1
+      result = subject.fetch( 2, { the: 'default'} )
+      expect( result.inner_map ).to eq( { the: 'default'} )
+    end
+
+    it "passes the given index to the given block, and returns the externalization of the block result for an out-of-bounds index" do
+      inner_array << 0 << 1
+      result = subject.fetch( 2 ){ |idx| { index: idx } }
+      expect( result.inner_map ).to eq( { index: 2} )
+    end
+  end
+
   it "provides its number of entries via #length" do
     subject.push( 1, { a: 2 } )
     expect( subject.length ).to eq( 2 )
