@@ -1,49 +1,32 @@
 require "map_with_indifferent_access/version"
 require "map_with_indifferent_access/array"
+require "map_with_indifferent_access/values"
 require 'forwardable'
 
 class MapWithIndifferentAccess
-  module ClassBehavior ; end
-  extend ClassBehavior
+  # Shorthand constant.
+  MWIA = MapWithIndifferentAccess
 
   extend Forwardable
   include Enumerable
 
-  module ClassBehavior
-    def try_convert(from_obj)
-      if self === from_obj
-        from_obj
-      else
-        hash = Hash.try_convert( from_obj )
-        new( hash ) if hash
-      end
+  def self.try_convert(from_obj)
+    if self === from_obj
+      from_obj
+    else
+      hash = Hash.try_convert( from_obj )
+      new( hash ) if hash
     end
+  end
 
-    def try_deconstruct(obj)
-      if self === obj
-        obj.inner_map
-      elsif obj.respond_to?(:to_hash )
-        h = obj.to_hash
-        Hash === h ? h : nil
-      else
-        nil
-      end
-    end
-
-    def valueize(obj)
-      (
-        try_convert( obj ) ||
-        self::Array.try_convert( obj ) ||
-        obj
-      )
-    end
-
-    def unvalueize(obj)
-      (
-        try_deconstruct( obj ) ||
-        self::Array.try_deconstruct( obj ) ||
-        obj
-      )
+  def self.try_deconstruct(obj)
+    if self === obj
+      obj.inner_map
+    elsif obj.respond_to?(:to_hash )
+      h = obj.to_hash
+      Hash === h ? h : nil
+    else
+      nil
     end
   end
 
@@ -98,7 +81,7 @@ class MapWithIndifferentAccess
   end
 
   def[]=(key, value)
-    value = self.class.unvalueize( value )
+    value = MWIA::Values << value
     key = conform_key( key )
     inner_map[ key ] = value
   end
@@ -108,7 +91,7 @@ class MapWithIndifferentAccess
   def[](key)
     key = conform_key( key )
     value = inner_map[ key ]
-    self.class.valueize( value )
+    MWIA::Values >> value
   end
 
   def fetch(key, *more_args)
@@ -127,7 +110,7 @@ class MapWithIndifferentAccess
       inner_map.fetch( key, *more_args )
     end
 
-    self.class.valueize( value )
+    MWIA::Values >> value
   end
 
   def key?(key)
@@ -152,7 +135,7 @@ class MapWithIndifferentAccess
 
   def default(key = nil)
     inner_default = inner_map.default( key )
-    self.class.valueize( inner_default )
+    MWIA::Values >> inner_default
   end
 
   def ==(other)
@@ -179,7 +162,7 @@ class MapWithIndifferentAccess
 
     each_key do |key|
       value = fetch( key )
-      value = self.class.valueize( value )
+      value = MWIA::Values >> value
       yield [key, value]
     end
   end
@@ -190,7 +173,7 @@ class MapWithIndifferentAccess
     return enum_for(:each_value) unless block_given?
 
     inner_map.each_value do |value|
-      value = self.class.valueize( value )
+      value = MWIA::Values >> value
       yield value
     end
   end
@@ -202,7 +185,7 @@ class MapWithIndifferentAccess
     else
       inner_map.delete( key )
     end
-    self.class.valueize( value )
+    MWIA::Values >> value
   end
 
   def reject
@@ -230,7 +213,7 @@ class MapWithIndifferentAccess
     return enum_for(:delete_if ) unless block_given?
 
     inner_map.delete_if do |key, value|
-      value = self.class.valueize( value )
+      value = MWIA::Values >> value
       yield key, value
     end
 
@@ -262,7 +245,7 @@ class MapWithIndifferentAccess
     return enum_for(:keep_if ) unless block_given?
 
     inner_map.keep_if do |key, value|
-      value = self.class.valueize( value )
+      value = MWIA::Values >> value
       yield key, value
     end
 
@@ -279,25 +262,25 @@ class MapWithIndifferentAccess
     obj = conform_key( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
-      value = self.class.valueize( entry[ 1 ] )
+      value = MWIA::Values >> entry[ 1 ]
       entry[ 1 ] = value
     end
     entry
   end
 
   def has_value?(value)
-    value = self.class.valueize( value )
+    value = MWIA::Values >> value
     each_value.any? { |v| v == value }
   end
 
   def rassoc(value)
-    value = self.class.valueize( value )
+    value = MWIA::Values >> value
     entry = inner_map.detect { |(k, v)|
-      v = self.class.valueize( v )
+      v = MWIA::Values >> v
       value == v
     }
     if entry
-      entry[ 1 ] = self.class.valueize( entry[ 1 ] )
+      entry[ 1 ] = MWIA::Values >> entry[ 1 ]
       entry
     else
       nil
@@ -328,12 +311,12 @@ class MapWithIndifferentAccess
 
   def shift
     if inner_map.empty?
-      self.class.valueize( inner_map.shift )
+      MWIA::Values >> inner_map.shift
     else
       inner_result = inner_map.shift
       [
-        inner_result[0],
-        self.class.valueize( inner_result[1] )
+        inner_result[ 0 ],
+        MWIA::Values >> inner_result[ 1 ]
       ]
     end
   end

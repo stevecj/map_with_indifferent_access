@@ -6,9 +6,6 @@ class MapWithIndifferentAccess
     extend Forwardable
     include Enumerable
 
-    # Shorthand constant.
-    MWIA = MapWithIndifferentAccess
-
     def self.try_convert(from_obj)
       if self === from_obj
         from_obj
@@ -43,17 +40,17 @@ class MapWithIndifferentAccess
     end
 
     def []=(index, value)
-      value = MWIA.unvalueize value
+      value = MWIA::Values << value
       inner_array[ index ] = value
     end
 
     def [](index)
       item = inner_array[ index ]
-      MWIA.valueize item
+      MWIA::Values >> item
     end
 
     def <<(value)
-      value = MWIA.unvalueize value
+      value = MWIA::Values << value
       inner_array << value
     end
 
@@ -76,7 +73,7 @@ class MapWithIndifferentAccess
 
     def each
       inner_array.each do |item|
-        item = MWIA.valueize( item )
+        item = MWIA::Values >> item
         yield item
       end
     end

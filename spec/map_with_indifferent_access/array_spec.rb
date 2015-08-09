@@ -67,13 +67,13 @@ describe MapWithIndifferentAccess::Array do
   end
 
   describe "indexed value access" do
-    it "stores the un-valuization of a given item by the given index into its inner array" do
+    it "stores the internalization of a given item by the given index into its inner array" do
       map = MapWithIndifferentAccess.new
       subject[ 2 ] = map
       expect( inner_array[ 2 ] ).to equal( map.inner_map )
     end
 
-    it "reads the valuization of the item by index from its inner array" do
+    it "reads the externalization of the item by index from its inner array" do
       inner_array[ 3 ] = { a: 1 }
       expect( subject[ 3 ] ).to be_kind_of( MapWithIndifferentAccess )
       expect( subject[ 3 ].inner_map ).to eq( { a: 1 } )
@@ -81,7 +81,7 @@ describe MapWithIndifferentAccess::Array do
   end
 
   describe "#push" do
-    it "push the unvaluizations of given items onto the end of the inner array" do
+    it "push the internalization of given items onto the end of the inner array" do
       wrapped_hash_map = MapWithIndifferentAccess.new
 
       subject << 1
@@ -101,7 +101,7 @@ describe MapWithIndifferentAccess::Array do
     expect( subject.length ).to eq( 2 )
   end
 
-  it "has unequal instances via #== with corresponding entries, the valuizations of which are not all equal" do
+  it "has unequal instances via #== with corresponding entries, the externalization of which are not all equal" do
     inner_array <<
       1 <<
       { a: 2 } <<
@@ -116,7 +116,7 @@ describe MapWithIndifferentAccess::Array do
     expect( subject == other ).to eq( false )
   end
 
-  it "has equal instances via #== with corresponding entries, the valuizations of which are all equal" do
+  it "has equal instances via #== with corresponding entries, the externalization of which are all equal" do
     inner_array <<
       1 <<
       { a: 2 } <<
