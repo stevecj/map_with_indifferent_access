@@ -80,7 +80,7 @@ describe MapWithIndifferentAccess::Array do
     end
   end
 
-  describe "#<< and #push" do
+  describe "#push" do
     it "push the unvaluizations of given items onto the end of the inner array" do
       wrapped_hash_map = MapWithIndifferentAccess.new
 

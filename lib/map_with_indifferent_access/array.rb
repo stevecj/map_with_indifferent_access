@@ -43,17 +43,17 @@ class MapWithIndifferentAccess
     end
 
     def []=(index, value)
-      value = MWIA >> value
+      value = MWIA.unvalueize value
       inner_array[ index ] = value
     end
 
     def [](index)
       item = inner_array[ index ]
-      MWIA << item
+      MWIA.valueize item
     end
 
     def <<(value)
-      value = MWIA >> value
+      value = MWIA.unvalueize value
       inner_array << value
     end
 
@@ -76,7 +76,7 @@ class MapWithIndifferentAccess
 
     def each
       inner_array.each do |item|
-        item = MWIA << item
+        item = MWIA.valueize( item )
         yield item
       end
     end

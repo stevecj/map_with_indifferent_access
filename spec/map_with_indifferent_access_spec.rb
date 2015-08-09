@@ -71,55 +71,55 @@ describe MapWithIndifferentAccess do
     expect( map.inner_map ).to equal( hash )
   end
 
-  describe '::valueize / ::<<' do
+  describe '::valueize' do
     it "returns the given object when not an Array, Hash, instance of self, or instance of self::Array" do
-      expect( described_class <<  nil  ).to eq( nil )
-      expect( described_class << 'abc' ).to eq('abc')
-      expect( described_class <<  123  ).to eq( 123 )
+      expect( described_class.valueize( nil ) ).to eq( nil )
+      expect( described_class.valueize('abc') ).to eq('abc')
+      expect( described_class.valueize( 123 ) ).to eq( 123 )
 
       timeval = Time.new( 2010,11,16, 10,45,59 )
-      expect( described_class << timeval ).to eq( timeval )
+      expect( described_class.valueize( timeval ) ).to eq( timeval )
     end
 
     it "returns a wrapped instance of the given Hash" do
       given_hash = { a: 1 }
-      result = described_class << given_hash
+      result = described_class.valueize( given_hash )
       expect( result.inner_map ).to equal( given_hash )
     end
 
     it "returns a wrapped instance of the given Array" do
       given_array = [ 1, 2, 3 ]
-      result = described_class << given_array
+      result = described_class.valueize( given_array )
       expect( result.inner_array ).to equal( given_array )
     end
 
     it "returns the given instance of MapWithIndifferentAccess" do
-      result = described_class << subject
+      result = described_class.valueize( subject )
       expect( result ).to equal( subject )
     end
 
     it "returns the given instance of MapWithIndifferentAccess::Array" do
       given_array_wrapper = described_class::Array.new
-      result = described_class << given_array_wrapper
+      result = described_class.valueize( given_array_wrapper )
       expect( result ).to equal( given_array_wrapper )
     end
   end
 
-  describe '::unvalueize / ::>>' do
+  describe '::unvalueize' do
     it "returns the given object when not a wrapped-hash map or wrapped array" do
-      expect( described_class >>  nil  ).to eq(  nil  )
-      expect( described_class >> 'abc' ).to eq( 'abc' )
-      expect( described_class >>  123  ).to eq(  123  )
-      expect( described_class >> [ 9 ] ).to eq( [ 9 ] )
+      expect( described_class.unvalueize  nil  ).to eq(  nil  )
+      expect( described_class.unvalueize 'abc' ).to eq( 'abc' )
+      expect( described_class.unvalueize  123  ).to eq(  123  )
+      expect( described_class.unvalueize [ 9 ] ).to eq( [ 9 ] )
     end
 
     it "returns the inner hash map from a given wrapped wrapped hash map" do
-      expect( described_class >> subject  ).to equal( subject.inner_map )
+      expect( described_class.unvalueize subject  ).to equal( subject.inner_map )
     end
 
     it "returns the inner array from a given wrapped wrapped array" do
       wrapped_array = described_class::Array.new
-      expect( described_class >> wrapped_array ).to equal( wrapped_array.inner_array )
+      expect( described_class.unvalueize wrapped_array ).to equal( wrapped_array.inner_array )
     end
   end
 

@@ -38,8 +38,6 @@ class MapWithIndifferentAccess
       )
     end
 
-    alias << valueize
-
     def unvalueize(obj)
       (
         try_deconstruct( obj ) ||
@@ -47,8 +45,6 @@ class MapWithIndifferentAccess
         obj
       )
     end
-
-    alias >> unvalueize
   end
 
   attr_reader :inner_map
@@ -102,7 +98,7 @@ class MapWithIndifferentAccess
   end
 
   def[]=(key, value)
-    value = self.class >> value
+    value = self.class.unvalueize( value )
     key = conform_key( key )
     inner_map[ key ] = value
   end
@@ -112,7 +108,7 @@ class MapWithIndifferentAccess
   def[](key)
     key = conform_key( key )
     value = inner_map[ key ]
-    self.class << value
+    self.class.valueize( value )
   end
 
   def fetch(key, *more_args)
@@ -131,7 +127,7 @@ class MapWithIndifferentAccess
       inner_map.fetch( key, *more_args )
     end
 
-    self.class << value
+    self.class.valueize( value )
   end
 
   def key?(key)
@@ -156,7 +152,7 @@ class MapWithIndifferentAccess
 
   def default(key = nil)
     inner_default = inner_map.default( key )
-    self.class << inner_default
+    self.class.valueize( inner_default )
   end
 
   def ==(other)
@@ -183,7 +179,7 @@ class MapWithIndifferentAccess
 
     each_key do |key|
       value = fetch( key )
-      value = self.class << value
+      value = self.class.valueize( value )
       yield [key, value]
     end
   end
@@ -194,7 +190,7 @@ class MapWithIndifferentAccess
     return enum_for(:each_value) unless block_given?
 
     inner_map.each_value do |value|
-      value = self.class << value
+      value = self.class.valueize( value )
       yield value
     end
   end
@@ -206,7 +202,7 @@ class MapWithIndifferentAccess
     else
       inner_map.delete( key )
     end
-    self.class << value
+    self.class.valueize( value )
   end
 
   def reject
@@ -234,7 +230,7 @@ class MapWithIndifferentAccess
     return enum_for(:delete_if ) unless block_given?
 
     inner_map.delete_if do |key, value|
-      value = self.class << value
+      value = self.class.valueize( value )
       yield key, value
     end
 
@@ -266,7 +262,7 @@ class MapWithIndifferentAccess
     return enum_for(:keep_if ) unless block_given?
 
     inner_map.keep_if do |key, value|
-      value = self.class << value
+      value = self.class.valueize( value )
       yield key, value
     end
 
@@ -283,25 +279,25 @@ class MapWithIndifferentAccess
     obj = conform_key( obj )
     entry = inner_map.assoc( obj )
     unless entry.nil?
-      value = self.class << entry[ 1 ]
+      value = self.class.valueize( entry[ 1 ] )
       entry[ 1 ] = value
     end
     entry
   end
 
   def has_value?(value)
-    value = self.class << value
+    value = self.class.valueize( value )
     each_value.any? { |v| v == value }
   end
 
   def rassoc(value)
-    value = self.class << value
+    value = self.class.valueize( value )
     entry = inner_map.detect { |(k, v)|
-      v = self.class << v
+      v = self.class.valueize( v )
       value == v
     }
     if entry
-      entry[ 1 ] = self.class << entry[ 1 ]
+      entry[ 1 ] = self.class.valueize( entry[ 1 ] )
       entry
     else
       nil
