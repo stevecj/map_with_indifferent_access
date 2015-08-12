@@ -271,22 +271,22 @@ module MWIA_ArraySpec
 
     describe "#shift" do
       before do
-        inner_array.replace( [
+        inner_array.replace [
           { a: 1 },
           2,
           3
-        ] )
+        ]
       end
 
       it "removes the first item from the inner array, and returns the externalization of that value when no argument is given" do
         result = subject.shift
-        expect( subject.inner_array ).to eq( [ 2, 3 ] )
+        expect( inner_array ).to eq( [ 2, 3 ] )
         expect( result.inner_map ).to eq( { a: 1 } )
       end
 
       it "removes the given number of initial items from the inner array, and returns an MWIA::Array of those values" do
         result = subject.shift( 2 )
-        expect( subject.inner_array ).to eq( [ 3 ] )
+        expect( inner_array ).to eq( [ 3 ] )
         expect( result.inner_array ).to eq( [
           { a: 1 },
           2
@@ -296,26 +296,78 @@ module MWIA_ArraySpec
 
     describe "#pop" do
       before do
-        inner_array.replace( [
+        inner_array.replace [
           1,
           2,
           { c: 3 }
-        ] )
+        ]
       end
 
       it "removes the last item from the inner array, and returns the externalization of that value when no argument is given" do
         result = subject.pop
-        expect( subject.inner_array ).to eq( [ 1, 2 ] )
+        expect( inner_array ).to eq( [ 1, 2 ] )
         expect( result.inner_map ).to eq( { c: 3 } )
       end
 
       it "removes the given number of items from the inner array, and returns an MWIA::Array of those values" do
         result = subject.pop( 2 )
-        expect( subject.inner_array ).to eq( [ 1 ] )
+        expect( inner_array ).to eq( [ 1 ] )
         expect( result.inner_array ).to eq( [
           2,
           { c: 3 }
         ] )
+      end
+    end
+
+    describe "#delete_at" do
+      before do
+        inner_array.replace [
+          1,
+          { b: 2 },
+          3
+        ]
+      end
+
+      it "removes the item at the given index from the inner array, and returns the externalization of that value" do
+        result = subject.delete_at( 1 )
+        expect( inner_array ).to eq( [ 1, 3 ] )
+        expect( result.inner_map ).to eq( { b: 2 } )
+      end
+    end
+
+    describe "#delete" do
+      before do
+        inner_array.replace [
+          1,
+          { x: 99 },
+          3,
+          {'x' => 99 },
+          5
+        ]
+      end
+
+      context "given a value that does not match any items in the array" do
+        it "without a block argument, does not remove any items from the inner array and returns nil" do
+          result = subject.delete( 'z' )
+          expect( subject.length ).to eq( 5 )
+          expect( result ).to eq( nil )
+        end
+
+        it "does not remove any items from the inner array, passes the given value to the given block, and returns the externalization of the block call result" do
+          result = subject.delete( 'z' ){ |v|
+            { value: v }
+          }
+          expect( subject.length ).to eq( 5 )
+          expect( result.inner_map ).to eq( { value: 'z' } )
+        end
+      end
+
+      context "given a value, the externalization of which is equal to the externalizartions of multiple items in the inner array" do
+        it "deletes matching items from the inner array and returns the externalization of the last match" do
+          result = subject.delete( { x: 99 } )
+          expect( result.inner_map ).to eq( {'x' => 99 } )
+          expect( inner_array ).to eq( [ 1, 3, 5 ] )
+        end
       end
     end
 

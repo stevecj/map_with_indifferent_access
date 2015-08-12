@@ -148,6 +148,29 @@ class MapWithIndifferentAccess
       end
     end
 
+    def delete_at(index)
+      inner_result = inner_array.delete_at( index )
+      MWIA::Values >> inner_result
+    end
+
+    def delete(obj)
+      obj = MWIA::Values >> obj
+      removed_items = false
+      result = nil
+      inner_array.delete_if{ |v|
+        v = MWIA::Values >> v
+        if v == obj
+          result = v
+          removed_items = true
+          true
+        end
+      }
+      if !removed_items && block_given?
+        result = MWIA::Values >> yield( obj )
+      end
+      result
+    end
+
     def ==(other)
       return true if equal?( other )
       return false unless self.class === other
