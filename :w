@@ -109,6 +109,7 @@ module MWIA_ArraySpec
           expect( inner_array[ 4..5 ] ).to eq( [ 99, 4 ] )
         end
       end
+    end
 
       context "given a starting index and a range length" do
         before do
@@ -143,42 +144,11 @@ module MWIA_ArraySpec
       end
     end
 
-    describe '#at' do
+    describe '#[]' do
       it "reads the externalization of the item by index from its inner array" do
         inner_array[ 3 ] = { a: 1 }
-        result = subject.at( 3 )
-        expect( result.inner_map ).to eq( { a: 1 } )
-      end
-    end
-
-    describe '#[]' do
-      before do
-        inner_array.replace [
-          0,
-          1,
-          { c: 2 },
-          3
-        ]
-      end
-
-      it "reads the externalization of the item at a given index from its inner array" do
-        expect( subject[ 2 ].inner_map ).to eq( { c: 2 } )
-      end
-
-      it "reads an MWIA::Array of the items at a given range of indexes in its inner array" do
-        result = subject[ 1..2 ]
-        expect( result.inner_array ).to eq( [
-          1,
-          { c: 2 }
-        ] )
-      end
-
-      it "reads an MWIA::Array of the items in the range of index in its inner array with the given starting index and length" do
-        result = subject[ 2, 2 ]
-        expect( result.inner_array ).to eq( [
-          { c: 2 },
-          3
-        ] )
+        expect( subject[ 3 ] ).to be_kind_of( MWIA )
+        expect( subject[ 3 ].inner_map ).to eq( { a: 1 } )
       end
     end
 
@@ -243,6 +213,10 @@ module MWIA_ArraySpec
       end
     end
 
+    describe "#values_at" do
+      it "does something"
+    end
+
     describe '#fetch' do
       it "reads the externalization of the item by index from its inner array" do
         inner_array[ 3 ] = { a: 1 }
@@ -267,6 +241,30 @@ module MWIA_ArraySpec
         result = subject.fetch( 2 ){ |idx| { index: idx } }
         expect( result.inner_map ).to eq( { index: 2} )
       end
+    end
+
+    describe "#shift" do
+      it "does something"
+    end
+
+    describe "#pop" do
+      it "does something"
+    end
+
+    describe "#delete_at" do
+      it "does something"
+    end
+
+    describe "#delete" do
+      it "does something"
+    end
+
+    describe "#uniq!" do
+      it "does something"
+    end
+
+    describe "#uniq" do
+      it "does something"
     end
 
     it "provides its number of entries via #length" do

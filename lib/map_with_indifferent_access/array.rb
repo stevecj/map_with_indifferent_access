@@ -41,17 +41,76 @@ class MapWithIndifferentAccess
       @inner_array = basis
     end
 
-    def []=(index, value)
-      value = MWIA::Values << value
-      inner_array[ index ] = value
+    def []=(index, length_or_value, *maybe_value)
+      arg_count = 2 + maybe_value.length
+      unless (2..3) === arg_count
+        raise ArgumentError, "wrong number of arguments (#{arg_count} for 2..3)"
+      end
+
+      if maybe_value.empty?
+        maybe_length = []
+        value_or_values = length_or_value
+      else
+        maybe_length = [length_or_value]
+        value_or_values = maybe_value.first
+      end
+
+      if (
+        ( !maybe_length.empty? || Range === index ) &&
+        ( value_array = MWIA::Array.try_deconstruct( value_or_values ) )
+      )
+        value_array = value_array.map{ |v| MWIA::Values << v }
+        inner_array[ index, *maybe_length ] = value_array
+      else
+        value = MWIA::Values << value_or_values
+        inner_array[ index, *maybe_length ] = value
+      end
     end
 
-    def [](index)
-      item = inner_array[ index ]
+    def [](index, *maybe_length)
+      arg_count = 1 + maybe_length.length
+      unless (1..2) === arg_count
+        raise ArgumentError, "wrong number of arguments (#{arg_count} for 1..2)"
+      end
+
+      if !maybe_length.empty? || Range === index
+        value_array = inner_array[ index, *maybe_length ]
+        value_array.map!{ |v| MWIA::Values >> v }
+        MWIA::Array.new( value_array )
+      else
+        value = inner_array[ index ]
+        MWIA::Values >> value
+      end
+    end
+
+    def at(index)
+      item = inner_array.at( index )
       MWIA::Values >> item
     end
 
-    alias at []
+    def <<(value)
+      value = MWIA::Values << value
+      inner_array << value
+      self
+    end
+
+    def push(*values)
+      values.map!{ |v| MWIA::Values << v }
+      inner_array.push *values
+      self
+    end
+
+    def unshift(*values)
+      values.map!{ |v| MWIA::Values << v }
+      inner_array.unshift *values
+      self
+    end
+
+    def insert(index, *values)
+      values.map!{ |v| MWIA::Values << v }
+      inner_array.insert(index, *values)
+      self
+    end
 
     def fetch(index, *args)
       item =
@@ -61,17 +120,6 @@ class MapWithIndifferentAccess
           inner_array.fetch( index, *args )
         end
       MWIA::Values >> item
-    end
-
-    def <<(value)
-      value = MWIA::Values << value
-      inner_array << value
-    end
-
-    def push(*values)
-      values.each do |value|
-        self << value
-      end
     end
 
     def ==(other)

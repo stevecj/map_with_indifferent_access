@@ -22,7 +22,7 @@ module MapWithIndifferentAccessSpec
       expect( map.inner_map ).to be_kind_of( Hash )
     end
 
-    it "can be constructed as a new wrapper around an existing wrapped hash" do
+    it "can be constructed as a new wrapper around ther inner-map hash of an existing wrapped hash" do
       hash = {}
       original_map = MWIA.new( hash )
       map = MWIA.new( original_map )
