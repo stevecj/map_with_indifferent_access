@@ -122,6 +122,32 @@ class MapWithIndifferentAccess
       MWIA::Values >> item
     end
 
+    def shift(*maybe_n)
+      arg_count = maybe_n.length
+      unless (0..1) === arg_count
+        raise ArgumentError, "wrong number of arguments (#{arg_count} for 0..1)"
+      end
+      if maybe_n.empty?
+        MWIA::Values >> inner_array.shift
+      else
+        inner_result = inner_array.shift( *maybe_n )
+        MWIA::Array.new( inner_result )
+      end
+    end
+
+    def pop(*maybe_n)
+      arg_count = maybe_n.length
+      unless (0..1) === arg_count
+        raise ArgumentError, "wrong number of arguments (#{arg_count} for 0..1)"
+      end
+      if maybe_n.empty?
+        MWIA::Values >> inner_array.pop
+      else
+        inner_result = inner_array.pop( *maybe_n )
+        MWIA::Array.new( inner_result )
+      end
+    end
+
     def ==(other)
       return true if equal?( other )
       return false unless self.class === other

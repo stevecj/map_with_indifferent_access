@@ -269,6 +269,56 @@ module MWIA_ArraySpec
       end
     end
 
+    describe "#shift" do
+      before do
+        inner_array.replace( [
+          { a: 1 },
+          2,
+          3
+        ] )
+      end
+
+      it "removes the first item from the inner array, and returns the externalization of that value when no argument is given" do
+        result = subject.shift
+        expect( subject.inner_array ).to eq( [ 2, 3 ] )
+        expect( result.inner_map ).to eq( { a: 1 } )
+      end
+
+      it "removes the given number of initial items from the inner array, and returns an MWIA::Array of those values" do
+        result = subject.shift( 2 )
+        expect( subject.inner_array ).to eq( [ 3 ] )
+        expect( result.inner_array ).to eq( [
+          { a: 1 },
+          2
+        ] )
+      end
+    end
+
+    describe "#pop" do
+      before do
+        inner_array.replace( [
+          1,
+          2,
+          { c: 3 }
+        ] )
+      end
+
+      it "removes the last item from the inner array, and returns the externalization of that value when no argument is given" do
+        result = subject.pop
+        expect( subject.inner_array ).to eq( [ 1, 2 ] )
+        expect( result.inner_map ).to eq( { c: 3 } )
+      end
+
+      it "removes the given number of items from the inner array, and returns an MWIA::Array of those values" do
+        result = subject.pop( 2 )
+        expect( subject.inner_array ).to eq( [ 1 ] )
+        expect( result.inner_array ).to eq( [
+          2,
+          { c: 3 }
+        ] )
+      end
+    end
+
     it "provides its number of entries via #length" do
       subject.push( 1, { a: 2 } )
       expect( subject.length ).to eq( 2 )
