@@ -112,6 +112,11 @@ class MapWithIndifferentAccess
       self
     end
 
+    def values_at( *indexes )
+      inner_result = inner_array.values_at( *indexes )
+      MWIA::Values >> inner_result
+    end
+
     def fetch(index, *args)
       item =
         if block_given?

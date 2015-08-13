@@ -243,6 +243,22 @@ module MWIA_ArraySpec
       end
     end
 
+    describe "#values_at" do
+      before do
+        inner_array.replace [ 1, 2, 3, 4 ]
+      end
+
+      it "acts like Array#values_at, but returns an MWIA::Array" do
+        # Hand-waving on the description because the behavior
+        # of Array#values at is Byzantine, and the implementation
+        # directly uses Array to get all of that behavior.
+        result = subject.values_at( 3, 0..1, 3..9, 2 )
+        expect( result.inner_array ).to eq( [
+          4, 1, 2, 4, nil, 3
+        ] )
+      end
+    end
+
     describe '#fetch' do
       it "reads the externalization of the item by index from its inner array" do
         inner_array[ 3 ] = { a: 1 }
