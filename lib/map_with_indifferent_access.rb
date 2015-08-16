@@ -2,7 +2,7 @@ require "map_with_indifferent_access/version"
 require "map_with_indifferent_access/with_conveniences"
 require "map_with_indifferent_access/array"
 require "map_with_indifferent_access/values"
-require "map_with_indifferent_access/key_symbolization"
+require "map_with_indifferent_access/key_coercion"
 require 'forwardable'
 
 class MapWithIndifferentAccess

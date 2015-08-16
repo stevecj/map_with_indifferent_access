@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module KeySymbolizationSpec
+module KeyCoercionSpec
   include MapWithIndifferentAccess::WithConveniences
 
   class HashAnalog  < Struct.new(:to_hash )
@@ -10,7 +10,7 @@ module KeySymbolizationSpec
   class ArrayAnalog < Struct.new(:to_ary  )
   end
 
-  describe MWIA::KeySymbolization do
+  describe MWIA::KeyCoercion do
     describe "deep_symbolize" do
       let(:shallow_hash ){ {
         'a' => 11,

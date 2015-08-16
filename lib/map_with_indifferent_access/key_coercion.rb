@@ -1,5 +1,5 @@
 class MapWithIndifferentAccess
-  module KeySymbolization
+  module KeyCoercion
     include MapWithIndifferentAccess::WithConveniences
 
     extend self
