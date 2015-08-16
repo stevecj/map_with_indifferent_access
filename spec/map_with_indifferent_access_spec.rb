@@ -165,9 +165,6 @@ module MapWithIndifferentAccessSpec
       end
     end
 
-    describe "#shift" do
-    end
-
     describe '#tainted?' do
       it "returns false when its inner-map hash is not tainted" do
         expect( subject.tainted? ).to eq( false )
