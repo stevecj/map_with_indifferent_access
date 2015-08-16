@@ -387,6 +387,14 @@ module MWIA_ArraySpec
       end
     end
 
+    describe "#uniq!" do
+      it "does something"
+    end
+
+    describe "#uniq" do
+      it "does something"
+    end
+
     it "provides its number of entries via #length" do
       subject.push( 1, { a: 2 } )
       expect( subject.length ).to eq( 2 )
