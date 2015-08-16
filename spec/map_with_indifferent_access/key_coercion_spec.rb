@@ -12,141 +12,108 @@ module KeyCoercionSpec
 
   describe MWIA::KeyCoercion do
     describe "deep_symbolize" do
-      let(:shallow_hash ){ {
-        'a' => 11,
-        :b  => 22,
-         3  => 33
-      } }
-
-      let(:shallow_mwia ){
-        MWIA.new( shallow_hash )
-      }
-
-      let(:shallow_hash_analog) {
-        HashAnalog.new( shallow_hash )
-      }
-
-      let(:array ){ [
-        shallow_hash.dup,
-        shallow_mwia,
-        [ 31, 32, 33 ],
-        MWIA::Array.new( [ 41, 42 ] ),
-        5,
-      ] }
-
-      let(:mwia_array ){
-        MWIA::Array.new( array )
-      }
-
-      let(:array_analog) {
-        ArrayAnalog.new( array )
-      }
-
-      let(:nested_hash ){ {
-        :shallow_h  => shallow_hash.dup,
-        'shallow_m' => shallow_mwia,
-        :array      => array,
-        'number'    => 99
-      } }
-
-      it "returns the given object that is not hashlike or arraylike" do
-        expect( subject.deeply_symbolize( 123 ) ).to eq( 123 )
-        expect( subject.deeply_symbolize('abc') ).to eq('abc')
+      def build_given_hash
+        {
+          'a' => 1,
+          :b  => {'bb' => 22 },
+           3  => [ 33, MWIA.new('cc' => 333 ) ]
+        }
       end
 
-      it "returns a new Hash copy of the given Hash with keys symbolized" do
-        result = subject.deeply_symbolize( shallow_hash )
-        expect( result ).to be_kind_of( Hash )
-        expect( result ).to eq( {
-          :a    => 11,
-          :b    => 22,
-          :'3'  => 33
-        } )
+      def build_given_array
+        [
+          1,
+          [
+            12,
+            { 'b2' => {'bb2' => 22 } }
+          ]
+        ]
       end
 
-      it "returns a new MWIA copy of the given MWIA with keys symbolized" do
-        result = subject.deeply_symbolize( shallow_mwia )
-        expect( result ).to be_kind_of( MWIA )
-        expect( result.inner_map ).to eq( {
-          :a    => 11,
-          :b    => 22,
-          :'3'  => 33
-        } )
+      it "returns a copy of a given Hash with keys symbolized deeply" do
+        result = subject.deeply_symbolize( build_given_hash )
+
+        expect( result.keys ).to eq( [:a, :b, :'3'] )
+        expect( result[:a ]  ).to eq( 1 )
+        expect( result[:b ]  ).to eq( {:bb => 22 } )
+        expect( result[:'3'] ).to eq( [ 33, MWIA.new(:cc => 333) ] )
       end
 
-      it "returns a new Hash copy of the given hashlike object with keys symbolized" do
-        result = subject.deeply_symbolize( shallow_hash_analog )
-        expect( result ).to be_kind_of( Hash )
-        expect( result ).to eq( {
-          :a    => 11,
-          :b    => 22,
-          :'3'  => 33
-        } )
+      it "does not modfy the contents of the given Hash" do
+        given_hash = build_given_hash
+        result = subject.deeply_symbolize( build_given_hash )
+        expect( given_hash ).to eq( build_given_hash )
       end
 
-      it "returns a new Array copy of the given array with symbolized-key copies of hashlike and arraylike items" do
-        result = subject.deeply_symbolize( array )
-        expect( result ).to be_kind_of( ::Array )
-        expect( result.length ).to eq( 5 )
-        expect( result[ 0 ] ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[ 1 ].inner_map ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[ 2 ] ).to eq( [ 31, 32, 33 ] )
-        expect( result[ 3 ].inner_array ).to eq( [ 41, 42 ] )
-        expect( result[ 4 ] ).to eq( 5 )
-      end
+      it "returns a copy of a given Array with keys symbolized deeply" do
+        result = subject.deeply_symbolize( build_given_array )
 
-      it "returns a new Array copy of the given array with symbolized-key copies of hashlike and arraylike items" do
-        result = subject.deeply_symbolize( mwia_array )
-        expect( result ).to be_kind_of( MWIA::Array )
-        expect( result.length ).to eq( 5 )
-        expect( result.inner_array[ 0 ] ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result.inner_array[ 1 ].inner_map ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result.inner_array[ 2 ] ).to eq( [ 31, 32, 33 ] )
-        expect( result.inner_array[ 3 ].inner_array ).to eq( [ 41, 42 ] )
-        expect( result[ 4 ] ).to eq( 5 )
-      end
-
-      it "returns a new Array copy of the given arraylike object with symbolized-key copies of hashlike and arraylike items" do
-        result = subject.deeply_symbolize( array_analog )
-        expect( result ).to be_kind_of( ::Array )
-        expect( result.length ).to eq( 5 )
-        expect( result[ 0 ] ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[ 1 ].inner_map ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[ 2 ] ).to eq( [ 31, 32, 33 ] )
-        expect( result[ 3 ].inner_array ).to eq( [ 41, 42 ] )
-        expect( result[ 4 ] ).to eq( 5 )
-      end
-
-      it "returns a new Hash copy of the given Hash with hashlike/arraylike contents deeply replaced with symbolized-key copies" do
-        result = subject.deeply_symbolize( nested_hash )
-        expect( result.keys ).to eq( [
-          :shallow_h, :shallow_m, :array, :number
+        expect( result ).to eq( [
+          1,
+          [
+            12,
+            {:b2 => {:bb2 => 22 } }
+          ]
         ] )
-        expect( result[:shallow_h ] ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[:shallow_m ].inner_map ).to eq( {
-          :a => 11, :b => 22, :'3' => 33
-        } )
-        expect( result[:array ] ).to eq( [
-          {:a => 11, :b => 22, :'3' => 33 },
-          MWIA.new(:a => 11, :b => 22, :'3' => 33 ),
-          [ 31, 32, 33 ],
-          MWIA::Array.new( [ 41, 42 ] ),
-          5
+      end
+
+      it "does not modfy the contents of the given Array" do
+        given_array = build_given_array
+        result = subject.deeply_symbolize( build_given_array )
+        expect( given_array ).to eq( build_given_array )
+      end
+    end
+
+    describe '#deep_stringify' do
+      def build_given_hash
+        {
+          'a' => 1,
+          :b  => {:bb => 22 },
+           3  => [ 33, MWIA.new(:cc => 333 ) ]
+        }
+      end
+
+      def build_given_array
+        [
+          1,
+          [
+            12,
+            { :b2 => {:bb2 => 22 } }
+          ]
+        ]
+      end
+
+      it "returns a copy of a given Hash with keys stringified deeply" do
+        result = subject.deeply_stringify( build_given_hash )
+
+        expect( result.keys ).to eq( ['a', 'b', '3'] )
+        expect( result['a'] ).to eq( 1 )
+        expect( result['b'] ).to eq( {'bb' => 22 } )
+        expect( result['3'] ).to eq( [ 33, MWIA.new('cc' => 333) ] )
+      end
+
+      it "does not modfy the contents of the given Hash" do
+        given_hash = build_given_hash
+        result = subject.deeply_stringify( build_given_hash )
+        expect( given_hash ).to eq( build_given_hash )
+      end
+
+      it "returns a copy of a given Array with keys stringified deeply" do
+        result = subject.deeply_stringify( build_given_array )
+
+        expect( result ).to eq( [
+          1,
+          [
+            12,
+            {'b2' => {'bb2' => 22 } }
+          ]
         ] )
+      end
+
+      it "does not modfy the contents of the given Array" do
+        given_array = build_given_array
+        result = subject.deeply_stringify( build_given_array )
+        expect( given_array ).to eq( build_given_array )
       end
     end
   end

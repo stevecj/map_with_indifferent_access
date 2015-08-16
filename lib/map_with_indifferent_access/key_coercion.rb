@@ -1,3 +1,5 @@
+require "map_with_indifferent_access/key_coercion/deep_coercer"
+
 class MapWithIndifferentAccess
   module KeyCoercion
     include MapWithIndifferentAccess::WithConveniences
@@ -5,46 +7,42 @@ class MapWithIndifferentAccess
     extend self
 
     def deeply_symbolize(obj)
-      if ::Hash === obj
-        deeply_symbolize_hash( obj )
-      elsif MWIA === obj
-        deeply_symbolize_mwia( obj )
-      elsif ::Array === obj
-        deeply_symbolize_array( obj )
-      elsif MWIA::Array === obj
-        deeply_symbolize_mwia_array( obj )
-      elsif obj.respond_to?(:to_hash) && obj.respond_to?(:each_pair)
-        deeply_symbolize_hash( obj.to_hash )
-      elsif obj.respond_to?(:to_ary)
-        deeply_symbolize_array( obj.to_ary )
-      else
-        obj
+      deep_symbolizer.call( obj )
+    end
+
+    def deeply_stringify(obj)
+      deep_stringifier.call( obj )
+    end
+
+    private
+
+    def deep_symbolizer
+      @deep_symbolizer ||= DeepCoercer.new( SymbolizationStrategy )
+    end
+
+    module SymbolizationStrategy
+      def self.needs_coercion?(key)
+        !( Symbol === key )
+      end
+
+      def self.coerce(key)
+        key.to_s.to_sym
       end
     end
 
-    def deeply_symbolize_hash(obj)
-      result = {}
-      obj.each_pair{ |(k,v)|
-        k = k.to_s.to_sym unless Symbol == k
-        result[ k ] = deeply_symbolize( v )
-      }
-      result
+    def deep_stringifier
+      @deep_stringifier ||= DeepCoercer.new( StringificationStrategy )
     end
 
-    def deeply_symbolize_mwia(obj)
-      result_hash = deeply_symbolize_hash( obj )
-      MWIA.new( result_hash )
+    module StringificationStrategy
+      def self.needs_coercion?(key)
+        !( String === key )
+      end
+
+      def self.coerce(key)
+        key.to_s
+      end
     end
 
-    def deeply_symbolize_array( obj )
-      result = obj.dup
-      result.map!{ |item| deeply_symbolize(item) }
-      result
-    end
-
-    def deeply_symbolize_mwia_array(obj)
-      result_array = deeply_symbolize_array( obj.inner_array )
-      MWIA::Array.new( result_array )
-    end
   end
 end
