@@ -33,6 +33,27 @@ class MapWithIndifferentAccess
 
   attr_reader :inner_map
 
+  # @!method _frozen?
+  # Returns `true` if the target map is frozen, in which case,
+  # its #inner_map [Hash] is also frozen.
+  # Returns `false` if the target map is not frozen, in which
+  # case, its #inner_map [Hash] might or might not also be
+  # frozen.
+
+  alias _frozen? frozen?
+
+  # @!method frozen?
+  # Reflects the frozen-ness of its #inner_map [Hash].
+  # When `true`, the #inner_map is frozen, and the target map
+  # might be frozen or not.
+  # When `false`, the #inner_map is not frozen, and neither is
+  # the target map.
+  # When the #inner_map [Hash] is frozen, but not the target map,
+  # the target behaves as if frozen for the most part, however
+  # some of the restrictions that Ruby applies to truly frozen
+  # objects do not apply, such as preventing instance methods
+  # from being dynamically added to the object.
+
   def_delegators(
     :inner_map,
     :clear,
@@ -59,14 +80,6 @@ class MapWithIndifferentAccess
     raise ArgumentError, "Could not convert #{basis.inspect} into a Hash" unless use_basis
     @inner_map = use_basis
   end
-
-  # @!method frozen?(other)
-  # reflects the frozen-ness of its inner-map Hash.  When true,
-  # the map behaves as if frozen in most respects, but not all.
-  # One difference is that Ruby will not allow defining new
-  # instance methods to truly frozen object, but such methods
-  # may be added to a map instance when its #frozen? method
-  # returns true.
 
   def conform_key(given_key)
     case given_key
@@ -112,6 +125,23 @@ class MapWithIndifferentAccess
     end
 
     MWIA::Values >> value
+  end
+
+  [:taint, :untaint, :untrust, :trust ].each do |method_name|
+    class_eval <<-EOS, __FILE__, __LINE__ + 1
+      def #{method_name}
+        inner_map.#{method_name}
+        self
+      end
+    EOS
+  end
+
+  # @!method freeze
+  # Freezes both the target map and its #inner_map [Hash].
+  def freeze
+    super
+    inner_map.freeze
+    self
   end
 
   def key?(key)
