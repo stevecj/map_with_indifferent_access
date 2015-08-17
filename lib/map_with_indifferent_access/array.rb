@@ -152,12 +152,6 @@ class MapWithIndifferentAccess
       MWIA::Values >> inner_result
     end
 
-    def freeze
-      super
-      inner_array.freeze
-      self
-    end
-
     def delete(obj)
       obj = MWIA::Values >> obj
       removed_items = false

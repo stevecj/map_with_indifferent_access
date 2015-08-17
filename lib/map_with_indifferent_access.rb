@@ -37,13 +37,10 @@ class MapWithIndifferentAccess
 
   def_delegators(
     :inner_map,
-    :clear,
     :default=,
     :each_key,
-    :empty?,
     :keys,
     :rehash,
-    :size,
   )
 
   def initialize(basis={})

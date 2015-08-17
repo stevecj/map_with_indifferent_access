@@ -37,6 +37,9 @@ class MapWithIndifferentAccess
     def_delegators(
       :inner_collection,
       :length,
+      :size,
+      :clear,
+      :empty?,
       :tainted?,
       :untrusted?,
       :frozen?,
