@@ -1,5 +1,6 @@
 require "map_with_indifferent_access/version"
 require "map_with_indifferent_access/with_conveniences"
+require "map_with_indifferent_access/wraps_collection"
 require "map_with_indifferent_access/array"
 require "map_with_indifferent_access/values"
 require "map_with_indifferent_access/key_coercion"
@@ -9,7 +10,7 @@ class MapWithIndifferentAccess
   include self::WithConveniences
 
   extend Forwardable
-  include Enumerable
+  include MWIA::WrapsCollection
 
   def self.try_convert(from_obj)
     if self === from_obj
@@ -32,27 +33,7 @@ class MapWithIndifferentAccess
   end
 
   attr_reader :inner_map
-
-  # @!method _frozen?
-  # Returns `true` if the target map is frozen, in which case,
-  # its #inner_map [Hash] is also frozen.
-  # Returns `false` if the target map is not frozen, in which
-  # case, its #inner_map [Hash] might or might not also be
-  # frozen.
-
-  alias _frozen? frozen?
-
-  # @!method frozen?
-  # Reflects the frozen-ness of its #inner_map [Hash].
-  # When `true`, the #inner_map is frozen, and the target map
-  # might be frozen or not.
-  # When `false`, the #inner_map is not frozen, and neither is
-  # the target map.
-  # When the #inner_map [Hash] is frozen, but not the target map,
-  # the target behaves as if frozen for the most part, however
-  # some of the restrictions that Ruby applies to truly frozen
-  # objects do not apply, such as preventing instance methods
-  # from being dynamically added to the object.
+  alias inner_collection inner_map
 
   def_delegators(
     :inner_map,
@@ -61,16 +42,8 @@ class MapWithIndifferentAccess
     :each_key,
     :empty?,
     :keys,
-    :length,
     :rehash,
     :size,
-    :frozen?,
-    :tainted?,
-    :taint,
-    :untaint,
-    :untrusted?,
-    :untrust,
-    :trust,
   )
 
   def initialize(basis={})
@@ -125,23 +98,6 @@ class MapWithIndifferentAccess
     end
 
     MWIA::Values >> value
-  end
-
-  [:taint, :untaint, :untrust, :trust ].each do |method_name|
-    class_eval <<-EOS, __FILE__, __LINE__ + 1
-      def #{method_name}
-        inner_map.#{method_name}
-        self
-      end
-    EOS
-  end
-
-  # @!method freeze
-  # Freezes both the target map and its #inner_map [Hash].
-  def freeze
-    super
-    inner_map.freeze
-    self
   end
 
   def key?(key)

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'map_with_indifferent_access/wraps_collection_examples'
 
 module MapWithIndifferentAccessSpec
   include MapWithIndifferentAccess::WithConveniences
@@ -6,6 +7,7 @@ module MapWithIndifferentAccessSpec
   describe MapWithIndifferentAccess do
     subject{ MWIA.new( inner_map ) }
     let( :inner_map ) { {} }
+    let( :inner_collection ) { inner_map }
 
     it 'has a version number' do
       expect(MWIA::VERSION).not_to be nil
@@ -165,117 +167,7 @@ module MapWithIndifferentAccessSpec
       end
     end
 
-    describe '#tainted?' do
-      it "returns false when its inner-map hash is not tainted" do
-        expect( subject.tainted? ).to eq( false )
-      end
-
-      it "returns true when its inner-map hash is tainted" do
-        inner_map.taint
-        expect( subject.tainted? ).to eq( true )
-      end
-    end
-
-    describe '#taint' do
-      it "causes its inner-map hash to be tainted" do
-        subject.taint
-        expect( inner_map ).to be_tainted
-      end
-
-      it "returns the map" do
-        expect( subject.taint ).to equal( subject )
-      end
-    end
-
-    describe '#untaint' do
-      before do
-        inner_map.taint
-      end
-
-      it "causes its inner-map hash to be untainted" do
-        subject.untaint
-        expect( inner_map ).not_to be_tainted
-      end
-
-      it "returns the map" do
-        expect( subject.untaint ).to equal( subject )
-      end
-    end
-
-    describe '#untrusted?' do
-      it "returns false when its inner-map hash is trusted" do
-        expect( subject.untrusted? ).to eq( false )
-      end
-
-      it "returns true when its inner-map hash is not trusted" do
-        inner_map.untrust
-        expect( subject.untrusted? ).to eq( true )
-      end
-    end
-
-    describe '#untrust' do
-      it "causes its inner-map hash to be untrusted" do
-        subject.untrust
-        expect( inner_map ).to be_untrusted
-      end
-
-      it "returns the map" do
-        expect( subject.untrust ).to equal( subject )
-      end
-    end
-
-    describe '#trust' do
-      before do
-        inner_map.untrust
-      end
-
-      it "causes its inner-map hash to be trusted" do
-        subject.trust
-        expect( inner_map ).not_to be_untrusted
-      end
-
-      it "returns the map" do
-        expect( subject.trust ).to equal( subject )
-      end
-    end
-
-    describe '#freeze' do
-      it "freezes the inner-map Hash along with the map" do
-        subject.freeze
-        expect( inner_map ).to be_frozen
-      end
-
-      it "returns the map" do
-        expect( subject.freeze ).to equal( subject )
-      end
-    end
-
-    describe '#_frozen?' do
-      it "returns false when neither the map nor its inner-map Hash is frozen" do
-        expect( subject._frozen? ).to eq( false )
-      end
-
-      it "returns false when the map is not frozen and its inner-map Hash is frozen" do
-        inner_map.freeze
-        expect( subject._frozen? ).to eq( false )
-      end
-
-      it "returns true when the map is frozen" do
-        subject.freeze
-        expect( subject._frozen? ).to eq( true )
-      end
-    end
-
-    describe '#frozen?' do
-      it "returns false when its inner-map hash is not frozen" do
-        expect( subject.frozen? ).to eq( false )
-      end
-
-      it "returns true when its inner-map hash is frozen" do
-        inner_map.freeze
-        expect( subject.frozen? ).to eq( true )
-      end
-    end
+    it_behaves_like "a collection wrapper"
 
     describe '#dup' do
       context "with an unfrozen inner-map hash" do

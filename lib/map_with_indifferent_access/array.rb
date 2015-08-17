@@ -1,12 +1,10 @@
-require 'forwardable'
-
 class MapWithIndifferentAccess
 
   class Array
     include MapWithIndifferentAccess::WithConveniences
 
     extend Forwardable
-    include Enumerable
+    include MWIA::WrapsCollection
 
     def self.try_convert(from_obj)
       if self === from_obj
@@ -29,11 +27,7 @@ class MapWithIndifferentAccess
     end
 
     attr_reader :inner_array
-
-    def_delegators(
-      :inner_array,
-      :length,
-    )
+    alias inner_collection inner_array
 
     def initialize(basis = [])
       basis = basis.inner_array if self.class === basis
@@ -112,7 +106,7 @@ class MapWithIndifferentAccess
       self
     end
 
-    def values_at( *indexes )
+    def values_at(*indexes)
       inner_result = inner_array.values_at( *indexes )
       MWIA::Values >> inner_result
     end
@@ -156,6 +150,12 @@ class MapWithIndifferentAccess
     def delete_at(index)
       inner_result = inner_array.delete_at( index )
       MWIA::Values >> inner_result
+    end
+
+    def freeze
+      super
+      inner_array.freeze
+      self
     end
 
     def delete(obj)

@@ -1,10 +1,12 @@
 require 'spec_helper'
+require_relative 'wraps_collection_examples'
 
 module MWIA_ArraySpec
   include MapWithIndifferentAccess::WithConveniences
 
   describe MWIA::Array do
     let( :inner_array ) { subject.inner_array }
+    let( :inner_collection ) { inner_array }
 
     it "can be constructed as a wrapper around an existing array" do
       inner_a = []
@@ -348,6 +350,110 @@ module MWIA_ArraySpec
         result = subject.delete_at( 1 )
         expect( inner_array ).to eq( [ 1, 3 ] )
         expect( result.inner_map ).to eq( { b: 2 } )
+      end
+    end
+
+    it_behaves_like "a collection wrapper"
+
+    describe '#tainted?' do
+      it "returns false when its inner-array is not tainted" do
+        expect( subject.tainted? ).to eq( false )
+      end
+
+      it "returns true when its inner-array hash is tainted" do
+        inner_array.taint
+        expect( subject.tainted? ).to eq( true )
+      end
+    end
+
+    describe '#taint' do
+      before do
+        subject.taint
+      end
+
+      it "causes its inner-array to be tainted" do
+        expect( inner_array ).to be_tainted
+      end
+    end
+
+    describe '#untaint' do
+      before do
+        inner_array.taint
+        subject.untaint
+      end
+
+      it "causes its inner-array to be untainted" do
+        expect( inner_array ).not_to be_tainted
+      end
+    end
+
+    describe '#untrusted?' do
+      it "returns false when its inner-array is trusted" do
+        expect( subject.untrusted? ).to eq( false )
+      end
+
+      it "returns true when its inner-array is not trusted" do
+        inner_array.untrust
+        expect( subject.untrusted? ).to eq( true )
+      end
+    end
+
+    describe '#trust' do
+      before do
+        inner_array.untrust
+        subject.trust
+      end
+
+      it "causes its inner-array to be trusted" do
+        expect( inner_array ).not_to be_untrusted
+      end
+    end
+
+    describe '#untrust' do
+      before do
+        subject.untrust
+      end
+
+      it "causes its inner-array to be untrusted" do
+        expect( inner_array ).to be_untrusted
+      end
+    end
+
+    describe '#freeze' do
+      it "freezes the inner-array along with the MWIA::Array" do
+        subject.freeze
+        expect( inner_array ).to be_frozen
+      end
+
+      it "returns the MWIA::Array" do
+        expect( subject.freeze ).to equal( subject )
+      end
+    end
+
+    describe '#_frozen?' do
+      it "returns false when neither the MWIA::Array nor its inner-array is frozen" do
+        expect( subject._frozen? ).to eq( false )
+      end
+
+      it "returns false when the MWIA::Array is not frozen and its inner-array is frozen" do
+        inner_array.freeze
+        expect( subject._frozen? ).to eq( false )
+      end
+
+      it "returns true when the MWIA::Array is frozen" do
+        subject.freeze
+        expect( subject._frozen? ).to eq( true )
+      end
+    end
+
+    describe '#frozen?' do
+      it "returns false when its inner-array is not frozen" do
+        expect( subject.frozen? ).to eq( false )
+      end
+
+      it "returns true when its inner-array is frozen" do
+        inner_array.freeze
+        expect( subject.frozen? ).to eq( true )
       end
     end
 
