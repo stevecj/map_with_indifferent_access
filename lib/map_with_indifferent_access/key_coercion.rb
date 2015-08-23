@@ -6,10 +6,16 @@ class MapWithIndifferentAccess
 
     extend self
 
+    # Deeply coerces keys to [Symbol] type. See
+    # [MapWithIndifferentAccess::KeyCoercion::DeepCoercer#call]
+    # for more details.
     def deeply_symbolize(obj)
       deep_symbolizer.call( obj )
     end
 
+    # Deeply coerces keys to [String] type. See
+    # [MapWithIndifferentAccess::KeyCoercion::DeepCoercer#call]
+    # for more details.
     def deeply_stringify(obj)
       deep_stringifier.call( obj )
     end
@@ -20,7 +26,19 @@ class MapWithIndifferentAccess
       @deep_symbolizer ||= DeepCoercer.new( SymbolizationStrategy )
     end
 
+    module Strategy
+      def self.needs_coercion?(key)
+        raise NotImplementedError, "Including-module responsibility"
+      end
+
+      def self.coerce(key)
+        raise NotImplementedError, "Including-module responsibility"
+      end
+    end
+
     module SymbolizationStrategy
+      extend KeyCoercion::Strategy
+
       def self.needs_coercion?(key)
         !( Symbol === key )
       end
@@ -35,6 +53,8 @@ class MapWithIndifferentAccess
     end
 
     module StringificationStrategy
+      extend KeyCoercion::Strategy
+
       def self.needs_coercion?(key)
         !( String === key )
       end

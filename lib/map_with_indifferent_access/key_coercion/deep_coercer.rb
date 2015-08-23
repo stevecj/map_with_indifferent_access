@@ -6,10 +6,34 @@ class MapWithIndifferentAccess
 
       attr_reader :strategy
 
+      # Initializes a new DeepCoercer with a given object that
+      # extends [MapWithIndifferentAccess::KeyCoercion::Strategy].
       def initialize(strategy)
         @strategy = strategy
       end
 
+      # Given an [Array]-like or [Hash]-like object, returns a
+      # similar object with keys coerced according to the
+      # target [DeepCoercer]'s strategy.
+      # Given an object that is not [Array]-like or [Hash]-like,
+      # then the given object is returned.
+      # During this process, any hash entry values or array
+      # items that are instances of [MapWithIndifferentAccess]
+      # or [MapWithIndifferentAccess::Array] are replaced with
+      # [Hash] or [Array] deconstructions respectively.
+      # If a [MapWithIndifferentAccess] or
+      # [MapWithIndifferentAccess::Array] is given, then the
+      # same kind of object is returned.
+      # If a [Hash] or an object that resonds to #to_hash and
+      # #each_pair is given, then a [Hash] is returned.  The
+      # same applies to any entry values or array items
+      # traversed.
+      # If an [Array] or an object that resonds to #to_ary is
+      # given, then an [Array] is returned.  The same applies to
+      # any entry values or array items traversed.
+      # If any keys, hash entry values, or array items are
+      # replaced, then a new object is returned.  Otherwise, the
+      # given object is returned.
       def call(obj)
         if MWIA::WrapsCollection === obj
           coerced_inner_col = recursively_coerce( obj )
