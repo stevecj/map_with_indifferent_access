@@ -40,17 +40,35 @@ class MapWithIndifferentAccess
       end
 
       def coerce_hash(obj)
-        result = {}
-        obj.each_pair{ |(k,v)|
-          k = strategy.coerce( k ) if strategy.needs_coercion?( k )
-          result[ k ] = recursively_coerce( v )
+        does_need_key_coercion = obj.each_key.any?{ |key|
+          strategy.needs_coercion?( key )
         }
+        result = does_need_key_coercion ? {} : obj
+
+        obj.each_pair do |(key,value)|
+          key = strategy.coerce( key ) if strategy.needs_coercion?( key )
+          new_value = recursively_coerce( value )
+          if result.equal?( obj )
+            unless new_value.equal?( value )
+              result = obj.dup
+              result[ key ] = new_value
+            end
+          else
+            result[ key ] = new_value
+          end
+        end
         result
       end
 
       def coerce_array( obj )
-        result = obj.dup
-        result.map!{ |item| recursively_coerce(item) }
+        result = obj
+        obj.each_with_index do |item,i|
+          new_item = recursively_coerce(item)
+          unless new_item.equal?( item )
+            result = obj.dup if result.equal?( obj )
+            result[ i ] = new_item
+          end
+        end
         result
       end
     end
