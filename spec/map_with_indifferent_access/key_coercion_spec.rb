@@ -30,13 +30,13 @@ module KeyCoercionSpec
         ]
       end
 
-      it "returns a copy of a given Hash with keys symbolized deeply" do
+      it "returns a copy of a given Hash with inner content deconstructed and keys symbolized deeply" do
         result = subject.deeply_symbolize( build_given_hash )
 
         expect( result.keys ).to eq( [:a, :b, :'3'] )
         expect( result[:a ]  ).to eq( 1 )
         expect( result[:b ]  ).to eq( {:bb => 22 } )
-        expect( result[:'3'] ).to eq( [ 33, MWIA.new(:cc => 333) ] )
+        expect( result[:'3'] ).to eq( [ 33, :cc => 333 ] )
       end
 
       it "does not modfy the contents of the given Hash" do
@@ -83,13 +83,13 @@ module KeyCoercionSpec
         ]
       end
 
-      it "returns a copy of a given Hash with keys stringified deeply" do
+      it "returns a copy of a given Hash with inner content deconstructed and keys stringified deeply" do
         result = subject.deeply_stringify( build_given_hash )
 
         expect( result.keys ).to eq( ['a', 'b', '3'] )
         expect( result['a'] ).to eq( 1 )
         expect( result['b'] ).to eq( {'bb' => 22 } )
-        expect( result['3'] ).to eq( [ 33, MWIA.new('cc' => 333) ] )
+        expect( result['3'] ).to eq( [ 33, 'cc' => 333 ] )
       end
 
       it "does not modfy the contents of the given Hash" do

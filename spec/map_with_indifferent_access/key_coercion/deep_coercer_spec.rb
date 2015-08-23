@@ -95,52 +95,52 @@ module DeepKeyCoercerSpec
       } )
     end
 
-    it "returns a new Array copy of the given array with symbolized-key copies of hashlike and arraylike items" do
+    it "returns a new Array copy of the given array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
       result = subject.call( array )
       expect( result ).to be_kind_of( ::Array )
       expect( result.length ).to eq( 5 )
       expect( result[ 0 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
-      expect( result[ 1 ].inner_map ).to eq( {
+      expect( result[ 1 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
       expect( result[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result[ 3 ].inner_array ).to eq( [ 41, 42 ] )
+      expect( result[ 3 ] ).to eq( [ 41, 42 ] )
       expect( result[ 4 ] ).to eq( 5 )
     end
 
-    it "returns a new Array copy of the given array with symbolized-key copies of hashlike and arraylike items" do
+    it "returns a new Array copy of the given MWIA::Array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
       result = subject.call( mwia_array )
       expect( result ).to be_kind_of( MWIA::Array )
       expect( result.length ).to eq( 5 )
       expect( result.inner_array[ 0 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
-      expect( result.inner_array[ 1 ].inner_map ).to eq( {
+      expect( result.inner_array[ 1 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
       expect( result.inner_array[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result.inner_array[ 3 ].inner_array ).to eq( [ 41, 42 ] )
+      expect( result.inner_array[ 3 ] ).to eq( [ 41, 42 ] )
       expect( result[ 4 ] ).to eq( 5 )
     end
 
-    it "returns a new Array copy of the given arraylike object with symbolized-key copies of hashlike and arraylike items" do
+    it "returns a new Array copy of the given arraylike object with deconstructed, symbolized-key copies of hashlike and arraylike items" do
       result = subject.call( array_analog )
       expect( result ).to be_kind_of( ::Array )
       expect( result.length ).to eq( 5 )
       expect( result[ 0 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
-      expect( result[ 1 ].inner_map ).to eq( {
+      expect( result[ 1 ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
       expect( result[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result[ 3 ].inner_array ).to eq( [ 41, 42 ] )
+      expect( result[ 3 ] ).to eq( [ 41, 42 ] )
       expect( result[ 4 ] ).to eq( 5 )
     end
 
-    it "returns a new Hash copy of the given Hash with hashlike/arraylike contents deeply replaced with symbolized-key copies" do
+    it "returns a new Hash copy of the given Hash with hashlike/arraylike contents deeply replaced with deconstructed, symbolized-key copies" do
       result = subject.call( nested_hash )
       expect( result.keys ).to eq( [
         '<shallow_h>', '<shallow_m>', '<array>', 42
@@ -148,14 +148,14 @@ module DeepKeyCoercerSpec
       expect( result['<shallow_h>'] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
-      expect( result['<shallow_m>' ].inner_map ).to eq( {
+      expect( result['<shallow_m>' ] ).to eq( {
         '<a>' => 11, '<b>' => 22, 42 => 33
       } )
       expect( result['<array>'] ).to eq( [
         {'<a>' => 11, '<b>' => 22, 42 => 33 },
-        MWIA.new('<a>' => 11, '<b>' => 22, 42 => 33 ),
+        {'<a>' => 11, '<b>' => 22, 42 => 33 },
         [ 31, 32 ],
-        MWIA::Array.new( [ 41, 42 ] ),
+        [ 41, 42 ],
         5
       ] )
     end

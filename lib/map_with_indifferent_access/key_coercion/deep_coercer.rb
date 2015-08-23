@@ -11,14 +11,25 @@ class MapWithIndifferentAccess
       end
 
       def call(obj)
+        if MWIA::WrapsCollection === obj
+          coerced_inner_col = recursively_coerce( obj )
+          MWIA::Values.externalize( coerced_inner_col )
+        else
+          recursively_coerce( obj )
+        end
+      end
+
+      private
+
+      def recursively_coerce(obj)
         if ::Hash === obj
           coerce_hash( obj )
         elsif MWIA === obj
-          coerce_mwia( obj )
+          coerce_hash( obj.inner_map )
         elsif ::Array === obj
           coerce_array( obj )
         elsif MWIA::Array === obj
-          coerce_mwia_array( obj )
+          coerce_array( obj.inner_array )
         elsif obj.respond_to?(:to_hash) && obj.respond_to?(:each_pair)
           coerce_hash( obj.to_hash )
         elsif obj.respond_to?(:to_ary)
@@ -28,31 +39,19 @@ class MapWithIndifferentAccess
         end
       end
 
-      private
-
       def coerce_hash(obj)
         result = {}
         obj.each_pair{ |(k,v)|
           k = strategy.coerce( k ) if strategy.needs_coercion?( k )
-          result[ k ] = call( v )
+          result[ k ] = recursively_coerce( v )
         }
         result
       end
 
-      def coerce_mwia(obj)
-        result_hash = coerce_hash( obj )
-        MWIA.new( result_hash )
-      end
-
       def coerce_array( obj )
         result = obj.dup
-        result.map!{ |item| call(item) }
+        result.map!{ |item| recursively_coerce(item) }
         result
-      end
-
-      def coerce_mwia_array(obj)
-        result_array = coerce_array( obj.inner_array )
-        MWIA::Array.new( result_array )
       end
     end
 
