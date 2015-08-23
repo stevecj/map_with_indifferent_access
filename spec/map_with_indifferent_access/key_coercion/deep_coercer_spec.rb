@@ -77,7 +77,6 @@ module DeepKeyCoercerSpec
 
     it "returns a new MWIA copy of the given MWIA with keys symbolized" do
       result = subject.call( shallow_mwia )
-      expect( result ).to be_kind_of( MWIA )
       expect( result.inner_map ).to eq( {
         '<a>' => 11,
         '<b>' => 22,
@@ -98,66 +97,62 @@ module DeepKeyCoercerSpec
     it "returns a new Array copy of the given array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
       result = subject.call( array )
       expect( result ).to be_kind_of( ::Array )
-      expect( result.length ).to eq( 5 )
-      expect( result[ 0 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result[ 1 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result[ 3 ] ).to eq( [ 41, 42 ] )
-      expect( result[ 4 ] ).to eq( 5 )
-    end
-
-    it "returns a new Array copy of the given MWIA::Array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
-      result = subject.call( mwia_array )
-      expect( result ).to be_kind_of( MWIA::Array )
-      expect( result.length ).to eq( 5 )
-      expect( result.inner_array[ 0 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result.inner_array[ 1 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result.inner_array[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result.inner_array[ 3 ] ).to eq( [ 41, 42 ] )
-      expect( result[ 4 ] ).to eq( 5 )
-    end
-
-    it "returns a new Array copy of the given arraylike object with deconstructed, symbolized-key copies of hashlike and arraylike items" do
-      result = subject.call( array_analog )
-      expect( result ).to be_kind_of( ::Array )
-      expect( result.length ).to eq( 5 )
-      expect( result[ 0 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result[ 1 ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result[ 2 ] ).to eq( [ 31, 32 ] )
-      expect( result[ 3 ] ).to eq( [ 41, 42 ] )
-      expect( result[ 4 ] ).to eq( 5 )
-    end
-
-    it "returns a new Hash copy of the given Hash with hashlike/arraylike contents deeply replaced with deconstructed, symbolized-key copies" do
-      result = subject.call( nested_hash )
-      expect( result.keys ).to eq( [
-        '<shallow_h>', '<shallow_m>', '<array>', 42
-      ] )
-      expect( result['<shallow_h>'] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result['<shallow_m>' ] ).to eq( {
-        '<a>' => 11, '<b>' => 22, 42 => 33
-      } )
-      expect( result['<array>'] ).to eq( [
+      expect( result ).to eq( [
         {'<a>' => 11, '<b>' => 22, 42 => 33 },
         {'<a>' => 11, '<b>' => 22, 42 => 33 },
         [ 31, 32 ],
         [ 41, 42 ],
         5
       ] )
+    end
+
+    it "returns a new Array copy of the given MWIA::Array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
+      result = subject.call( mwia_array )
+      expect( result.inner_array ).to eq( [
+        {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        [ 31, 32 ],
+        [ 41, 42 ],
+        5
+      ] )
+    end
+
+    it "returns a new Array copy of the given arraylike object with deconstructed, symbolized-key copies of hashlike and arraylike items" do
+      result = subject.call( array_analog )
+      expect( result ).to be_kind_of( ::Array )
+      expect( result ).to eq( [
+        {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        [ 31, 32 ],
+        [ 41, 42 ],
+        5
+      ] )
+    end
+
+    it "returns a new Hash copy of the given Hash with hashlike/arraylike contents deeply replaced with deconstructed, symbolized-key copies" do
+      result = subject.call( nested_hash )
+      expect( result ).to eq( {
+        '<shallow_h>' => {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        '<shallow_m>' => {'<a>' => 11, '<b>' => 22, 42 => 33 },
+        '<array>' => [
+          {'<a>' => 11, '<b>' => 22, 42 => 33 },
+          {'<a>' => 11, '<b>' => 22, 42 => 33 },
+          [ 31, 32 ],
+          [ 41, 42 ],
+          5
+        ],
+        42 => 99
+      } )
+    end
+
+    it "deeply conserves hash entry insertion order" do
+      result = subject.call( nested_hash )
+
+      expect( result.keys ).
+        to eq( ['<shallow_h>', '<shallow_m>', '<array>', 42 ] )
+
+      expect( result['<array>'].first.keys ).
+        to eq( ['<a>', '<b>', 42 ] )
     end
   end
 
