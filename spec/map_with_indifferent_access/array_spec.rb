@@ -493,12 +493,35 @@ module MWIA_ArraySpec
       end
     end
 
-    describe "#uniq!" do
-      it "does something"
-    end
+    describe '#uniq' do
+      before do
+        inner_array.replace build_initial_content
+      end
 
-    describe "#uniq" do
-      it "does something"
+      def build_initial_content
+        [
+          1,
+          {'a' => 1 },
+          {'a' => 1 },
+          {:a  => 1 },
+          1,
+          {:b => 2 },
+          MWIA.new(:b => 2 ),
+          MWIA.new(:b => 2 ),
+        ]
+      end
+
+      it "returns a new instance with inner array containing unique entries from the target compared using #hash and #eql?" do
+        actual_result = subject.uniq
+        expected_result = [
+          1,
+          {'a' => 1 },
+          {:a  => 1 },
+          {:b => 2 },
+          MWIA.new(:b => 2 ),
+        ]
+        expect( actual_result ).to eq( expected_result )
+      end
     end
 
     it "provides its number of entries via #length" do
@@ -506,34 +529,59 @@ module MWIA_ArraySpec
       expect( subject.length ).to eq( 2 )
     end
 
-    it "has unequal instances via #== with corresponding entries, the externalization of which are not all equal" do
-      inner_array <<
-        1 <<
-        { a: 2 } <<
-        [ {'b' => 3 } ]
+    describe '#==' do
+      before do
+        inner_array <<
+          1 <<
+          { a: 2 } <<
+          [ {'b' => 3 } ]
+      end
 
-      other = described_class.new( [
-        1,
-        {'a' => :too },
-        [ { b: 3 } ]
-      ] )
+      it "returns false for an MWIA::Array with corresponding entries, the externalization of which are not all equal" do
 
-      expect( subject == other ).to eq( false )
+        other = described_class.new( [
+          1,
+          {'a' => :too },
+          [ { b: 3 } ]
+        ] )
+
+        expect( subject == other ).to eq( false )
+      end
+
+      it "returns true for an MWIA::Array with corresponding entries, the externalization of which are all equal" do
+        other = described_class.new( [
+          1,
+          {'a' => 2 },
+          [ { b: 3 } ]
+        ] )
+
+        expect( subject == other ).to eq( true )
+      end
     end
 
-    it "has equal instances via #== with corresponding entries, the externalization of which are all equal" do
-      inner_array <<
-        1 <<
-        { a: 2 } <<
-        [ {'b' => 3 } ]
+    describe '#eql?' do
+      before do
+        inner_array <<
+          1 <<
+          MWIA.new('b' => 2 )
+      end
 
-      other = described_class.new( [
-        1,
-        {'a' => 2 },
-        [ { b: 3 } ]
-      ] )
+      it "returns false, given an object that is not an MWIA::Array" do
+        expect( subject.eql?( inner_array ) ).to eq( false )
+      end
 
-      expect( subject == other ).to eq( true )
+      it "returns false, given an MWIA::Array with an inner array not #eql? to its own" do
+        other = MWIA::Array.new( [
+          1,
+          {'b' => 2 }
+        ] )
+        expect( subject.eql?( other ) ).to eq( false )
+      end
+
+      it "returns true, given an MWIA::Array with an inner array that is #eql? to its own" do
+        other = subject.dup
+        expect( subject.eql?( other ) ).to eq( true )
+      end
     end
 
     it "is enumerable over items" do

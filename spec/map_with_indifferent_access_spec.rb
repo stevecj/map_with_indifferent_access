@@ -357,6 +357,23 @@ module MapWithIndifferentAccessSpec
       end
     end
 
+    describe '#eql?' do
+      it "returns false, given a non-MWIA object" do
+        expect( subject.eql?( inner_map ) ).to eq( false )
+      end
+
+      it "returns false, given an MWIA with an inner-map hash not #eql? to its own" do
+        other = subject.dup
+        other['d'] = other.inner_map.delete(:d )
+        expect( subject.eql?( other ) ).to eq( false )
+      end
+
+      it "returns true, given an MWIA with an inner-map that is #eql? to its own" do
+        other = subject.dup
+        expect( subject.eql?( other ) ).to eq( true )
+      end
+    end
+
     describe '#each' do
       before do
         subject[ 1     ] = 1

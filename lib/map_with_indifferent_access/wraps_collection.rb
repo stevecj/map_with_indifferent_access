@@ -43,6 +43,7 @@ class MapWithIndifferentAccess
       :tainted?,
       :untrusted?,
       :frozen?,
+      :hash,
     )
 
     # @!method taint
@@ -72,6 +73,11 @@ class MapWithIndifferentAccess
       super
       inner_collection.freeze
       self
+    end
+
+    def eql?(other)
+      self.class == other.class &&
+        self.inner_collection.eql?( other.inner_collection )
     end
   end
 

@@ -170,6 +170,12 @@ class MapWithIndifferentAccess
       result
     end
 
+    def uniq
+      dup.uniq!
+    end
+
+    def_delegator :inner_array, :uniq!
+
     def ==(other)
       return true if equal?( other )
       return false unless self.class === other
@@ -187,6 +193,7 @@ class MapWithIndifferentAccess
         yield item
       end
     end
+
   end
 
 end
