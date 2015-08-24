@@ -11,26 +11,62 @@ module NormalizationSpec
   end
 
   describe MWIA::Normalization do
-    describe "deeply_symbolize_keys" do
-      def build_given_hash
-        {
+    def build_given_hash
+      {
+        'a' => 1,
+        :b  => {'bb' => 22 },
+         3  => [ 33, MWIA.new(:cc => 333 ) ]
+      }
+    end
+
+    def build_given_array
+      [
+        1,
+        [
+          12,
+          {:b2 => {'bb2' => 22 } }
+        ]
+      ]
+    end
+
+    describe "deeply_normalize" do
+      it "returns a copy of a given Hash with inner content deconstructed and keys preserved" do
+        result = subject.deeply_normalize( build_given_hash )
+
+        expect( result ).to eq( {
           'a' => 1,
           :b  => {'bb' => 22 },
-           3  => [ 33, MWIA.new('cc' => 333 ) ]
-        }
+           3  => [ 33, {:cc => 333 } ]
+        } )
       end
 
-      def build_given_array
-        [
+      it "does not modfy the contents of the given Hash" do
+        given_hash = build_given_hash
+        result = subject.deeply_normalize( build_given_hash )
+        expect( given_hash ).to eq( build_given_hash )
+      end
+
+      it "returns a copy of a given Array with inner content deconstructed and keys preserved" do
+        result = subject.deeply_normalize( build_given_array )
+
+        expect( result ).to eq( [
           1,
           [
             12,
-            { 'b2' => {'bb2' => 22 } }
+            {:b2 => {'bb2' => 22 } }
           ]
-        ]
+        ] )
       end
 
-      it "returns a copy of a given Hash with inner content deconstructed and keys symbolized deeply" do
+      it "does not modfy the contents of the given Array" do
+        given_array = build_given_array
+        result = subject.deeply_normalize( build_given_array )
+        expect( given_array ).to eq( build_given_array )
+      end
+    end
+
+    describe "deeply_symbolize_keys" do
+      it "returns a copy of a given Hash with inner content deconstructed and keys preserved" do
         result = subject.deeply_symbolize_keys( build_given_hash )
 
         expect( result ).to eq( {
@@ -46,7 +82,7 @@ module NormalizationSpec
         expect( given_hash ).to eq( build_given_hash )
       end
 
-      it "returns a copy of a given Array with keys symbolized deeply" do
+      it "returns a copy of a given Array with inner content deconstructed and keys symbolized deeply" do
         result = subject.deeply_symbolize_keys( build_given_array )
 
         expect( result ).to eq( [
@@ -66,24 +102,6 @@ module NormalizationSpec
     end
 
     describe '#deeply_stringify_keys' do
-      def build_given_hash
-        {
-          'a' => 1,
-          :b  => {:bb => 22 },
-           3  => [ 33, MWIA.new(:cc => 333 ) ]
-        }
-      end
-
-      def build_given_array
-        [
-          1,
-          [
-            12,
-            { :b2 => {:bb2 => 22 } }
-          ]
-        ]
-      end
-
       it "returns a copy of a given Hash with inner content deconstructed and keys stringified deeply" do
         result = subject.deeply_stringify_keys( build_given_hash )
 
@@ -104,7 +122,7 @@ module NormalizationSpec
         expect( given_hash ).to eq( build_given_hash )
       end
 
-      it "returns a copy of a given Array with keys stringified deeply" do
+      it "returns a copy of a given Array with inner content deconstructed and keys stringified deeply" do
         result = subject.deeply_stringify_keys( build_given_array )
 
         expect( result ).to eq( [
