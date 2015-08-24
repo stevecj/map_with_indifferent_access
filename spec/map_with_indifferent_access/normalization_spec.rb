@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module KeyCoercionSpec
+module NormalizationSpec
   include MapWithIndifferentAccess::WithConveniences
 
   class HashAnalog  < Struct.new(:to_hash )
@@ -10,8 +10,8 @@ module KeyCoercionSpec
   class ArrayAnalog < Struct.new(:to_ary  )
   end
 
-  describe MWIA::KeyCoercion do
-    describe "deep_symbolize" do
+  describe MWIA::Normalization do
+    describe "deeply_symbolize_keys" do
       def build_given_hash
         {
           'a' => 1,
@@ -31,7 +31,7 @@ module KeyCoercionSpec
       end
 
       it "returns a copy of a given Hash with inner content deconstructed and keys symbolized deeply" do
-        result = subject.deeply_symbolize( build_given_hash )
+        result = subject.deeply_symbolize_keys( build_given_hash )
 
         expect( result ).to eq( {
           :a   => 1,
@@ -42,12 +42,12 @@ module KeyCoercionSpec
 
       it "does not modfy the contents of the given Hash" do
         given_hash = build_given_hash
-        result = subject.deeply_symbolize( build_given_hash )
+        result = subject.deeply_symbolize_keys( build_given_hash )
         expect( given_hash ).to eq( build_given_hash )
       end
 
       it "returns a copy of a given Array with keys symbolized deeply" do
-        result = subject.deeply_symbolize( build_given_array )
+        result = subject.deeply_symbolize_keys( build_given_array )
 
         expect( result ).to eq( [
           1,
@@ -60,12 +60,12 @@ module KeyCoercionSpec
 
       it "does not modfy the contents of the given Array" do
         given_array = build_given_array
-        result = subject.deeply_symbolize( build_given_array )
+        result = subject.deeply_symbolize_keys( build_given_array )
         expect( given_array ).to eq( build_given_array )
       end
     end
 
-    describe '#deep_stringify' do
+    describe '#deeply_stringify_keys' do
       def build_given_hash
         {
           'a' => 1,
@@ -85,7 +85,7 @@ module KeyCoercionSpec
       end
 
       it "returns a copy of a given Hash with inner content deconstructed and keys stringified deeply" do
-        result = subject.deeply_stringify( build_given_hash )
+        result = subject.deeply_stringify_keys( build_given_hash )
 
         expect( result ).to eq( {
           'a' => 1,
@@ -100,12 +100,12 @@ module KeyCoercionSpec
 
       it "does not modfy the contents of the given Hash" do
         given_hash = build_given_hash
-        result = subject.deeply_stringify( build_given_hash )
+        result = subject.deeply_stringify_keys( build_given_hash )
         expect( given_hash ).to eq( build_given_hash )
       end
 
       it "returns a copy of a given Array with keys stringified deeply" do
-        result = subject.deeply_stringify( build_given_array )
+        result = subject.deeply_stringify_keys( build_given_array )
 
         expect( result ).to eq( [
           1,
@@ -118,7 +118,7 @@ module KeyCoercionSpec
 
       it "does not modfy the contents of the given Array" do
         given_array = build_given_array
-        result = subject.deeply_stringify( build_given_array )
+        result = subject.deeply_stringify_keys( build_given_array )
         expect( given_array ).to eq( build_given_array )
       end
     end

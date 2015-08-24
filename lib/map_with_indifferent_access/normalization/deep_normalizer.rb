@@ -1,12 +1,12 @@
 class MapWithIndifferentAccess
-  module KeyCoercion
+  module Normalization
 
-    class DeepCoercer
+    class DeepNormalizer
       include MapWithIndifferentAccess::WithConveniences
 
       attr_reader :strategy
 
-      # Initializes a new DeepCoercer with a given object that
+      # Initializes a new DeepNormalizer with a given object that
       # extends [MapWithIndifferentAccess::KeyCoercion::Strategy].
       def initialize(strategy)
         @strategy = strategy
@@ -14,7 +14,7 @@ class MapWithIndifferentAccess
 
       # Given an [Array]-like or [Hash]-like object, returns a
       # similar object with keys coerced according to the
-      # target [DeepCoercer]'s strategy.
+      # target [DeepNormalizer]'s strategy.
       # Given an object that is not [Array]-like or [Hash]-like,
       # then the given object is returned.
       # During this process, any hash entry values or array

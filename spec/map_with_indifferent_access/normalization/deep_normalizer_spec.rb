@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module DeepKeyCoercerSpec
+module DeepNormalizerSpec
   include MapWithIndifferentAccess::WithConveniences
 
   module ExampleStrategy
@@ -20,7 +20,7 @@ module DeepKeyCoercerSpec
   class ArrayAnalog < Struct.new(:to_ary  )
   end
 
-  describe MWIA::KeyCoercion::DeepCoercer do
+  describe MWIA::Normalization::DeepNormalizer do
     subject{ described_class.new( ExampleStrategy ) }
 
     let(:shallow_hash ){ {

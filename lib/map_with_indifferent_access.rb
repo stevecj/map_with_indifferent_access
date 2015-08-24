@@ -3,7 +3,7 @@ require "map_with_indifferent_access/with_conveniences"
 require "map_with_indifferent_access/wraps_collection"
 require "map_with_indifferent_access/array"
 require "map_with_indifferent_access/values"
-require "map_with_indifferent_access/key_coercion"
+require "map_with_indifferent_access/normalization"
 require 'forwardable'
 
 class MapWithIndifferentAccess

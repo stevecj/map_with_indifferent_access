@@ -1,32 +1,32 @@
-require "map_with_indifferent_access/key_coercion/deep_coercer"
+require "map_with_indifferent_access/normalization/deep_normalizer"
 
 class MapWithIndifferentAccess
-  module KeyCoercion
+  module Normalization
     include MapWithIndifferentAccess::WithConveniences
 
     extend self
 
     # Deeply coerces keys to [Symbol] type. See
-    # [MapWithIndifferentAccess::KeyCoercion::DeepCoercer#call]
+    # [MapWithIndifferentAccess::Normalization::DeepNormalizer#call]
     # for more details.
-    def deeply_symbolize(obj)
-      deep_symbolizer.call( obj )
+    def deeply_symbolize_keys(obj)
+      deep_key_symbolizer.call( obj )
     end
 
     # Deeply coerces keys to [String] type. See
-    # [MapWithIndifferentAccess::KeyCoercion::DeepCoercer#call]
+    # [MapWithIndifferentAccess::Normalization::DeepNormalizer#call]
     # for more details.
-    def deeply_stringify(obj)
-      deep_stringifier.call( obj )
+    def deeply_stringify_keys(obj)
+      deep_key_stringifier.call( obj )
     end
 
     private
 
-    def deep_symbolizer
-      @deep_symbolizer ||= DeepCoercer.new( SymbolizationStrategy )
+    def deep_key_symbolizer
+      @deep_key_symbolizer ||= DeepNormalizer.new( KeySymbolizationStrategy )
     end
 
-    module Strategy
+    module KeyStrategy
       def self.needs_coercion?(key)
         raise NotImplementedError, "Including-module responsibility"
       end
@@ -36,8 +36,8 @@ class MapWithIndifferentAccess
       end
     end
 
-    module SymbolizationStrategy
-      extend KeyCoercion::Strategy
+    module KeySymbolizationStrategy
+      extend Normalization::KeyStrategy
 
       def self.needs_coercion?(key)
         !( Symbol === key )
@@ -48,12 +48,12 @@ class MapWithIndifferentAccess
       end
     end
 
-    def deep_stringifier
-      @deep_stringifier ||= DeepCoercer.new( StringificationStrategy )
+    def deep_key_stringifier
+      @deep_key_stringifier ||= DeepNormalizer.new( KeyStringificationStrategy )
     end
 
-    module StringificationStrategy
-      extend KeyCoercion::Strategy
+    module KeyStringificationStrategy
+      extend Normalization::KeyStrategy
 
       def self.needs_coercion?(key)
         !( String === key )
