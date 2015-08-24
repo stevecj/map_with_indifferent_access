@@ -170,10 +170,31 @@ class MapWithIndifferentAccess
       result
     end
 
+    # Returns a new instance with duplicate items omitted.
+    # Items are considered equal if their #hash values are equal
+    # and comparison using #eql? returns `true`.
+    # Note that this does not recongnize
+    # [MapWithIndifferentAccess] items as equal just because
+    # they are equal by #==, which can be true when they have
+    # equivalent keys that differ by [String]/[Symbol] type.
+    # You might therefore wish to call #uniq on an instance that
+    # has first had its keys deeply-stringified or
+    # deeply-symbolized.
     def uniq
       dup.uniq!
     end
 
+    # Deletes duplicate items from the target's inner array,
+    # leaving only unique items remaining.
+    # Items are considered equal if their #hash values are equal
+    # and comparison using #eql? returns `true`.
+    # Note that this does not recongnize
+    # [MapWithIndifferentAccess] items as equal just because
+    # they are equal by #==, which can be true when they have
+    # equivalent keys that differ by [String]/[Symbol] type.
+    # You might therefore wish to call #uniq on an instance that
+    # has first had its keys deeply-stringified or
+    # deeply-symbolized.
     def_delegator :inner_array, :uniq!
 
     def ==(other)
