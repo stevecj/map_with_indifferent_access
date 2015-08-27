@@ -94,11 +94,6 @@ intended to be a safe, welcoming space for collaboration, and contributors are
 expected to adhere to the [Contributor Covenant](contributor-covenant.org) code
 of conduct.
 
-## To Do
-
-* Add more Hash-like behaviors to MapWithIndifferentAccess
-* Add more Array-like behaviors to MapWithIndifferentAccess::Array
-
 ## License
 
 The gem is available as open source under the terms of the
