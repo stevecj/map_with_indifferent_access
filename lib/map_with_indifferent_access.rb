@@ -50,7 +50,6 @@ class MapWithIndifferentAccess
   def_delegators(
     :inner_map,
     :default=,
-    :each_key,
     :keys,
     :rehash,
   )
@@ -183,6 +182,13 @@ class MapWithIndifferentAccess
   # Inherited from [Object]. Returns `true` if the map and
   # `other` are the same object.
 
+  # When a block argument is given, calls the block once for each of the
+  # target's entries, passing the entry's key and the externalization of its
+  # value as a parameters, and then returns the target object.
+  #
+  # When no block argument is given, returns an enumerator.
+  #
+  # @return [MapWithIndifferentAccess]
   def each
     return enum_for(:each ) unless block_given?
 
@@ -195,6 +201,28 @@ class MapWithIndifferentAccess
 
   alias each_pair each
 
+  # When a block argument is given, calls the block once for each of the
+  # target's keys, passing the key as a parameter, and then returns the
+  # target object.
+  #
+  # When no block argument is given, returns an enumerator.
+  #
+  # @return [MapWithIndifferentAccess]
+  def each_key
+    return enum_for(:each_key ) unless block_given?
+    inner_map.each_key do |key|
+      yield key
+    end
+    self
+  end
+
+  # When a block argument is given, calls the block once for each of the
+  # target's entries, passing externalization the entry value as a parameter,
+  # and then returns the target.
+  #
+  # When no block argument is given, returns an enumerator.
+  #
+  # @return [MapWithIndifferentAccess]
   def each_value
     return enum_for(:each_value) unless block_given?
 
@@ -202,6 +230,7 @@ class MapWithIndifferentAccess
       value = MWIA::Values >> value
       yield value
     end
+    self
   end
 
   def delete(key)

@@ -302,16 +302,6 @@ module MapWithIndifferentAccessSpec
       expect( subject.key?(:a ) ).to eq( true  )
     end
 
-    it "enumerates keys in order added" do
-      subject[ 1     ] = 1
-      subject['two'  ] = 2
-      subject[:three ] = 3
-
-      keys = []
-      subject.each_key do |key| ; keys << key ; end
-      expect( keys ).to eq( [ 1, 'two', :three ] )
-    end
-
     it "returns fron #default, the default value for the case where the conformation of the given key does not match an entry" do
       inner_map.default_proc = ->(hash, key) { key ? "#{key.inspect} in #{hash.inspect}" : [ key, hash ] }
       expect( subject.default(:a )        ).to eq(":a in {}")
@@ -381,22 +371,28 @@ module MapWithIndifferentAccessSpec
         subject[:three ] = [ 9 ]
       end
 
-      it "given a block, enumerates key, externalized-value pairs for entries" do
-        entries = []
+      context "given a block" do
+        it "enumerates key, externalized-value pairs for entries" do
+          entries = []
 
-        subject.each do |entry| ; entries << entry ; end
+          subject.each do |entry| ; entries << entry ; end
 
-        expect( entries.length ).to eq( 3 )
+          expect( entries.length ).to eq( 3 )
 
-        expect( entries[ 0 ] ).to eq( [ 1, 1 ] )
+          expect( entries[ 0 ] ).to eq( [ 1, 1 ] )
 
-        expect( entries[ 1 ][ 0 ] ).to eq('two')
-        expect( entries[ 1 ][ 1 ].inner_map ).to eq( { a: 1 } )
+          expect( entries[ 1 ][ 0 ] ).to eq('two')
+          expect( entries[ 1 ][ 1 ].inner_map ).to eq( { a: 1 } )
 
-        expect( entries[ 2 ][ 0 ] ).to eq(:three )
-        expect( entries[ 2 ][ 1 ].inner_array ).to eq( [ 9 ] )
+          expect( entries[ 2 ][ 0 ] ).to eq(:three )
+          expect( entries[ 2 ][ 1 ].inner_array ).to eq( [ 9 ] )
 
-        expect( subject.entries ).to eq( entries )
+          expect( subject.entries ).to eq( entries )
+        end
+
+        it "returns the target map" do
+          expect( subject.each{ 'foo' } ).to equal( subject )
+        end
       end
 
       it "without a block argument, returns an enumerator over key, externalized-value pairs for entries" do
@@ -596,12 +592,18 @@ module MapWithIndifferentAccessSpec
         subject[:three ] = [ 9 ]
       end
 
-      it "given a block argument, provides enumeration of its keys in same order as added" do
-        keys = []
-        subject.each_key do |key| ; keys << key ; end
-        expect( keys ).to eq(
-          [ 1, 'two', :three ]
-        )
+      describe "given a block argument" do
+        it "provides enumeration of its keys in same order as added" do
+          keys = []
+          subject.each_key do |key| ; keys << key ; end
+          expect( keys ).to eq(
+            [ 1, 'two', :three ]
+          )
+        end
+
+        it "returns the target map" do
+          expect( subject.each_key{ 'foo' } ).to eq( subject )
+        end
       end
 
       it "without a block argument, returns an enumerator over its keys in same order as added" do
@@ -621,15 +623,21 @@ module MapWithIndifferentAccessSpec
         subject[:three ] = [ 9 ]
       end
 
-      it "provides enumeration of externalizations of its values in same order as added when given a block" do
-        values = []
+      context "when given a block argument" do
+        it "provides enumeration of externalizations of its values in same order as added" do
+          values = []
 
-        subject.each_value do |value| ; values << value ; end
+          subject.each_value do |value| ; values << value ; end
 
-        expect( values.length ).to eq( 3 )
-        expect( values[ 0 ] ).to eq( 1 )
-        expect( values[ 1 ].inner_map ).to eq( { a: 1 } )
-        expect( values[ 2 ].inner_array ).to eq( [ 9 ] )
+          expect( values.length ).to eq( 3 )
+          expect( values[ 0 ] ).to eq( 1 )
+          expect( values[ 1 ].inner_map ).to eq( { a: 1 } )
+          expect( values[ 2 ].inner_array ).to eq( [ 9 ] )
+        end
+
+        it "returns the target map" do
+          expect( subject.each_value{ 'foo' } ).to equal( subject )
+        end
       end
 
       it "provides an enumerator over externalizations of its values in same order as added when not given a block" do
