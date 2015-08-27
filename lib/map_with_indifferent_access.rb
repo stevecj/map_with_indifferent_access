@@ -12,6 +12,10 @@ class MapWithIndifferentAccess
   extend Forwardable
   include MWIA::WrapsCollection
 
+  # Try to convert `from_obj` into a {MapWithIndifferentAccess}.
+  # @return
+  #   converted object or `nil` if `from_obj` cannot be converted for any
+  #   reason.
   def self.try_convert(from_obj)
     if self === from_obj
       from_obj
@@ -21,6 +25,10 @@ class MapWithIndifferentAccess
     end
   end
 
+  # Try to convert `obj` into a `Hash`
+  # @return
+  #   converted object or `nil` if `obj` cannot be converted for any
+  #   reason.
   def self.try_deconstruct(obj)
     if self === obj
       obj.inner_map
@@ -32,8 +40,12 @@ class MapWithIndifferentAccess
     end
   end
 
+  # The encapsuated `Hash` object.
   attr_reader :inner_map
   alias inner_collection inner_map
+
+  # @!method default=(other)
+  # Sets the default value in the target's {#inner_map} `Hash`.
 
   def_delegators(
     :inner_map,
@@ -43,6 +55,13 @@ class MapWithIndifferentAccess
     :rehash,
   )
 
+  # Returns a new instance of {MapWithIndifferentAccess}
+  #
+  # @param basis
+  #   A specific `Hash`-like object to be coerced into a `Hash` and used as the
+  #   {#inner_map} of the new instance. If a {MapWithIndifferentAccess} is
+  #   given, this results in the new instance sharing an {#inner_map} `Hash`
+  #   with the given object.
   def initialize(basis={})
     use_basis = basis
     use_basis = basis.inner_map if self.class === basis
@@ -51,6 +70,14 @@ class MapWithIndifferentAccess
     @inner_map = use_basis
   end
 
+  # When given a `String` that is not a key in the target's {#inner_map}
+  # `Hash`, but its symbolization is a key, returns the symbolization.
+  #
+  # When given a `Symbol` that is not a key in the target's {#inner_map}
+  # `Hash`, but its stringification is a key, returns the stringification.
+  #
+  # In all other cases, returns the given value, regardless of whether it is a
+  # key in the target's {#inner_map} or not.
   def conform_key(given_key)
     case given_key
     when String
@@ -64,6 +91,16 @@ class MapWithIndifferentAccess
     end
   end
 
+  # Creates an entry or replaces the value of an existing entry in the target's
+  # {#inner_map} `Hash`.
+  #
+  # When the given key is a `String`/`Symbol` indifferent match to the key of
+  # an existing entry in the target's {#inner_map} `Hash`, then the value of the
+  # matching entry is replaced with the given value.
+  #
+  # When the given key is not a `String`/`Symbol` indifferent match to the key
+  # of any existing entry in the target's {#inner_map} `Hash`, then a new entry
+  # is created with the given key and value.
   def[]=(key, value)
     value = MWIA::Values << value
     key = conform_key( key )
@@ -72,6 +109,11 @@ class MapWithIndifferentAccess
 
   alias store []=
 
+  # Returns the value from the entry having a key that is a match to the given
+  # key with `String`/`Symbol` indifference if a match exists.
+  #
+  # Otherwise, returns the {#inner_map} `Hash`'s default value for the given
+  # key, which us normally `nil`.
   def[](key)
     key = conform_key( key )
     value = inner_map[ key ]

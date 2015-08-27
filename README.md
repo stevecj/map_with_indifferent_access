@@ -1,6 +1,6 @@
 # MapWithIndifferentAccess
 
-A wrapper around Hash that treats string and symbol keys as interchangeable.
+A wrapper around Hash that treats String and Symbol keys as interchangeable.
 
 Note that this gem is still in early development stages and does not yet have
 any released versions.
