@@ -650,8 +650,23 @@ module MapWithIndifferentAccessSpec
       end
     end
 
+    describe '#clear' do
+      before do
+        inner_map.merge( a: 1, b: 2 )
+      end
+
+      it "removes all entries from the inner-map Hash" do
+        subject.clear
+        expect( inner_map ).to be_empty
+      end
+
+      it "returns the target MWIA" do
+        expect( subject.clear ).to equal( subject )
+      end
+    end
+
     describe "#replace" do
-      it "replaces the contents of the inner-map hash with the contents of the map-deconstruction of the given object" do
+      it "replaces the contents of the inner-map Hash with the contents of the map-deconstruction of the given object" do
         inner_map.merge original: 'contents'
         replacement_data = MWIA.new(
           :new => 'stuff',

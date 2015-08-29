@@ -10,7 +10,7 @@ class MapWithIndifferentAccess
   include self::WithConveniences
 
   extend Forwardable
-  include MWIA::WrapsCollection
+  include MapWithIndifferentAccess::WrapsCollection
 
   # Try to convert `from_obj` into a {MapWithIndifferentAccess}.
   # @return
@@ -178,13 +178,9 @@ class MapWithIndifferentAccess
     true
   end
 
-  # @!method eql?(other)
-  # Inherited from [Object]. Returns `true` if the map and
-  # `other` are the same object.
-
   # When a block argument is given, calls the block once for each of the
-  # target's entries, passing the entry's key and the externalization of its
-  # value as a parameters, and then returns the target object.
+  # target's entries, passing the entry's key and the externalization of
+  # its value as a parameters, and then returns the target object.
   #
   # When no block argument is given, returns an enumerator.
   #

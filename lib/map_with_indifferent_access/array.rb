@@ -4,7 +4,7 @@ class MapWithIndifferentAccess
     include MapWithIndifferentAccess::WithConveniences
 
     extend Forwardable
-    include MWIA::WrapsCollection
+    include MapWithIndifferentAccess::WrapsCollection
 
     def self.try_convert(from_obj)
       if self === from_obj
