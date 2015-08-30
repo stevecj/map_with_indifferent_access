@@ -6,6 +6,14 @@ class MapWithIndifferentAccess
     extend Forwardable
     include MapWithIndifferentAccess::WrapsCollection
 
+    # Try to convert `from_obj` into a
+    # {MapWithIndifferentAccess::Array}.
+    #
+    # @return [MapWithIndifferentAccess::Array]
+    #   converted object if `from_obj` is convertible.
+    #
+    # @return [nil]
+    #   if `from_obj` cannot be converted for any reason.
     def self.try_convert(from_obj)
       if self === from_obj
         from_obj
@@ -26,15 +34,49 @@ class MapWithIndifferentAccess
       end
     end
 
+    # The encapsuated `Array` object.
     attr_reader :inner_array
     alias inner_collection inner_array
 
+    # Returns a new instance of {MapWithIndifferentAccess::Array}
+    #
+    # @param basis
+    #   A specific `Array`-like object to be coerced into an
+    #   `Array` and used as the {#inner_array} of the new
+    #   instance. If a {MapWithIndifferentAccess::Array} is
+    #   given, this results in the new instance sharing an
+    #   {#inner_array} with the given object.
     def initialize(basis = [])
       basis = basis.inner_array if self.class === basis
       basis = basis.to_ary
       @inner_array = basis
     end
 
+    # Element Assignment — Sets the element at index, or replaces
+    # a subarray from the start index for length elements, or
+    # replaces a subarray specified by the range of indices.
+    #
+    # The given object or array is internalized befor being
+    # ussed for assignment into the {#inner_array}.
+    #
+    # @return the given value or array.
+    #
+    # @see MapWithIndifferentAccess::Values#internalize
+    # @see #push
+    # @see #unshift.
+    #
+    # @overload []=(index, value)
+    #   @param index [Fixnum]
+    #   @param value [Object]
+    #
+    # @overload []=(start, length, array_or_value)
+    #   @param start [Fixnum]
+    #   @param length [Fixnum]
+    #   @param array_or_value [::Array, MapWithIndifferentAccess::Array Object, nil]
+    #
+    # @overload []=(range, array_or_value)
+    #   @param range [Ramge]
+    #   @param array_or_value [::Array, MapWithIndifferentAccess::Array, Object, nil]
     def []=(index, length_or_value, *maybe_value)
       arg_count = 2 + maybe_value.length
       unless (2..3) === arg_count
@@ -61,56 +103,173 @@ class MapWithIndifferentAccess
       end
     end
 
-    def [](index, *maybe_length)
-      arg_count = 1 + maybe_length.length
-      unless (1..2) === arg_count
-        raise ArgumentError, "wrong number of arguments (#{arg_count} for 1..2)"
-      end
+    # @!method []
+    #   Returns the element at index, or returns a subarray
+    #   starting at the start index and continuing for length
+    #   elements, or returns a subarray specified by range of
+    #   indices.
+    #
+    #   Externalizes the result before returning it.
+    #
+    #   @see MapWithIndifferentAccess::Values#externalize
+    #
+    #   @overload [](index)
+    #     @param index [Fixnum]
+    #     @return [Object]
+    #
+    #   @overload [](start, length)
+    #     @param start [Fixnum]
+    #     @param length [Fixnum]
+    #     @return [MapWithIndifferentAccess::Array]
+    #
+    #   @overload [](range)
+    #     @param range [Ramge]
+    #     @return [MapWithIndifferentAccess::Array]
+    #
+    #   @overload slice(index)
+    #     @param index [Fixnum]
+    #     @return [Object]
+    #
+    #   @overload slice(start, length)
+    #     @param start [Fixnum]
+    #     @param length [Fixnum]
+    #     @return [MapWithIndifferentAccess::Array]
+    #
+    #   @overload slice(range)
+    #     @param range [Ramge]
+    #     @return [MapWithIndifferentAccess::Array]
 
-      if !maybe_length.empty? || Range === index
-        value_array = inner_array[ index, *maybe_length ]
-        value_array.map!{ |v| MWIA::Values >> v }
-        MWIA::Array.new( value_array )
-      else
-        value = inner_array[ index ]
-        MWIA::Values >> value
-      end
+    ['[]', 'slice'].each do |method_name|
+      class_eval <<-EOS, __FILE__, __LINE__ + 1
+
+        def #{method_name}(index, *maybe_length)
+          arg_count = 1 + maybe_length.length
+          unless (1..2) === arg_count
+            raise ArgumentError, "wrong number of arguments (\#{arg_count} for 1..2)"
+          end
+
+          if !maybe_length.empty? || Range === index
+            value_array = inner_array.#{method_name}( index, *maybe_length )
+            value_array.map!{ |v| MWIA::Values >> v }
+            MWIA::Array.new( value_array )
+          else
+            value = inner_array.#{method_name}( index )
+            MWIA::Values >> value
+          end
+        end
+
+      EOS
     end
 
+    # Returns the externalization of the element at index. A
+    # negative index counts from the end of self. Returns nil if
+    # the index is out of range.
+    #
+    # @see #[]
     def at(index)
       item = inner_array.at( index )
       MWIA::Values >> item
     end
 
+    # Append. Pushes the given object on to the end of this
+    # array. This expression returns the array itself, so several
+    # appends may be chained together.
+    #
+    # Internalizes the given onject before appending it to the
+    # target's {#inner_array}.
+    #
+    # @return [MapWithIndifferentAccess::Array]
+    # @see #push
     def <<(value)
       value = MWIA::Values << value
       inner_array << value
       self
     end
 
+    # Append. Pushes the given object(s) on to the end of this
+    # array. Internalizes the value(s) before appending to the
+    # target's {#inner_array}.
+    #
+    # This expression returns the array itself, so several
+    # appends may be chained together. See also {#pop} for the
+    # opposite effect.
+    #
+    # @return MapWithIndifferentAccess::Array
+    # @see #<<
+    # @see #pop
+    # @see MapWithIndifferentAccess::Values#internalize
     def push(*values)
       values.map!{ |v| MWIA::Values << v }
       inner_array.push *values
       self
     end
 
+    # Prepends objects to the front of the array, moving other
+    # elements upwards. Internalizes the values before prepending
+    # them to the target's {#inner_array}. See also {#shift} for
+    # the opposite effect.
+    #
+    # @return MapWithIndifferentAccess::Array
+    # @see MapWithIndifferentAccess::Values#internalize
     def unshift(*values)
       values.map!{ |v| MWIA::Values << v }
       inner_array.unshift *values
       self
     end
 
+    # Inserts the given values before the element with the given
+    # index. Internalizes the values before inserting them into
+    # the target's {#inner_array}.
+    #
+    # Negative indices count backwards from the end of the array,
+    # where -1 is the last element. If a negative index is used,
+    # the given values will be inserted after that element, so
+    # using an index of -1 will insert the values at the end of
+    # the array.
+    #
+    # @return MapWithIndifferentAccess::Array
+    # @see MapWithIndifferentAccess::Values#internalize
     def insert(index, *values)
       values.map!{ |v| MWIA::Values << v }
       inner_array.insert(index, *values)
       self
     end
 
+    # Returns a {MapWithIndifferentAccess::Array} containing the
+    # elements in self corresponding to the given selector(s).
+    #
+    # The selectors may be either integer indices or ranges.
+    #
+    # @return MapWithIndifferentAccess::Array
     def values_at(*indexes)
       inner_result = inner_array.values_at( *indexes )
       MWIA::Values >> inner_result
     end
 
+    # @method fetch
+    # Tries to retrieve the element at position `index`, but
+    # throws an `IndexError` exception or uses a default value
+    # when an invalid index is referenced.
+    #
+    # Returns the externalization of the retrieved value.
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
+    #
+    # @overload fetch(index)
+    #   Tries to retrieve the element at position `index`, but
+    #   throws an `IndexError` exception if the referenced index
+    #   lies outside of the array bounds.
+    #
+    # @overload fetch(index, default)
+    #   Tries to retrieve the element at position `index`, but
+    #   uses the given default if the referenced index lies
+    #   outside of the array bounds.
+    #
+    # @overload fetch(index)
+    #   @yieldparam index
+    #   Tries to retrieve the element at position `index`, but if
+    #   the referenced index lies outside of the array bounds,
+    #   calls the given block, and uses the block call result.
     def fetch(index, *args)
       item =
         if block_given?
@@ -121,6 +280,30 @@ class MapWithIndifferentAccess
       MWIA::Values >> item
     end
 
+    # @!method shift
+    # Removes and returns the first element or first `n` elements
+    # of the array, shifting all of the other elements downward.
+    #
+    # Returns the externalization of the removed element or array
+    # of elements
+    #
+    # See {#unshift} for the opposite effect.
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
+    #
+    # @overload shift()
+    #   Removes the first element and returns it, shifting all
+    #   other elements down by one. Returns nil if the array is
+    #   empty.
+    #
+    #   @return [Object, nil]
+    #
+    # @overload shift(n)
+    #   Returns a {MapWithIndifferentAccess::Array} of the first
+    #   `n` elements (or less) just like `array.slice!(0, n)`
+    #   does, but also removing those elements from the target.
+    #
+    #   @return [MapWithIndifferentAccess::Array]
     def shift(*maybe_n)
       arg_count = maybe_n.length
       unless (0..1) === arg_count
@@ -134,6 +317,29 @@ class MapWithIndifferentAccess
       end
     end
 
+    # @!method pop
+    # Removes and returns the last element or last `n` elements
+    # of the array.
+    #
+    # Returns the externalization of the removed element or array
+    # of elements
+    #
+    # See {#push} for the opposite effect.
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
+    #
+    # @overload pop()
+    #   Removes the last element and returns it. Returns nil if
+    #   the array is empty.
+    #
+    #   @return [Object, nil]
+    #
+    # @overload pop(n)
+    #   Returns a {MapWithIndifferentAccess::Array} of the last
+    #   `n` elements (or less) just like `array.slice!(-n, n)`
+    #   does, but also removing those elements from the target.
+    #
+    #   @return [MapWithIndifferentAccess::Array]
     def pop(*maybe_n)
       arg_count = maybe_n.length
       unless (0..1) === arg_count
@@ -147,11 +353,34 @@ class MapWithIndifferentAccess
       end
     end
 
+    # Deletes the element at the specified index, returning the
+    # externalization of that element, or `nil` if the index is
+    # out of range.
+    #
+    # @return [Object, nil]
+    #
+    # @see #slice
+    # @see MapWithIndifferentAccess::Values#externalize
     def delete_at(index)
       inner_result = inner_array.delete_at( index )
       MWIA::Values >> inner_result
     end
 
+    # Deletes all items from self, the externalizations of which
+    # are equal to the externalization of `obj`.
+    #
+    # Returns the externalization of the last deleted item if
+    # applicable.
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
+    #
+    # @overload delete(obj)
+    #   Returns `nil` if no matching items are found.
+    #
+    # @overload delete(obj)
+    #   @yield
+    #   Returns the externalization of the block result is no
+    #   matching items are found.
     def delete(obj)
       obj = MWIA::Values >> obj
       removed_items = false

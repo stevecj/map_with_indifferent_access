@@ -13,9 +13,12 @@ class MapWithIndifferentAccess
   include MapWithIndifferentAccess::WrapsCollection
 
   # Try to convert `from_obj` into a {MapWithIndifferentAccess}.
-  # @return
-  #   converted object or `nil` if `from_obj` cannot be converted for any
-  #   reason.
+  #
+  # @return [MapWithIndifferentAccess]
+  #   converted object if `from_obj` is convertible.
+  #
+  # @return [nil]
+  #   if `from_obj` cannot be converted for any reason.
   def self.try_convert(from_obj)
     if self === from_obj
       from_obj
@@ -25,10 +28,6 @@ class MapWithIndifferentAccess
     end
   end
 
-  # Try to convert `obj` into a `Hash`
-  # @return
-  #   converted object or `nil` if `obj` cannot be converted for any
-  #   reason.
   def self.try_deconstruct(obj)
     if self === obj
       obj.inner_map
