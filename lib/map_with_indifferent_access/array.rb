@@ -45,24 +45,18 @@ class MapWithIndifferentAccess
     # When a {MapWithIndifferentAccess::Array} is given as a
     # basis, this results on the given and new instances sharing
     # the same {#inner_array}. There is no obvious reason to do
-    # that on purpose, but there is also no particular harm in
-    # allowing it to happen.
+    # that on purpose, but there is also no harm in allowing it
+    # to happen.
     #
     # @param [::Array, MapWithIndifferentAccess::Array, Object] basis
     #   An `::Array` or an object that can be implicitly coerced to
     #   an `::Array`
     def initialize(basis = [])
-      basis = basis.inner_array if self.class === basis
-      basis = Array.try_convert( basis )
-
-      if basis.nil?
-        msg =
-          "When provided, basis must be implicitly convertible " \
-          "into an ::Array ."
-        raise ArgumentError, msg
-      end
-
-      @inner_array = basis
+      use_basis = basis
+      use_basis = basis.inner_array if self.class === basis
+      use_basis = ::Array.try_convert( use_basis )
+      raise ArgumentError, "Could not convert #{basis.inspect} into an ::Array" unless use_basis
+      @inner_array = use_basis
     end
 
     # Element Assignment — Sets the element at index, or replaces

@@ -53,13 +53,18 @@ class MapWithIndifferentAccess
     :rehash,
   )
 
-  # Returns a new instance of {MapWithIndifferentAccess}
+  # Returns a new instance of {MapWithIndifferentAccess} that
+  # encapsulates a new empty `::Array` or the `::Array` coerced
+  # from the given `basis`.
   #
-  # @param basis
-  #   A specific `Hash`-like object to be coerced into a `Hash` and used as the
-  #   {#inner_map} of the new instance. If a {MapWithIndifferentAccess} is
-  #   given, this results in the new instance sharing an {#inner_map} `Hash`
-  #   with the given object.
+  # When a {MapWithIndifferentAccess} is given as a basis, this
+  # results on the given and new instances sharing the same
+  # {#inner_map}. There is no obvious reason to do that on
+  # purpose, but there is also no harm in allowing it to happen.
+  #
+  # @param [::Hash, MapWithIndifferentAccess, Object] basis
+  #   A `::Hash` or an object that can be implicitly coerced to
+  #   a `::Hash`
   def initialize(basis={})
     use_basis = basis
     use_basis = basis.inner_map if self.class === basis

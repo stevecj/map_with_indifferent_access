@@ -30,7 +30,7 @@ module MWIA_ArraySpec
     it "cannot be constructed by passing an un-array-like argument to ::new" do
       expect{
         described_class.new( 1 )
-      }.to raise_exception( NoMethodError )
+      }.to raise_exception( ArgumentError )
     end
 
     it "deconstructs a wrapped-array instance to its inner array" do
