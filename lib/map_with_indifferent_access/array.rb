@@ -39,16 +39,29 @@ class MapWithIndifferentAccess
     alias inner_collection inner_array
 
     # Returns a new instance of {MapWithIndifferentAccess::Array}
+    # that encapsulates a new empty `::Array` or the `::Array`
+    # coerced from the given `basis`.
     #
-    # @param basis
-    #   A specific `Array`-like object to be coerced into an
-    #   `Array` and used as the {#inner_array} of the new
-    #   instance. If a {MapWithIndifferentAccess::Array} is
-    #   given, this results in the new instance sharing an
-    #   {#inner_array} with the given object.
+    # When a {MapWithIndifferentAccess::Array} is given as a
+    # basis, this results on the given and new instances sharing
+    # the same {#inner_array}. There is no obvious reason to do
+    # that on purpose, but there is also no particular harm in
+    # allowing it to happen.
+    #
+    # @param [::Array, MapWithIndifferentAccess::Array, Object] basis
+    #   An `::Array` or an object that can be implicitly coerced to
+    #   an `::Array`
     def initialize(basis = [])
       basis = basis.inner_array if self.class === basis
-      basis = basis.to_ary
+      basis = Array.try_convert( basis )
+
+      if basis.nil?
+        msg =
+          "When provided, basis must be implicitly convertible " \
+          "into an ::Array ."
+        raise ArgumentError, msg
+      end
+
       @inner_array = basis
     end
 
@@ -449,6 +462,18 @@ class MapWithIndifferentAccess
       zip( other ).all? { |(v,other_v)| v == MWIA::Values >> other_v }
     end
 
+    # Calls the given block once for each element in the
+    # target's {#inner_array}, passing the externalization of
+    # the element as a parameter to the block.
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
+    #
+    # @overload each
+    #   @yieldparam item
+    #   @return [MapWithIndifferentAccess::Array]
+    #
+    # @overload each
+    #   @return [Enumerator]
     def each
       inner_array.each do |item|
         item = MWIA::Values >> item
