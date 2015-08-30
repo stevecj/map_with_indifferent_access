@@ -537,8 +537,11 @@ module MWIA_ArraySpec
           [ {'b' => 3 } ]
       end
 
-      it "returns false for an MWIA::Array with corresponding entries, the externalization of which are not all equal" do
+      it "returns false of a non-array object" do
+        expect( subject == 'abc' ).to eq( false )
+      end
 
+      it "returns false for an MWIA::Array with corresponding entries, the externalizations of which are not all equal" do
         other = described_class.new( [
           1,
           {'a' => :too },
@@ -548,7 +551,37 @@ module MWIA_ArraySpec
         expect( subject == other ).to eq( false )
       end
 
-      it "returns true for an MWIA::Array with corresponding entries, the externalization of which are all equal" do
+      it "returns false for an ::Array with corresponding entries, the externalizations of which are not all equal" do
+        other = [
+          1,
+          {'a' => :too },
+          [ { b: 3 } ]
+        ]
+
+        expect( subject == other ).to eq( false )
+      end
+
+      it "returns false for an MWIA::Array with corresponding entries, the externalizations of which are not all equal" do
+        other = described_class.new( [
+          1,
+          {'a' => :too },
+          [ { b: 3 } ]
+        ] )
+
+        expect( subject == other ).to eq( false )
+      end
+
+      it "returns true for an ::Array with corresponding entries, the externalizations of which are all equal" do
+        other = [
+          1,
+          {'a' => 2 },
+          [ { b: 3 } ]
+        ]
+
+        expect( subject == other ).to eq( true )
+      end
+
+      it "returns true for an MWIA::Array with corresponding entries, the externalizations of which are all equal" do
         other = described_class.new( [
           1,
           {'a' => 2 },

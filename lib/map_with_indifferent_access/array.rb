@@ -248,7 +248,7 @@ class MapWithIndifferentAccess
 
     # @method fetch
     # Tries to retrieve the element at position `index`, but
-    # throws an `IndexError` exception or uses a default value
+    # raises an `IndexError` exception or uses a default value
     # when an invalid index is referenced.
     #
     # Returns the externalization of the retrieved value.
@@ -257,8 +257,10 @@ class MapWithIndifferentAccess
     #
     # @overload fetch(index)
     #   Tries to retrieve the element at position `index`, but
-    #   throws an `IndexError` exception if the referenced index
+    #   raises an `IndexError` exception if the referenced index
     #   lies outside of the array bounds.
+    #
+    #   @raise [IndexError]
     #
     # @overload fetch(index, default)
     #   Tries to retrieve the element at position `index`, but
@@ -419,22 +421,32 @@ class MapWithIndifferentAccess
     # and comparison using #eql? returns `true`.
     # Note that this does not recongnize
     # [MapWithIndifferentAccess] items as equal just because
-    # they are equal by #==, which can be true when they have
-    # equivalent keys that differ by [String]/[Symbol] type.
+    # they are equal by #== (which can be true when they have
+    # equivalent keys that differ by [String]/[Symbol] type).
     # You might therefore wish to call #uniq on an instance that
     # has first had its keys deeply-stringified or
     # deeply-symbolized.
     def_delegator :inner_array, :uniq!
 
+    # Equality. The target is equal to the given array if both
+    # contain the same number of elements, and externalizations
+    # of corresponding items in each are equal according to
+    # `#==`.
+    #
+    # @return [Boolean]
+    #
+    # @see MapWithIndifferentAccess::Values#externalize
     def ==(other)
+      same_class = self.class === other
+
+      return false unless same_class || other.respond_to?(:to_ary )
+
+      # Optimizations
       return true if equal?( other )
-      return false unless self.class === other
-      return true if inner_array == other.inner_array
+      return true if same_class && inner_array == other.inner_array
+
       return false unless length == other.length
-      inner_array.each_index do |index|
-        return false unless self[ index ] == other[ index ]
-      end
-      true
+      zip( other ).all? { |(v,other_v)| v == MWIA::Values >> other_v }
     end
 
     def each
