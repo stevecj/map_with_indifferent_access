@@ -1,6 +1,6 @@
 require "map_with_indifferent_access/normalization/deep_normalizer"
 
-class MapWithIndifferentAccess
+module MapWithIndifferentAccess
   module Normalization
     include MapWithIndifferentAccess::WithConveniences
 

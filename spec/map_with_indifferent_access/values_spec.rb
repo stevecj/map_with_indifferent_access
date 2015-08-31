@@ -6,7 +6,7 @@ module MWIA_ValuesSpec
   describe MapWithIndifferentAccess::Values do
 
     describe '#externalize / #>>' do
-      it "returns the given object when not an Array, Hash, MWIA, or MWIA::List" do
+      it "returns the given object when not an Array, Hash, MWIA::Map, or MWIA::List" do
         expect( subject >>  nil ).to eq( nil )
         expect( subject >> 'abc').to eq('abc')
         expect( subject >>  123 ).to eq( 123 )
@@ -16,31 +16,31 @@ module MWIA_ValuesSpec
       end
     end
 
-    it "returns an MWIA-wrapped instance of the given Hash" do
+    it "returns a Map-wrapped instance of the given Hash" do
       given_hash = { a: 1 }
       result = subject >> given_hash
       expect( result.inner_map ).to equal( given_hash )
     end
 
-    it "returns an MWIA::List-wrapped instance of the given Array" do
+    it "returns a List-wrapped instance of the given Array" do
       given_array = [ 1, 2, 3 ]
       result = subject >> given_array
       expect( result.inner_array ).to equal( given_array )
     end
 
-    it "returns the given MWIA instance" do
+    it "returns the given Map instance" do
       result = subject >> subject
       expect( result ).to equal( subject )
     end
 
-    it "returns the given MWIA::List instance" do
+    it "returns the given List instance" do
       given_array_wrapper = MWIA::List.new
       result = subject >> given_array_wrapper
       expect( result ).to equal( given_array_wrapper )
     end
 
     describe '#internalize / #<<' do
-      it "returns the given object when not an MWIA or MWIA::List" do
+      it "returns the given object when not an Map or List" do
         p subject
         expect( subject <<  nil  ).to eq(  nil  )
         expect( subject << 'abc' ).to eq( 'abc' )
@@ -48,8 +48,8 @@ module MWIA_ValuesSpec
         expect( subject << [ 9 ] ).to eq( [ 9 ] )
       end
 
-      it "returns the inner hash map from a given MWIA" do
-        map = MWIA.new
+      it "returns the inner hash map from a given Map" do
+        map = MWIA::Map.new
         expect( subject << map ).to equal( map.inner_map )
       end
 

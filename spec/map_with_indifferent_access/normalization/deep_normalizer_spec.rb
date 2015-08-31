@@ -30,7 +30,7 @@ module DeepNormalizerSpec
     } }
 
     let(:shallow_mwia ){
-      MWIA.new( shallow_hash )
+      MWIA::Map.new( shallow_hash )
     }
 
     let(:shallow_hash_analog){
@@ -75,7 +75,7 @@ module DeepNormalizerSpec
       } )
     end
 
-    it "returns a new MWIA copy of the given MWIA with keys symbolized" do
+    it "returns a new Map copy of the given Map with keys symbolized" do
       result = subject.call( shallow_mwia )
       expect( result.inner_map ).to eq( {
         '<a>' => 11,

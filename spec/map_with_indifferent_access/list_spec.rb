@@ -85,7 +85,7 @@ module MWIA_ListSpec
           inner_array.replace [ 0, 1, 2, 3, 4 ]
         end
 
-        let(:map_val ){ MWIA.new }
+        let(:map_val ){ MWIA::Map.new }
 
         it "replaces the range of entries with a single entry containing the internalization of a given value" do
           subject[ 2..3 ] = map_val
@@ -117,7 +117,7 @@ module MWIA_ListSpec
           inner_array.replace [ 0, 1, 2, 3, 4 ]
         end
 
-        let(:map_val ){ MWIA.new }
+        let(:map_val ){ MWIA::Map.new }
 
         it "replaces the range of entries with a single entry containing the internalization of a given value" do
           subject[ 2, 2 ] = map_val
@@ -185,7 +185,7 @@ module MWIA_ListSpec
     end
 
     describe '#push / #<<' do
-      let(:wrapped_hash_map ){ MWIA.new }
+      let(:wrapped_hash_map ){ MWIA::Map.new }
 
       it "pushes the internalizations of given items onto the end of the inner array" do
         subject << 'a'
@@ -207,7 +207,7 @@ module MWIA_ListSpec
 
     describe '#unshift' do
       it "pushes the internalizations of given items into the beginning of the inner array" do
-        wrapped_hash_map = MWIA.new
+        wrapped_hash_map = MWIA::Map.new
 
         inner_array[0] = 'x'
 
@@ -227,7 +227,7 @@ module MWIA_ListSpec
 
     describe '#insert' do
       it "inserts the internalizations of given items before the element with the given index in the inner array" do
-        wrapped_hash_map = MWIA.new
+        wrapped_hash_map = MWIA::Map.new
 
         inner_array.replace ['a', 'b', 'c', 'd']
 
@@ -506,8 +506,8 @@ module MWIA_ListSpec
           {:a  => 1 },
           1,
           {:b => 2 },
-          MWIA.new(:b => 2 ),
-          MWIA.new(:b => 2 ),
+          MWIA::Map.new(:b => 2 ),
+          MWIA::Map.new(:b => 2 ),
         ]
       end
 
@@ -518,7 +518,7 @@ module MWIA_ListSpec
           {'a' => 1 },
           {:a  => 1 },
           {:b => 2 },
-          MWIA.new(:b => 2 ),
+          MWIA::Map.new(:b => 2 ),
         ]
         expect( actual_result ).to eq( expected_result )
       end
@@ -596,7 +596,7 @@ module MWIA_ListSpec
       before do
         inner_array <<
           1 <<
-          MWIA.new('b' => 2 )
+          MWIA::Map.new('b' => 2 )
       end
 
       it "returns false, given an object that is not an MWIA::List" do
@@ -628,7 +628,7 @@ module MWIA_ListSpec
 
       expect( items ).to eq( [
         1,
-        MWIA.new( a: 2 ), 
+        MWIA::Map.new( a: 2 ), 
         MWIA::List.new( [ { b: 3 } ] )
       ] )
 

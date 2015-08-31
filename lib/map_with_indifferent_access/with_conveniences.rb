@@ -1,4 +1,4 @@
-class MapWithIndifferentAccess
+module MapWithIndifferentAccess
 
   module WithConveniences
     # Shorthand constant.

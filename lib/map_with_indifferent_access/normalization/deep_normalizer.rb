@@ -1,4 +1,4 @@
-class MapWithIndifferentAccess
+module MapWithIndifferentAccess
   module Normalization
 
     class DeepNormalizer
@@ -17,20 +17,25 @@ class MapWithIndifferentAccess
       # target [DeepNormalizer]'s strategy.
       # Given an object that is not [Array]-like or [Hash]-like,
       # then the given object is returned.
+      #
       # During this process, any hash entry values or array
-      # items that are instances of [MapWithIndifferentAccess]
-      # or [MapWithIndifferentAccess::List] are replaced with
-      # [Hash] or [Array] deconstructions respectively.
-      # If a [MapWithIndifferentAccess] or
+      # items that are instances of
+      # [MapWithIndifferentAccess::Map] or
+      # [MapWithIndifferentAccess::List] are replaced with [Hash]
+      # or [Array] deconstructions respectively.
+      # If a [MapWithIndifferentAccess::Map] or
       # [MapWithIndifferentAccess::List] is given, then the
       # same kind of object is returned.
-      # If a [Hash] or an object that resonds to #to_hash and
-      # #each_pair is given, then a [Hash] is returned.  The
-      # same applies to any entry values or array items
+      #
+      # If a [Hash] or an object that resonds to `#to_hash` and
+      # `#each_pair` is given, then a [Hash] is returned. The
+      # same applies to each hash/map entry value or array/list
+      # item that is traversed.
+      # If an [Array] or an object that resonds to `#to_ary` is
+      # given, then an [Array] is returned. The same applies to
+      # each hash/map entry value or array/list item that is
       # traversed.
-      # If an [Array] or an object that resonds to #to_ary is
-      # given, then an [Array] is returned.  The same applies to
-      # any entry values or array items traversed.
+      #
       # If any keys, hash entry values, or array items are
       # replaced, then a new object is returned.  Otherwise, the
       # given object is returned.
@@ -48,7 +53,7 @@ class MapWithIndifferentAccess
       def recursively_coerce(obj)
         if ::Hash === obj
           coerce_hash( obj )
-        elsif MWIA === obj
+        elsif MWIA::Map === obj
           coerce_hash( obj.inner_map )
         elsif ::Array === obj
           coerce_array( obj )

@@ -1,6 +1,6 @@
 require 'forwardable'
 
-class MapWithIndifferentAccess
+module MapWithIndifferentAccess
 
   module WrapsCollection
     extend Forwardable

@@ -15,7 +15,7 @@ module NormalizationSpec
       {
         'a' => 1,
         :b  => {'bb' => 22 },
-         3  => [ 33, MWIA.new(:cc => 333 ) ]
+         3  => [ 33, MWIA::Map.new(:cc => 333 ) ]
       }
     end
 

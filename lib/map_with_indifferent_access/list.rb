@@ -1,4 +1,4 @@
-class MapWithIndifferentAccess
+module MapWithIndifferentAccess
 
   class List
     include MapWithIndifferentAccess::WithConveniences
@@ -412,7 +412,7 @@ class MapWithIndifferentAccess
     # Items are considered equal if their #hash values are equal
     # and comparison using #eql? returns `true`.
     # Note that this does not recongnize
-    # [MapWithIndifferentAccess] items as equal just because
+    # [MapWithIndifferentAccess::Map] items as equal just because
     # they are equal by #==, which can be true when they have
     # equivalent keys that differ by [String]/[Symbol] type.
     # You might therefore wish to call #uniq on an instance that
@@ -427,7 +427,7 @@ class MapWithIndifferentAccess
     # Items are considered equal if their #hash values are equal
     # and comparison using #eql? returns `true`.
     # Note that this does not recongnize
-    # [MapWithIndifferentAccess] items as equal just because
+    # [MapWithIndifferentAccess::Map] items as equal just because
     # they are equal by #== (which can be true when they have
     # equivalent keys that differ by [String]/[Symbol] type).
     # You might therefore wish to call #uniq on an instance that
