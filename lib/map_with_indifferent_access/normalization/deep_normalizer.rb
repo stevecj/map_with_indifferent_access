@@ -19,10 +19,10 @@ class MapWithIndifferentAccess
       # then the given object is returned.
       # During this process, any hash entry values or array
       # items that are instances of [MapWithIndifferentAccess]
-      # or [MapWithIndifferentAccess::Array] are replaced with
+      # or [MapWithIndifferentAccess::List] are replaced with
       # [Hash] or [Array] deconstructions respectively.
       # If a [MapWithIndifferentAccess] or
-      # [MapWithIndifferentAccess::Array] is given, then the
+      # [MapWithIndifferentAccess::List] is given, then the
       # same kind of object is returned.
       # If a [Hash] or an object that resonds to #to_hash and
       # #each_pair is given, then a [Hash] is returned.  The
@@ -52,7 +52,7 @@ class MapWithIndifferentAccess
           coerce_hash( obj.inner_map )
         elsif ::Array === obj
           coerce_array( obj )
-        elsif MWIA::Array === obj
+        elsif MWIA::List === obj
           coerce_array( obj.inner_array )
         elsif obj.respond_to?(:to_hash) && obj.respond_to?(:each_pair)
           coerce_hash( obj.to_hash )

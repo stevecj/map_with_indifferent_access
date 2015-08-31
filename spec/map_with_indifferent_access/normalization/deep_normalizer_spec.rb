@@ -41,12 +41,12 @@ module DeepNormalizerSpec
       shallow_hash.dup,
       shallow_mwia,
       [ 31, 32 ],
-      MWIA::Array.new( [ 41, 42 ] ),
+      MWIA::List.new( [ 41, 42 ] ),
       5,
     ] }
 
     let(:mwia_array ){
-      MWIA::Array.new( array )
+      MWIA::List.new( array )
     }
 
     let(:array_analog){
@@ -106,7 +106,7 @@ module DeepNormalizerSpec
       ] )
     end
 
-    it "returns a new Array copy of the given MWIA::Array with deconstructed, symbolized-key copies of hashlike and arraylike items" do
+    it "returns a new Array copy of the given MWIA::List with deconstructed, symbolized-key copies of hashlike and arraylike items" do
       result = subject.call( mwia_array )
       expect( result.inner_array ).to eq( [
         {'<a>' => 11, '<b>' => 22, 42 => 33 },

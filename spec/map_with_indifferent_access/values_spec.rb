@@ -6,7 +6,7 @@ module MWIA_ValuesSpec
   describe MapWithIndifferentAccess::Values do
 
     describe '#externalize / #>>' do
-      it "returns the given object when not an Array, Hash, MWIA, or MWIA::Array" do
+      it "returns the given object when not an Array, Hash, MWIA, or MWIA::List" do
         expect( subject >>  nil ).to eq( nil )
         expect( subject >> 'abc').to eq('abc')
         expect( subject >>  123 ).to eq( 123 )
@@ -22,7 +22,7 @@ module MWIA_ValuesSpec
       expect( result.inner_map ).to equal( given_hash )
     end
 
-    it "returns an MWIA::Array-wrapped instance of the given Array" do
+    it "returns an MWIA::List-wrapped instance of the given Array" do
       given_array = [ 1, 2, 3 ]
       result = subject >> given_array
       expect( result.inner_array ).to equal( given_array )
@@ -33,14 +33,14 @@ module MWIA_ValuesSpec
       expect( result ).to equal( subject )
     end
 
-    it "returns the given MWIA::Array instance" do
-      given_array_wrapper = MWIA::Array.new
+    it "returns the given MWIA::List instance" do
+      given_array_wrapper = MWIA::List.new
       result = subject >> given_array_wrapper
       expect( result ).to equal( given_array_wrapper )
     end
 
     describe '#internalize / #<<' do
-      it "returns the given object when not an MWIA or MWIA::Array" do
+      it "returns the given object when not an MWIA or MWIA::List" do
         p subject
         expect( subject <<  nil  ).to eq(  nil  )
         expect( subject << 'abc' ).to eq( 'abc' )
@@ -53,8 +53,8 @@ module MWIA_ValuesSpec
         expect( subject << map ).to equal( map.inner_map )
       end
 
-      it "returns the inner array from a given MWIA::Array" do
-        wrapped_array = MWIA::Array.new
+      it "returns the inner array from a given MWIA::List" do
+        wrapped_array = MWIA::List.new
         expect( subject << wrapped_array ).to equal( wrapped_array.inner_array )
       end
     end

@@ -8,7 +8,7 @@ class MapWithIndifferentAccess
     def externalize(obj)
       (
         MWIA.try_convert( obj ) ||
-        MWIA::Array.try_convert( obj ) ||
+        MWIA::List.try_convert( obj ) ||
         obj
       )
     end
@@ -18,7 +18,7 @@ class MapWithIndifferentAccess
     def internalize(obj)
       (
         MWIA.try_deconstruct( obj ) ||
-        MWIA::Array.try_deconstruct( obj ) ||
+        MWIA::List.try_deconstruct( obj ) ||
         obj
       )
     end

@@ -1,7 +1,7 @@
 require "map_with_indifferent_access/version"
 require "map_with_indifferent_access/with_conveniences"
 require "map_with_indifferent_access/wraps_collection"
-require "map_with_indifferent_access/array"
+require "map_with_indifferent_access/list"
 require "map_with_indifferent_access/values"
 require "map_with_indifferent_access/normalization"
 require 'forwardable'
@@ -73,14 +73,19 @@ class MapWithIndifferentAccess
     @inner_map = use_basis
   end
 
-  # When given a `String` that is not a key in the target's {#inner_map}
-  # `Hash`, but its symbolization is a key, returns the symbolization.
+  # Returns the `given_key` object if it is a key in the target's
+  # {#inner_map} `Hash` or if neither `given_key` nor its
+  # `String`/`Symbol` alternative is a key in the {#inner_map}.
   #
-  # When given a `Symbol` that is not a key in the target's {#inner_map}
-  # `Hash`, but its stringification is a key, returns the stringification.
+  # When `given_key` is a `String` that is not a key in the
+  # target's {#inner_map}, returns the symbolization of
+  # `given_key` if that symbolization is a key in the
+  # {#inner_map}.
   #
-  # In all other cases, returns the given value, regardless of whether it is a
-  # key in the target's {#inner_map} or not.
+  # When `given_key` is a `Symbol` that is not a key in the
+  # target's {#inner_map}, returns the stringification of
+  # `given_key` if that stringification is a key in the
+  # {#inner_map}.
   def conform_key(given_key)
     case given_key
     when String
@@ -94,16 +99,19 @@ class MapWithIndifferentAccess
     end
   end
 
-  # Creates an entry or replaces the value of an existing entry in the target's
-  # {#inner_map} `Hash`.
+  # Creates an entry or replaces the value of an existing entry
+  # in the target's {#inner_map} `Hash`.
   #
-  # When the given key is a `String`/`Symbol` indifferent match to the key of
-  # an existing entry in the target's {#inner_map} `Hash`, then the value of the
-  # matching entry is replaced with the given value.
+  # When the `key` conforms to a key in the target map, then the
+  # value of the matching entry in the target's {#inner_map} is 
+  # eplaced with the internalization of `value`.
   #
-  # When the given key is not a `String`/`Symbol` indifferent match to the key
-  # of any existing entry in the target's {#inner_map} `Hash`, then a new entry
-  # is created with the given key and value.
+  # When `key` does not conform to a key in the target map, then
+  # a new entry is added using the given `key` and the
+  # internalization of `value`.
+  #
+  # @see #conform_key
+  # @see MapWithIndifferentAccess::Values#internalize
   def[]=(key, value)
     value = MWIA::Values << value
     key = conform_key( key )
@@ -112,11 +120,13 @@ class MapWithIndifferentAccess
 
   alias store []=
 
-  # Returns the value from the entry having a key that is a match to the given
-  # key with `String`/`Symbol` indifference if a match exists.
+  # Returns the externalization of the value from the target's
+  # {#inner_map} entry having a key that conforms to the given
+  # `key` if applicable.
   #
-  # Otherwise, returns the {#inner_map} `Hash`'s default value for the given
-  # key, which us normally `nil`.
+  # When there is no entry with a conforming key, returns the
+  # externalization of the {#inner_map} `Hash`'s default value
+  # for the given `key` (normally `nil`).
   def[](key)
     key = conform_key( key )
     value = inner_map[ key ]

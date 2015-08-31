@@ -1,15 +1,15 @@
 class MapWithIndifferentAccess
 
-  class Array
+  class List
     include MapWithIndifferentAccess::WithConveniences
 
     extend Forwardable
     include MapWithIndifferentAccess::WrapsCollection
 
     # Try to convert `from_obj` into a
-    # {MapWithIndifferentAccess::Array}.
+    # {MapWithIndifferentAccess::List}.
     #
-    # @return [MapWithIndifferentAccess::Array]
+    # @return [MapWithIndifferentAccess::List]
     #   converted object if `from_obj` is convertible.
     #
     # @return [nil]
@@ -34,21 +34,21 @@ class MapWithIndifferentAccess
       end
     end
 
-    # The encapsuated `Array` object.
+    # The encapsuated `::Array` object.
     attr_reader :inner_array
     alias inner_collection inner_array
 
-    # Returns a new instance of {MapWithIndifferentAccess::Array}
+    # Returns a new instance of {MapWithIndifferentAccess::List}
     # that encapsulates a new empty `::Array` or the `::Array`
     # coerced from the given `basis`.
     #
-    # When a {MapWithIndifferentAccess::Array} is given as a
+    # When a {MapWithIndifferentAccess::List} is given as a
     # basis, this results on the given and new instances sharing
     # the same {#inner_array}. There is no obvious reason to do
     # that on purpose, but there is also no harm in allowing it
     # to happen.
     #
-    # @param [::Array, MapWithIndifferentAccess::Array, Object] basis
+    # @param [::Array, MapWithIndifferentAccess::List, Object] basis
     #   An `::Array` or an object that can be implicitly coerced to
     #   an `::Array`
     def initialize(basis = [])
@@ -79,11 +79,11 @@ class MapWithIndifferentAccess
     # @overload []=(start, length, array_or_value)
     #   @param start [Fixnum]
     #   @param length [Fixnum]
-    #   @param array_or_value [::Array, MapWithIndifferentAccess::Array Object, nil]
+    #   @param array_or_value [::Array, MapWithIndifferentAccess::List Object, nil]
     #
     # @overload []=(range, array_or_value)
     #   @param range [Ramge]
-    #   @param array_or_value [::Array, MapWithIndifferentAccess::Array, Object, nil]
+    #   @param array_or_value [::Array, MapWithIndifferentAccess::List, Object, nil]
     def []=(index, length_or_value, *maybe_value)
       arg_count = 2 + maybe_value.length
       unless (2..3) === arg_count
@@ -100,7 +100,7 @@ class MapWithIndifferentAccess
 
       if (
         ( !maybe_length.empty? || Range === index ) &&
-        ( value_array = MWIA::Array.try_deconstruct( value_or_values ) )
+        ( value_array = MWIA::List.try_deconstruct( value_or_values ) )
       )
         value_array = value_array.map{ |v| MWIA::Values << v }
         inner_array[ index, *maybe_length ] = value_array
@@ -127,11 +127,11 @@ class MapWithIndifferentAccess
     #   @overload [](start, length)
     #     @param start [Fixnum]
     #     @param length [Fixnum]
-    #     @return [MapWithIndifferentAccess::Array]
+    #     @return [MapWithIndifferentAccess::List]
     #
     #   @overload [](range)
     #     @param range [Ramge]
-    #     @return [MapWithIndifferentAccess::Array]
+    #     @return [MapWithIndifferentAccess::List]
     #
     #   @overload slice(index)
     #     @param index [Fixnum]
@@ -140,11 +140,11 @@ class MapWithIndifferentAccess
     #   @overload slice(start, length)
     #     @param start [Fixnum]
     #     @param length [Fixnum]
-    #     @return [MapWithIndifferentAccess::Array]
+    #     @return [MapWithIndifferentAccess::List]
     #
     #   @overload slice(range)
     #     @param range [Ramge]
-    #     @return [MapWithIndifferentAccess::Array]
+    #     @return [MapWithIndifferentAccess::List]
 
     ['[]', 'slice'].each do |method_name|
       class_eval <<-EOS, __FILE__, __LINE__ + 1
@@ -158,7 +158,7 @@ class MapWithIndifferentAccess
           if !maybe_length.empty? || Range === index
             value_array = inner_array.#{method_name}( index, *maybe_length )
             value_array.map!{ |v| MWIA::Values >> v }
-            MWIA::Array.new( value_array )
+            MWIA::List.new( value_array )
           else
             value = inner_array.#{method_name}( index )
             MWIA::Values >> value
@@ -185,7 +185,7 @@ class MapWithIndifferentAccess
     # Internalizes the given onject before appending it to the
     # target's {#inner_array}.
     #
-    # @return [MapWithIndifferentAccess::Array]
+    # @return [MapWithIndifferentAccess::List]
     # @see #push
     def <<(value)
       value = MWIA::Values << value
@@ -201,7 +201,7 @@ class MapWithIndifferentAccess
     # appends may be chained together. See also {#pop} for the
     # opposite effect.
     #
-    # @return MapWithIndifferentAccess::Array
+    # @return MapWithIndifferentAccess::List
     # @see #<<
     # @see #pop
     # @see MapWithIndifferentAccess::Values#internalize
@@ -216,7 +216,7 @@ class MapWithIndifferentAccess
     # them to the target's {#inner_array}. See also {#shift} for
     # the opposite effect.
     #
-    # @return MapWithIndifferentAccess::Array
+    # @return MapWithIndifferentAccess::List
     # @see MapWithIndifferentAccess::Values#internalize
     def unshift(*values)
       values.map!{ |v| MWIA::Values << v }
@@ -234,7 +234,7 @@ class MapWithIndifferentAccess
     # using an index of -1 will insert the values at the end of
     # the array.
     #
-    # @return MapWithIndifferentAccess::Array
+    # @return MapWithIndifferentAccess::List
     # @see MapWithIndifferentAccess::Values#internalize
     def insert(index, *values)
       values.map!{ |v| MWIA::Values << v }
@@ -242,12 +242,12 @@ class MapWithIndifferentAccess
       self
     end
 
-    # Returns a {MapWithIndifferentAccess::Array} containing the
+    # Returns a {MapWithIndifferentAccess::List} containing the
     # elements in self corresponding to the given selector(s).
     #
     # The selectors may be either integer indices or ranges.
     #
-    # @return MapWithIndifferentAccess::Array
+    # @return MapWithIndifferentAccess::List
     def values_at(*indexes)
       inner_result = inner_array.values_at( *indexes )
       MWIA::Values >> inner_result
@@ -308,11 +308,11 @@ class MapWithIndifferentAccess
     #   @return [Object, nil]
     #
     # @overload shift(n)
-    #   Returns a {MapWithIndifferentAccess::Array} of the first
+    #   Returns a {MapWithIndifferentAccess::List} of the first
     #   `n` elements (or less) just like `array.slice!(0, n)`
     #   does, but also removing those elements from the target.
     #
-    #   @return [MapWithIndifferentAccess::Array]
+    #   @return [MapWithIndifferentAccess::List]
     def shift(*maybe_n)
       arg_count = maybe_n.length
       unless (0..1) === arg_count
@@ -322,7 +322,7 @@ class MapWithIndifferentAccess
         MWIA::Values >> inner_array.shift
       else
         inner_result = inner_array.shift( *maybe_n )
-        MWIA::Array.new( inner_result )
+        MWIA::List.new( inner_result )
       end
     end
 
@@ -344,11 +344,11 @@ class MapWithIndifferentAccess
     #   @return [Object, nil]
     #
     # @overload pop(n)
-    #   Returns a {MapWithIndifferentAccess::Array} of the last
+    #   Returns a {MapWithIndifferentAccess::List} of the last
     #   `n` elements (or less) just like `array.slice!(-n, n)`
     #   does, but also removing those elements from the target.
     #
-    #   @return [MapWithIndifferentAccess::Array]
+    #   @return [MapWithIndifferentAccess::List]
     def pop(*maybe_n)
       arg_count = maybe_n.length
       unless (0..1) === arg_count
@@ -358,7 +358,7 @@ class MapWithIndifferentAccess
         MWIA::Values >> inner_array.pop
       else
         inner_result = inner_array.pop( *maybe_n )
-        MWIA::Array.new( inner_result )
+        MWIA::List.new( inner_result )
       end
     end
 
@@ -464,7 +464,7 @@ class MapWithIndifferentAccess
     #
     # @overload each
     #   @yieldparam item
-    #   @return [MapWithIndifferentAccess::Array]
+    #   @return [MapWithIndifferentAccess::List]
     #
     # @overload each
     #   @return [Enumerator]
