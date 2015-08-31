@@ -7,4 +7,9 @@ require "map_with_indifferent_access/normalization"
 require 'forwardable'
 
 module MapWithIndifferentAccess
+  class << self
+    extend Forwardable
+
+    def_delegator Map, :new
+  end
 end
