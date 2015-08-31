@@ -2,8 +2,6 @@ require "map_with_indifferent_access/normalization/deep_normalizer"
 
 module MapWithIndifferentAccess
   module Normalization
-    include MapWithIndifferentAccess::WithConveniences
-
     extend self
 
     # Deeply normalizes [Hash]-like and [Array]-like hash entry

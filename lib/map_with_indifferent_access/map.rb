@@ -1,8 +1,6 @@
 module MapWithIndifferentAccess
 
   class Map
-    include MapWithIndifferentAccess::WithConveniences
-
     extend Forwardable
     include MapWithIndifferentAccess::WrapsCollection
 
@@ -108,7 +106,7 @@ module MapWithIndifferentAccess
     # @see #conform_key
     # @see MapWithIndifferentAccess::Values#internalize
     def[]=(key, value)
-      value = MWIA::Values << value
+      value = Values << value
       key = conform_key( key )
       inner_map[ key ] = value
     end
@@ -125,7 +123,7 @@ module MapWithIndifferentAccess
     def[](key)
       key = conform_key( key )
       value = inner_map[ key ]
-      MWIA::Values >> value
+      Values >> value
     end
 
     def fetch(key, *more_args)
@@ -144,7 +142,7 @@ module MapWithIndifferentAccess
         inner_map.fetch( key, *more_args )
       end
 
-      MWIA::Values >> value
+      Values >> value
     end
 
     def key?(key)
@@ -169,7 +167,7 @@ module MapWithIndifferentAccess
 
     def default(key = nil)
       inner_default = inner_map.default( key )
-      MWIA::Values >> inner_default
+      Values >> inner_default
     end
 
     def ==(other)
@@ -199,7 +197,7 @@ module MapWithIndifferentAccess
 
       each_key do |key|
         value = fetch( key )
-        value = MWIA::Values >> value
+        value = Values >> value
         yield [key, value]
       end
     end
@@ -232,7 +230,7 @@ module MapWithIndifferentAccess
       return enum_for(:each_value) unless block_given?
 
       inner_map.each_value do |value|
-        value = MWIA::Values >> value
+        value = Values >> value
         yield value
       end
       self
@@ -245,7 +243,7 @@ module MapWithIndifferentAccess
       else
         inner_map.delete( key )
       end
-      MWIA::Values >> value
+      Values >> value
     end
 
     def reject
@@ -273,7 +271,7 @@ module MapWithIndifferentAccess
       return enum_for(:delete_if ) unless block_given?
 
       inner_map.delete_if do |key, value|
-        value = MWIA::Values >> value
+        value = Values >> value
         yield key, value
       end
 
@@ -305,7 +303,7 @@ module MapWithIndifferentAccess
       return enum_for(:keep_if ) unless block_given?
 
       inner_map.keep_if do |key, value|
-        value = MWIA::Values >> value
+        value = Values >> value
         yield key, value
       end
 
@@ -322,25 +320,25 @@ module MapWithIndifferentAccess
       obj = conform_key( obj )
       entry = inner_map.assoc( obj )
       unless entry.nil?
-        value = MWIA::Values >> entry[ 1 ]
+        value = Values >> entry[ 1 ]
         entry[ 1 ] = value
       end
       entry
     end
 
     def has_value?(value)
-      value = MWIA::Values >> value
+      value = Values >> value
       each_value.any? { |v| v == value }
     end
 
     def rassoc(value)
-      value = MWIA::Values >> value
+      value = Values >> value
       entry = inner_map.detect { |(k, v)|
-        v = MWIA::Values >> v
+        v = Values >> v
         value == v
       }
       if entry
-        entry[ 1 ] = MWIA::Values >> entry[ 1 ]
+        entry[ 1 ] = Values >> entry[ 1 ]
         entry
       else
         nil
@@ -371,12 +369,12 @@ module MapWithIndifferentAccess
 
     def shift
       if inner_map.empty?
-        MWIA::Values >> inner_map.shift
+        Values >> inner_map.shift
       else
         inner_result = inner_map.shift
         [
           inner_result[ 0 ],
-          MWIA::Values >> inner_result[ 1 ]
+          Values >> inner_result[ 1 ]
         ]
       end
     end

@@ -2,8 +2,6 @@ module MapWithIndifferentAccess
   module Normalization
 
     class DeepNormalizer
-      include MapWithIndifferentAccess::WithConveniences
-
       attr_reader :strategy
 
       # Initializes a new DeepNormalizer with a given object that
@@ -40,9 +38,9 @@ module MapWithIndifferentAccess
       # replaced, then a new object is returned.  Otherwise, the
       # given object is returned.
       def call(obj)
-        if MWIA::WrapsCollection === obj
+        if WrapsCollection === obj
           coerced_inner_col = recursively_coerce( obj )
-          MWIA::Values.externalize( coerced_inner_col )
+          Values.externalize( coerced_inner_col )
         else
           recursively_coerce( obj )
         end
@@ -53,11 +51,11 @@ module MapWithIndifferentAccess
       def recursively_coerce(obj)
         if ::Hash === obj
           coerce_hash( obj )
-        elsif MWIA::Map === obj
+        elsif Map === obj
           coerce_hash( obj.inner_map )
         elsif ::Array === obj
           coerce_array( obj )
-        elsif MWIA::List === obj
+        elsif List === obj
           coerce_array( obj.inner_array )
         elsif obj.respond_to?(:to_hash) && obj.respond_to?(:each_pair)
           coerce_hash( obj.to_hash )

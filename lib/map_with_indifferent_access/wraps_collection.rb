@@ -4,7 +4,6 @@ module MapWithIndifferentAccess
 
   module WrapsCollection
     extend Forwardable
-    include MapWithIndifferentAccess::WithConveniences
     include Enumerable
 
     # @!attribute [r] inner_collection

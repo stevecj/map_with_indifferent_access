@@ -1,16 +1,15 @@
 require 'spec_helper'
 require_relative 'wraps_collection_examples'
 
-module MapWithIndifferentAccessSpec
-  include MapWithIndifferentAccess::WithConveniences
+module MapWithIndifferentAccess
 
-  describe MWIA::Map do
+  describe Map do
     subject{ described_class.new( inner_map ) }
     let( :inner_map ) { {} }
     let( :inner_collection ) { inner_map }
 
     it 'has a version number' do
-      expect(MWIA::VERSION).not_to be nil
+      expect(VERSION).not_to be nil
     end
 
     it "can be constructed as a wrapper around an existing hash" do
@@ -711,7 +710,7 @@ module MapWithIndifferentAccessSpec
 
         expect( key ).to eql(:bbb )
         expect( value ).to eq(
-          MWIA::List.new( ['b'] )
+          List.new( ['b'] )
         )
       end
     end

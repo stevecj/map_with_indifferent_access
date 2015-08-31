@@ -1,10 +1,9 @@
 require 'spec_helper'
 require_relative 'wraps_collection_examples'
 
-module MWIA_ListSpec
-  include MapWithIndifferentAccess::WithConveniences
+module MapWithIndifferentAccess
 
-  describe MWIA::List do
+  describe List do
     let( :inner_array ) { subject.inner_array }
     let( :inner_collection ) { inner_array }
 
@@ -74,7 +73,7 @@ module MWIA_ListSpec
     describe '#[]=' do
       context "given an integer index" do
         it "stores the internalization of a given value at the given index in its inner array" do
-          array_val = MWIA::List.new
+          array_val = List.new
           subject[ 2 ] = array_val
           expect( inner_array[ 2 ] ).to equal( array_val.inner_array )
         end
@@ -85,7 +84,7 @@ module MWIA_ListSpec
           inner_array.replace [ 0, 1, 2, 3, 4 ]
         end
 
-        let(:map_val ){ MWIA::Map.new }
+        let(:map_val ){ Map.new }
 
         it "replaces the range of entries with a single entry containing the internalization of a given value" do
           subject[ 2..3 ] = map_val
@@ -103,8 +102,8 @@ module MWIA_ListSpec
           expect( inner_array[ 4..5 ] ).to eq( [ 99, 4 ] )
         end
 
-        it "replaces the range of entries with entries containing internalizations of entries in the given MWIA::List" do
-          subject[ 2..3 ] = MWIA::List.new( [22, map_val, 99] )
+        it "replaces the range of entries with entries containing internalizations of entries in the given List" do
+          subject[ 2..3 ] = List.new( [22, map_val, 99] )
           expect( inner_array.length ).to eq( 6 )
           expect( inner_array[ 0..2 ] ).to eq( [ 0, 1, 22 ] )
           expect( inner_array[ 3 ] ).to equal( map_val.inner_map )
@@ -117,7 +116,7 @@ module MWIA_ListSpec
           inner_array.replace [ 0, 1, 2, 3, 4 ]
         end
 
-        let(:map_val ){ MWIA::Map.new }
+        let(:map_val ){ Map.new }
 
         it "replaces the range of entries with a single entry containing the internalization of a given value" do
           subject[ 2, 2 ] = map_val
@@ -135,8 +134,8 @@ module MWIA_ListSpec
           expect( inner_array[ 4..5 ] ).to eq( [ 99, 4 ] )
         end
 
-        it "replaces the range of entries with entries containing internalizations of entries in the given MWIA::List" do
-          subject[ 2, 2 ] = MWIA::List.new( [22, map_val, 99] )
+        it "replaces the range of entries with entries containing internalizations of entries in the given List" do
+          subject[ 2, 2 ] = List.new( [22, map_val, 99] )
           expect( inner_array.length ).to eq( 6 )
           expect( inner_array[ 0..2 ] ).to eq( [ 0, 1, 22 ] )
           expect( inner_array[ 3 ] ).to equal( map_val.inner_map )
@@ -167,7 +166,7 @@ module MWIA_ListSpec
         expect( subject[ 2 ].inner_map ).to eq( { c: 2 } )
       end
 
-      it "reads an MWIA::List of the items at a given range of indexes in its inner array" do
+      it "reads an List of the items at a given range of indexes in its inner array" do
         result = subject[ 1..2 ]
         expect( result.inner_array ).to eq( [
           1,
@@ -175,7 +174,7 @@ module MWIA_ListSpec
         ] )
       end
 
-      it "reads an MWIA::List of the items in the range of index in its inner array with the given starting index and length" do
+      it "reads an List of the items in the range of index in its inner array with the given starting index and length" do
         result = subject[ 2, 2 ]
         expect( result.inner_array ).to eq( [
           { c: 2 },
@@ -185,7 +184,7 @@ module MWIA_ListSpec
     end
 
     describe '#push / #<<' do
-      let(:wrapped_hash_map ){ MWIA::Map.new }
+      let(:wrapped_hash_map ){ Map.new }
 
       it "pushes the internalizations of given items onto the end of the inner array" do
         subject << 'a'
@@ -207,7 +206,7 @@ module MWIA_ListSpec
 
     describe '#unshift' do
       it "pushes the internalizations of given items into the beginning of the inner array" do
-        wrapped_hash_map = MWIA::Map.new
+        wrapped_hash_map = Map.new
 
         inner_array[0] = 'x'
 
@@ -227,7 +226,7 @@ module MWIA_ListSpec
 
     describe '#insert' do
       it "inserts the internalizations of given items before the element with the given index in the inner array" do
-        wrapped_hash_map = MWIA::Map.new
+        wrapped_hash_map = Map.new
 
         inner_array.replace ['a', 'b', 'c', 'd']
 
@@ -250,7 +249,7 @@ module MWIA_ListSpec
         inner_array.replace [ 1, 2, 3, 4 ]
       end
 
-      it "acts like Array#values_at, but returns an MWIA::List" do
+      it "acts like Array#values_at, but returns an List" do
         # Hand-waving on the description because the behavior
         # of Array#values at is Byzantine, and the implementation
         # directly uses Array to get all of that behavior.
@@ -302,7 +301,7 @@ module MWIA_ListSpec
         expect( result.inner_map ).to eq( { a: 1 } )
       end
 
-      it "removes the given number of initial items from the inner array, and returns an MWIA::List of those values" do
+      it "removes the given number of initial items from the inner array, and returns an List of those values" do
         result = subject.shift( 2 )
         expect( inner_array ).to eq( [ 3 ] )
         expect( result.inner_array ).to eq( [
@@ -327,7 +326,7 @@ module MWIA_ListSpec
         expect( result.inner_map ).to eq( { c: 3 } )
       end
 
-      it "removes the given number of items from the inner array, and returns an MWIA::List of those values" do
+      it "removes the given number of items from the inner array, and returns an List of those values" do
         result = subject.pop( 2 )
         expect( inner_array ).to eq( [ 1 ] )
         expect( result.inner_array ).to eq( [
@@ -420,27 +419,27 @@ module MWIA_ListSpec
     end
 
     describe '#freeze' do
-      it "freezes the inner-array along with the MWIA::List" do
+      it "freezes the inner-array along with the List" do
         subject.freeze
         expect( inner_array ).to be_frozen
       end
 
-      it "returns the MWIA::List" do
+      it "returns the List" do
         expect( subject.freeze ).to equal( subject )
       end
     end
 
     describe '#_frozen?' do
-      it "returns false when neither the MWIA::List nor its inner-array is frozen" do
+      it "returns false when neither the List nor its inner-array is frozen" do
         expect( subject._frozen? ).to eq( false )
       end
 
-      it "returns false when the MWIA::List is not frozen and its inner-array is frozen" do
+      it "returns false when the List is not frozen and its inner-array is frozen" do
         inner_array.freeze
         expect( subject._frozen? ).to eq( false )
       end
 
-      it "returns true when the MWIA::List is frozen" do
+      it "returns true when the List is frozen" do
         subject.freeze
         expect( subject._frozen? ).to eq( true )
       end
@@ -506,8 +505,8 @@ module MWIA_ListSpec
           {:a  => 1 },
           1,
           {:b => 2 },
-          MWIA::Map.new(:b => 2 ),
-          MWIA::Map.new(:b => 2 ),
+          Map.new(:b => 2 ),
+          Map.new(:b => 2 ),
         ]
       end
 
@@ -518,7 +517,7 @@ module MWIA_ListSpec
           {'a' => 1 },
           {:a  => 1 },
           {:b => 2 },
-          MWIA::Map.new(:b => 2 ),
+          Map.new(:b => 2 ),
         ]
         expect( actual_result ).to eq( expected_result )
       end
@@ -541,7 +540,7 @@ module MWIA_ListSpec
         expect( subject == 'abc' ).to eq( false )
       end
 
-      it "returns false for an MWIA::List with corresponding entries, the externalizations of which are not all equal" do
+      it "returns false for an List with corresponding entries, the externalizations of which are not all equal" do
         other = described_class.new( [
           1,
           {'a' => :too },
@@ -561,7 +560,7 @@ module MWIA_ListSpec
         expect( subject == other ).to eq( false )
       end
 
-      it "returns false for an MWIA::List with corresponding entries, the externalizations of which are not all equal" do
+      it "returns false for an List with corresponding entries, the externalizations of which are not all equal" do
         other = described_class.new( [
           1,
           {'a' => :too },
@@ -581,7 +580,7 @@ module MWIA_ListSpec
         expect( subject == other ).to eq( true )
       end
 
-      it "returns true for an MWIA::List with corresponding entries, the externalizations of which are all equal" do
+      it "returns true for an List with corresponding entries, the externalizations of which are all equal" do
         other = described_class.new( [
           1,
           {'a' => 2 },
@@ -596,22 +595,22 @@ module MWIA_ListSpec
       before do
         inner_array <<
           1 <<
-          MWIA::Map.new('b' => 2 )
+          Map.new('b' => 2 )
       end
 
-      it "returns false, given an object that is not an MWIA::List" do
+      it "returns false, given an object that is not an List" do
         expect( subject.eql?( inner_array ) ).to eq( false )
       end
 
-      it "returns false, given an MWIA::List with an inner array not #eql? to its own" do
-        other = MWIA::List.new( [
+      it "returns false, given an List with an inner array not #eql? to its own" do
+        other = List.new( [
           1,
           {'b' => 2 }
         ] )
         expect( subject.eql?( other ) ).to eq( false )
       end
 
-      it "returns true, given an MWIA::List with an inner array that is #eql? to its own" do
+      it "returns true, given an List with an inner array that is #eql? to its own" do
         other = subject.dup
         expect( subject.eql?( other ) ).to eq( true )
       end
@@ -628,8 +627,8 @@ module MWIA_ListSpec
 
       expect( items ).to eq( [
         1,
-        MWIA::Map.new( a: 2 ), 
-        MWIA::List.new( [ { b: 3 } ] )
+        Map.new( a: 2 ), 
+        List.new( [ { b: 3 } ] )
       ] )
 
       expect( subject.entries ).to eq( items )

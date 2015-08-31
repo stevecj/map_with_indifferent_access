@@ -1,14 +1,12 @@
 module MapWithIndifferentAccess
 
   module Values
-    include MapWithIndifferentAccess::WithConveniences
-
     extend self
 
     def externalize(obj)
       (
-        MWIA::Map.try_convert( obj ) ||
-        MWIA::List.try_convert( obj ) ||
+        Map.try_convert( obj ) ||
+        List.try_convert( obj ) ||
         obj
       )
     end
@@ -17,8 +15,8 @@ module MapWithIndifferentAccess
 
     def internalize(obj)
       (
-        MWIA::Map.try_deconstruct( obj ) ||
-        MWIA::List.try_deconstruct( obj ) ||
+        Map.try_deconstruct( obj ) ||
+        List.try_deconstruct( obj ) ||
         obj
       )
     end

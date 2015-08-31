@@ -1,12 +1,11 @@
 require 'spec_helper'
 
-module MWIA_ValuesSpec
-  include MapWithIndifferentAccess::WithConveniences
+module MapWithIndifferentAccess
 
-  describe MapWithIndifferentAccess::Values do
+  describe Values do
 
     describe '#externalize / #>>' do
-      it "returns the given object when not an Array, Hash, MWIA::Map, or MWIA::List" do
+      it "returns the given object when not an Array, Hash, Map, or List" do
         expect( subject >>  nil ).to eq( nil )
         expect( subject >> 'abc').to eq('abc')
         expect( subject >>  123 ).to eq( 123 )
@@ -34,7 +33,7 @@ module MWIA_ValuesSpec
     end
 
     it "returns the given List instance" do
-      given_array_wrapper = MWIA::List.new
+      given_array_wrapper = List.new
       result = subject >> given_array_wrapper
       expect( result ).to equal( given_array_wrapper )
     end
@@ -49,12 +48,12 @@ module MWIA_ValuesSpec
       end
 
       it "returns the inner hash map from a given Map" do
-        map = MWIA::Map.new
+        map = Map.new
         expect( subject << map ).to equal( map.inner_map )
       end
 
-      it "returns the inner array from a given MWIA::List" do
-        wrapped_array = MWIA::List.new
+      it "returns the inner array from a given List" do
+        wrapped_array = List.new
         expect( subject << wrapped_array ).to equal( wrapped_array.inner_array )
       end
     end
