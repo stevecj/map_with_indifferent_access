@@ -420,18 +420,17 @@ module MapWithIndifferentAccess
     # {#uniq} on an instance that has first had its keys
     # deeply-stringified or deeply-symbolized.
     #
+    # @return [List]
+    #
     # @see #uniq!
     def uniq
       dup.uniq!
     end
 
-    #TODO: Fix this. Currently will return the inner array
-    #      instead of the target.
-
     # Deletes duplicate items from the target's {#inner_array},
     # leaving only unique items remaining. Items are considered
-    # equal if their #hash values are equal and comparison using
-    # `#eql?` returns `true`.
+    # equal if their `#hash` values are equal and comparison
+    # using `#eql?` returns `true`.
     #
     # Note that this does not recongnize items of [Map] type as
     # equal just because they are equal by `#==`, which can be
@@ -439,16 +438,23 @@ module MapWithIndifferentAccess
     # [String]/[Symbol] type. You might therefore wish to call
     # {#uniq} on an instance that has first had its keys
     # deeply-stringified or deeply-symbolized.
-    def_delegator :inner_array, :uniq!
+    #
+    # @return [List]
+    #
+    # @see #uniq
+    def uniq!
+      inner_array.uniq!
+      self
+    end
 
-    # Equality. The target is equal to the given array if both
-    # contain the same number of elements, and externalizations
-    # of corresponding items in each are equal according to
-    # `#==`.
+    # Equality. The target is equal to the given `Array`-like
+    # object if both contain the same number of elements, and
+    # externalizations of corresponding items in itself and the
+    # given object are equal according to `#==`.
     #
     # @return [Boolean]
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see Values#externalize
     def ==(other)
       same_class = self.class === other
 
@@ -462,15 +468,15 @@ module MapWithIndifferentAccess
       zip( other ).all? { |(v,other_v)| v == Values >> other_v }
     end
 
-    # Calls the given block once for each element in the
-    # target's {#inner_array}, passing the externalization of
-    # the element as a parameter to the block.
+    # Calls the given block once for each item in the target's
+    # {#inner_array}, passing the externalization of the item to
+    # the block.
     #
     # @see MapWithIndifferentAccess::Values#externalize
     #
     # @overload each
     #   @yieldparam item
-    #   @return [MapWithIndifferentAccess::List]
+    #   @return [List]
     #
     # @overload each
     #   @return [Enumerator]

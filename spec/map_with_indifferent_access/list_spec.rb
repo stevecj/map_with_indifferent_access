@@ -492,7 +492,7 @@ module MapWithIndifferentAccess
       end
     end
 
-    describe '#uniq' do
+    context "de-duplication of elements" do
       before do
         inner_array.replace build_initial_content
       end
@@ -510,16 +510,37 @@ module MapWithIndifferentAccess
         ]
       end
 
-      it "returns a new instance with inner array containing unique entries from the target compared using #hash and #eql?" do
-        actual_result = subject.uniq
-        expected_result = [
-          1,
-          {'a' => 1 },
-          {:a  => 1 },
-          {:b => 2 },
-          Map.new(:b => 2 ),
-        ]
-        expect( actual_result ).to eq( expected_result )
+      describe '#uniq' do
+        it "returns a new instance with inner array containing unique entries from the target compared using #hash and #eql?" do
+          actual_result = subject.uniq
+          expected_result = [
+            1,
+            {'a' => 1 },
+            {:a  => 1 },
+            {:b => 2 },
+            Map.new(:b => 2 ),
+          ]
+          expect( actual_result.inner_array ).to eq( expected_result )
+        end
+      end
+
+      describe '#uniq!' do
+        it "removes duplicate entries from the list" do
+          subject.uniq!
+
+          expected_result = [
+            1,
+            {'a' => 1 },
+            {:a  => 1 },
+            {:b => 2 },
+            Map.new(:b => 2 ),
+          ]
+          expect( subject.inner_array ).to eq( expected_result )
+        end
+
+        it "returns the target List" do
+          expect( subject.uniq! ).to equal( subject )
+        end
       end
     end
 
