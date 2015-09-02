@@ -4,10 +4,9 @@ module MapWithIndifferentAccess
     extend Forwardable
     include MapWithIndifferentAccess::WrapsCollection
 
-    # Try to convert `from_obj` into a
-    # {MapWithIndifferentAccess::List}.
+    # Try to convert `from_obj` into a {List}.
     #
-    # @return [MapWithIndifferentAccess::List]
+    # @return [List]
     #   converted object if `from_obj` is convertible.
     #
     # @return [nil]
@@ -36,19 +35,18 @@ module MapWithIndifferentAccess
     attr_reader :inner_array
     alias inner_collection inner_array
 
-    # Returns a new instance of {MapWithIndifferentAccess::List}
-    # that encapsulates a new empty `::Array` or the `::Array`
-    # coerced from the given `basis`.
+    # Initializes a new instance of {List} that encapsulates a
+    # new empty `Array` or the `Array` coerced from the given
+    # `basis`.
     #
-    # When a {MapWithIndifferentAccess::List} is given as a
-    # basis, this results on the given and new instances sharing
-    # the same {#inner_array}. There is no obvious reason to do
-    # that on purpose, but there is also no harm in allowing it
-    # to happen.
+    # When a {List} is given as a `basis`, this results on the
+    # given and new instances sharing the same {#inner_array}.
+    # There is no obvious reason to do that on purpose, but there
+    # is also no particular harm in allowing it to happen.
     #
-    # @param [::Array, MapWithIndifferentAccess::List, Object] basis
-    #   An `::Array` or an object that can be implicitly coerced to
-    #   an `::Array`
+    # @param [Array, List, Object] basis
+    #   An `Array` or an object that can be implicitly coerced to
+    #   an `Array`
     def initialize(basis = [])
       use_basis = basis
       use_basis = basis.inner_array if self.class === basis
@@ -66,9 +64,9 @@ module MapWithIndifferentAccess
     #
     # @return the given value or array.
     #
-    # @see MapWithIndifferentAccess::Values#internalize
+    # @see Values#internalize
     # @see #push
-    # @see #unshift.
+    # @see #unshift
     #
     # @overload []=(index, value)
     #   @param index [Fixnum]
@@ -77,11 +75,11 @@ module MapWithIndifferentAccess
     # @overload []=(start, length, array_or_value)
     #   @param start [Fixnum]
     #   @param length [Fixnum]
-    #   @param array_or_value [::Array, MapWithIndifferentAccess::List Object, nil]
+    #   @param array_or_value [Array, List Object, nil]
     #
     # @overload []=(range, array_or_value)
     #   @param range [Ramge]
-    #   @param array_or_value [::Array, MapWithIndifferentAccess::List, Object, nil]
+    #   @param array_or_value [Array, List, Object, nil]
     def []=(index, length_or_value, *maybe_value)
       arg_count = 2 + maybe_value.length
       unless (2..3) === arg_count
@@ -116,7 +114,7 @@ module MapWithIndifferentAccess
     #
     #   Externalizes the result before returning it.
     #
-    #   @see MapWithIndifferentAccess::Values#externalize
+    #   @see Values#externalize
     #
     #   @overload [](index)
     #     @param index [Fixnum]
@@ -125,11 +123,11 @@ module MapWithIndifferentAccess
     #   @overload [](start, length)
     #     @param start [Fixnum]
     #     @param length [Fixnum]
-    #     @return [MapWithIndifferentAccess::List]
+    #     @return [List]
     #
     #   @overload [](range)
-    #     @param range [Ramge]
-    #     @return [MapWithIndifferentAccess::List]
+    #     @param range [Range]
+    #     @return [List]
     #
     #   @overload slice(index)
     #     @param index [Fixnum]
@@ -138,11 +136,11 @@ module MapWithIndifferentAccess
     #   @overload slice(start, length)
     #     @param start [Fixnum]
     #     @param length [Fixnum]
-    #     @return [MapWithIndifferentAccess::List]
+    #     @return [List]
     #
     #   @overload slice(range)
-    #     @param range [Ramge]
-    #     @return [MapWithIndifferentAccess::List]
+    #     @param range [Range]
+    #     @return [List]
 
     ['[]', 'slice'].each do |method_name|
       class_eval <<-EOS, __FILE__, __LINE__ + 1
@@ -166,9 +164,9 @@ module MapWithIndifferentAccess
       EOS
     end
 
-    # Returns the externalization of the element at index. A
-    # negative index counts from the end of self. Returns nil if
-    # the index is out of range.
+    # Returns the externalization of the element at `index`. A
+    # negative index counts from the end of the list. Returns
+    # `nil` if the index is out of range.
     #
     # @see #[]
     def at(index)
@@ -176,14 +174,14 @@ module MapWithIndifferentAccess
       Values >> item
     end
 
-    # Append. Pushes the given object on to the end of this
-    # array. This expression returns the array itself, so several
-    # appends may be chained together.
+    # Append. Pushes the given object on to the end of the list.
+    # Returns the array itself, so several appends may be chained
+    # together.
     #
     # Internalizes the given onject before appending it to the
     # target's {#inner_array}.
     #
-    # @return [MapWithIndifferentAccess::List]
+    # @return [List]
     # @see #push
     def <<(value)
       value = Values << value
@@ -191,31 +189,34 @@ module MapWithIndifferentAccess
       self
     end
 
-    # Append. Pushes the given object(s) on to the end of this
-    # array. Internalizes the value(s) before appending to the
+    # Append. Pushes the given object(s) on to the end of the
+    # list. Returns the array itself, so several appends may be
+    # chained together.
+    #
+    # Internalizes each given object before appending it to the
     # target's {#inner_array}.
     #
-    # This expression returns the array itself, so several
-    # appends may be chained together. See also {#pop} for the
-    # opposite effect.
-    #
-    # @return MapWithIndifferentAccess::List
+    # @return [List]
     # @see #<<
     # @see #pop
-    # @see MapWithIndifferentAccess::Values#internalize
+    # @see Values#internalize
     def push(*values)
       values.map!{ |v| Values << v }
       inner_array.push *values
       self
     end
 
-    # Prepends objects to the front of the array, moving other
-    # elements upwards. Internalizes the values before prepending
-    # them to the target's {#inner_array}. See also {#shift} for
-    # the opposite effect.
+    # Prepends objects to the front of the list, moving other
+    # elements upwards.
     #
-    # @return MapWithIndifferentAccess::List
-    # @see MapWithIndifferentAccess::Values#internalize
+    # Internalizes each value before prepending it to the
+    # target's {#inner_array}.
+    #
+    # See also {#shift} for the opposite effect.
+    #
+    # @return [List]
+    # @see #shift
+    # @see Values#internalize
     def unshift(*values)
       values.map!{ |v| Values << v }
       inner_array.unshift *values
@@ -223,35 +224,37 @@ module MapWithIndifferentAccess
     end
 
     # Inserts the given values before the element with the given
-    # index. Internalizes the values before inserting them into
-    # the target's {#inner_array}.
+    # index.
+    #
+    # Internalizes the values before inserting them into the
+    # target's {#inner_array}.
     #
     # Negative indices count backwards from the end of the array,
     # where -1 is the last element. If a negative index is used,
     # the given values will be inserted after that element, so
     # using an index of -1 will insert the values at the end of
-    # the array.
+    # the list.
     #
-    # @return MapWithIndifferentAccess::List
-    # @see MapWithIndifferentAccess::Values#internalize
+    # @return [List]
+    # @see Values#internalize
     def insert(index, *values)
       values.map!{ |v| Values << v }
       inner_array.insert(index, *values)
       self
     end
 
-    # Returns a {MapWithIndifferentAccess::List} containing the
-    # elements in self corresponding to the given selector(s).
+    # Returns a {List} containing the elements in self
+    # corresponding to the given selector(s).
     #
-    # The selectors may be either integer indices or ranges.
+    # The selectors may be either `Integer` indices or
+    # `Range`s.
     #
-    # @return MapWithIndifferentAccess::List
+    # @return List
     def values_at(*indexes)
       inner_result = inner_array.values_at( *indexes )
       Values >> inner_result
     end
 
-    # @method fetch
     # Tries to retrieve the element at position `index`, but
     # raises an `IndexError` exception or uses a default value
     # when an invalid index is referenced.
@@ -287,7 +290,6 @@ module MapWithIndifferentAccess
       Values >> item
     end
 
-    # @!method shift
     # Removes and returns the first element or first `n` elements
     # of the array, shifting all of the other elements downward.
     #
@@ -296,7 +298,7 @@ module MapWithIndifferentAccess
     #
     # See {#unshift} for the opposite effect.
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see Values#externalize
     #
     # @overload shift()
     #   Removes the first element and returns it, shifting all
@@ -306,11 +308,11 @@ module MapWithIndifferentAccess
     #   @return [Object, nil]
     #
     # @overload shift(n)
-    #   Returns a {MapWithIndifferentAccess::List} of the first
-    #   `n` elements (or less) just like `array.slice!(0, n)`
-    #   does, but also removing those elements from the target.
+    #   Returns a {List} of the first `n` elements (or less) just
+    #   like `array.slice!(0, n)` does, but also removing those
+    #   elements from the target.
     #
-    #   @return [MapWithIndifferentAccess::List]
+    #   @return [List]
     def shift(*maybe_n)
       arg_count = maybe_n.length
       unless (0..1) === arg_count
@@ -324,7 +326,6 @@ module MapWithIndifferentAccess
       end
     end
 
-    # @!method pop
     # Removes and returns the last element or last `n` elements
     # of the array.
     #
@@ -346,6 +347,7 @@ module MapWithIndifferentAccess
     #   `n` elements (or less) just like `array.slice!(-n, n)`
     #   does, but also removing those elements from the target.
     #
+    #   @param n [Fixnum]
     #   @return [MapWithIndifferentAccess::List]
     def pop(*maybe_n)
       arg_count = maybe_n.length
@@ -360,14 +362,15 @@ module MapWithIndifferentAccess
       end
     end
 
-    # Deletes the element at the specified index, returning the
+    # Deletes the element at the specified `index`, returning the
     # externalization of that element, or `nil` if the index is
     # out of range.
     #
+    # @param index [Fixnum]
     # @return [Object, nil]
     #
     # @see #slice
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see Values#externalize
     def delete_at(index)
       inner_result = inner_array.delete_at( index )
       Values >> inner_result
@@ -379,7 +382,7 @@ module MapWithIndifferentAccess
     # Returns the externalization of the last deleted item if
     # applicable.
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see Values#externalize
     #
     # @overload delete(obj)
     #   Returns `nil` if no matching items are found.
@@ -407,30 +410,35 @@ module MapWithIndifferentAccess
     end
 
     # Returns a new instance with duplicate items omitted.
-    # Items are considered equal if their #hash values are equal
-    # and comparison using #eql? returns `true`.
-    # Note that this does not recongnize
-    # [MapWithIndifferentAccess::Map] items as equal just because
-    # they are equal by #==, which can be true when they have
-    # equivalent keys that differ by [String]/[Symbol] type.
-    # You might therefore wish to call #uniq on an instance that
-    # has first had its keys deeply-stringified or
-    # deeply-symbolized.
+    # Items are considered equal if their `#hash` values are
+    # equal and comparison using `#eql?` returns `true`.
+    #
+    # Note that this does not recongnize items of [Map] type as
+    # equal just because they are equal by `#==`, which can be
+    # the case when they have equivalent keys that differ by
+    # [String]/[Symbol] type. You might therefore wish to call
+    # {#uniq} on an instance that has first had its keys
+    # deeply-stringified or deeply-symbolized.
+    #
+    # @see #uniq!
     def uniq
       dup.uniq!
     end
 
-    # Deletes duplicate items from the target's inner array,
-    # leaving only unique items remaining.
-    # Items are considered equal if their #hash values are equal
-    # and comparison using #eql? returns `true`.
-    # Note that this does not recongnize
-    # [MapWithIndifferentAccess::Map] items as equal just because
-    # they are equal by #== (which can be true when they have
-    # equivalent keys that differ by [String]/[Symbol] type).
-    # You might therefore wish to call #uniq on an instance that
-    # has first had its keys deeply-stringified or
-    # deeply-symbolized.
+    #TODO: Fix this. Currently will return the inner array
+    #      instead of the target.
+
+    # Deletes duplicate items from the target's {#inner_array},
+    # leaving only unique items remaining. Items are considered
+    # equal if their #hash values are equal and comparison using
+    # `#eql?` returns `true`.
+    #
+    # Note that this does not recongnize items of [Map] type as
+    # equal just because they are equal by `#==`, which can be
+    # the case when they have equivalent keys that differ by
+    # [String]/[Symbol] type. You might therefore wish to call
+    # {#uniq} on an instance that has first had its keys
+    # deeply-stringified or deeply-symbolized.
     def_delegator :inner_array, :uniq!
 
     # Equality. The target is equal to the given array if both

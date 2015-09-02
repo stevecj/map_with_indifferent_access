@@ -5,22 +5,31 @@ A wrapper around Hash that treats String and Symbol keys as interchangeable.
 Note that this gem is still in early development stages and does not yet have
 any released versions.
 
-Behaves similarly to HashWithIndifferentAccess from ActiveSupport, but with
+Provides a `HashWithIndifferentAccess::Map` class that acts as a wrapper
+around a `Hash` and provides `String`/`Symbol` indifferent access to its
+entries.
+
+## Comparison to ActiveSupport's HashWithIndifferentAccess
+
+Behaves similarly to `HashWithIndifferentAccess` from ActiveSupport, but with
 the following differences.
 
-As of this writing, in order to have HashWithIndifferentAccess work as
+As of this writing, in order to have `HashWithIndifferentAccess` work as
 expected, it is necessary to load pretty much all of ActiveSupport, which
 modifies the behavior of other classes in ways that you might or might not
-want. MapWithIndifferentAccess does not currently alter any of the standard
-Ruby classes, but might make some very careful changes to those in future
-versions.
+want.
 
-When a Hash-type object is added as a value into a HashWithIndifferentAccess,
-it is converted into a new HashWithIndifferentAccess that is entirely
-independent of the provided object. When reading a Hash-type object from
-a MapWithIndifferentAccess, on the other hand, it is wrapped in a
-MapWithIndifferentAccess that remains consistent with the originally provided
-object.
+`MapWithIndifferentAccess` does not currently alter any of the standard Ruby
+classes, but might make some very careful changes to those in future versions.
+
+When a Hash-type object is added as a value into a
+`HashWithIndifferentAccess`, it is copied into a new
+`HashWithIndifferentAccess` that is entirely independent of the provided
+`Hash`.
+
+When reading a `Hash` from a `MapWithIndifferentAccess::Map`, on the other
+hand, it is wrapped in a `MapWithIndifferentAccess::Map` that remains
+coupled to the originally provided `Hash` instance.
 
 Code:
 
@@ -44,12 +53,13 @@ Output:
 
     "BAR"
 
-When a Hash-type object is in an array that is a value within a
-HashWithIndifferentAccess, that object is automatically converted into a
-HashWithIndifferentAccess. When reading an array from a value in a
-MapWithIndifferentAccess, it is wrapped in a MapWithIndifferentAccess::Array
-which returns wrapped items for any Array-type or Hash-type items that are
-read from it.
+When a `Hash` is added to an `Array` that is the value of an entry in a
+`HashWithIndifferentAccess`, that `Hash` is automatically copied into a
+`HashWithIndifferentAccess` that is independent of the original `Hash`.
+
+When reading an array from a value in a `MapWithIndifferentAccess::Map`, it is
+wrapped in a `MapWithIndifferentAccess::Array` which returns wrapped items for
+any `Array` or `Hash` items that are read from it.
 
 
 ## Installation

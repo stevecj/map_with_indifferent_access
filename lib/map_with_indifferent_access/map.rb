@@ -46,9 +46,10 @@ module MapWithIndifferentAccess
       :rehash,
     )
 
-    # Returns a new instance of {MapWithIndifferentAcces::Maps}
-    # that encapsulates a new empty `::Array` or the `::Array`
-    # coerced from the given `basis`.
+    # Initializes a new instance of
+    # {MapWithIndifferentAccess::Map} that encapsulates a new
+    # empty `::Array` or the `::Array` coerced from the given
+    # `basis`.
     #
     # When a {MapWithIndifferentAccess::Map} is given as a basis,
     # this results on the given and new instances sharing the

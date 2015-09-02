@@ -10,6 +10,12 @@ module MapWithIndifferentAccess
   class << self
     extend Forwardable
 
+    # @!method new
+    #   Creates and returns a new instance of
+    #   {Map}.
+    #
+    #   @return [Map]
+    #   @see Map#initialize
     def_delegator Map, :new
   end
 end
