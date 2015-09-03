@@ -126,6 +126,12 @@ module MapWithIndifferentAccess
         } )
       end
 
+      it "returns the value given for storage (not the internalized value)" do
+        entry_value = described_class.new( a: 5 )
+        result = subject.send(:[]=, 1, entry_value )
+        expect( result ).to eq( entry_value )
+      end
+
       it "retrieves the externalization of the inner-map hash's default value for an external key with no conformed match" do
         inner_map.default_proc = ->(h,k) { { key: k } }
         expect( subject['xyz'] ).to eq( described_class.new( key: 'xyz' ) )

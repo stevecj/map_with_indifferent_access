@@ -4,10 +4,9 @@ module MapWithIndifferentAccess
     extend Forwardable
     include MapWithIndifferentAccess::WrapsCollection
 
-    # Try to convert `from_obj` into a
-    # {MapWithIndifferentAccess::Map}.
+    # Try to convert `from_obj` into a {Map}.
     #
-    # @return [MapWithIndifferentAccess::Map]
+    # @return [Map]
     #   converted object if `from_obj` is convertible.
     #
     # @return [nil]
@@ -37,7 +36,26 @@ module MapWithIndifferentAccess
     alias inner_collection inner_map
 
     # @!method default=(other)
-    # Sets the default value in the target's {#inner_map} `Hash`.
+    #   Sets the default value in the target's {#inner_map} `Hash`.
+
+    # @!method keys
+    #  Returns a new `Array` populated with the keys from this
+    #  {Map}.
+    #
+    #  @return [Array]
+    #  @see #values
+
+    # @!method rehash
+    #   Rebuilds the target's {#inner_map} `Hash` based on the
+    #   current `#hash` values for each key. If values of key
+    #   objects have changed since they were inserted, this will
+    #   re-index that `Hash`.
+    #
+    #   If {#rehash} is called while an iterator is traversing
+    #   the {Map} or its {#inner_map} `Hash`, a `RuntimeError` will
+    #   be raised in the iterator.
+    #
+    #   @return [Map]
 
     def_delegators(
       :inner_map,
@@ -46,19 +64,18 @@ module MapWithIndifferentAccess
       :rehash,
     )
 
-    # Initializes a new instance of
-    # {MapWithIndifferentAccess::Map} that encapsulates a new
-    # empty `::Array` or the `::Array` coerced from the given
+    # Initializes a new {Map} that encapsulates a new
+    # empty `Array` or the `Array` coerced from the given
     # `basis`.
     #
-    # When a {MapWithIndifferentAccess::Map} is given as a basis,
-    # this results on the given and new instances sharing the
-    # same {#inner_map}. There is no obvious reason to do that on
-    # purpose, but there is also no harm in allowing it to happen.
+    # When a {Map} is given as a basis, this results on the given
+    # and new instances sharing the same {#inner_map}. There is
+    # no obvious reason to do that on purpose, but there is also
+    # no likely harm in allowing it to happen.
     #
     # @param [::Hash, MapWithIndifferentAccess::Map, Object] basis
-    #   A `::Hash` or an object that can be implicitly coerced to
-    #   a `::Hash`
+    #   A `Hash` or an object that can be implicitly coerced to a
+    #   `::Hash`
     def initialize(basis={})
       use_basis = basis
       use_basis = basis.inner_map if self.class === basis
@@ -73,12 +90,12 @@ module MapWithIndifferentAccess
     #
     # When `given_key` is a `String` that is not a key in the
     # target's {#inner_map}, returns the symbolization of
-    # `given_key` if that symbolization is a key in the
+    # `given_key` if that symbolization _is_ a key in the
     # {#inner_map}.
     #
     # When `given_key` is a `Symbol` that is not a key in the
     # target's {#inner_map}, returns the stringification of
-    # `given_key` if that stringification is a key in the
+    # `given_key` if that stringification _is_ a key in the
     # {#inner_map}.
     def conform_key(given_key)
       case given_key
@@ -98,18 +115,21 @@ module MapWithIndifferentAccess
     #
     # When the `key` conforms to a key in the target map, then the
     # value of the matching entry in the target's {#inner_map} is 
-    # eplaced with the internalization of `value`.
+    # replaced with the internalization of `value`.
     #
     # When `key` does not conform to a key in the target map, then
     # a new entry is added using the given `key` and the
     # internalization of `value`.
     #
+    # Returns the given `value`.
+    #
     # @see #conform_key
     # @see MapWithIndifferentAccess::Values#internalize
     def[]=(key, value)
-      value = Values << value
       key = conform_key( key )
-      inner_map[ key ] = value
+      intern_value = Values << value
+      inner_map[ key ] = intern_value
+      value
     end
 
     alias store []=
@@ -121,6 +141,9 @@ module MapWithIndifferentAccess
     # When there is no entry with a conforming key, returns the
     # externalization of the {#inner_map} `Hash`'s default value
     # for the given `key` (normally `nil`).
+    #
+    # @see #conform_key
+    # @see MapWithIndifferentAccess::Values#externalize
     def[](key)
       key = conform_key( key )
       value = inner_map[ key ]
@@ -236,6 +259,8 @@ module MapWithIndifferentAccess
       end
       self
     end
+
+    #FIXME: Need to define #values .
 
     def delete(key)
       key = conform_key( key )
