@@ -150,7 +150,7 @@ module MapWithIndifferentAccess
     # for the given `key` (normally `nil`).
     #
     # @see #conform_key
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see Values#externalize
     def[](key)
       key = conform_key( key )
       value = inner_map[ key ]
@@ -216,13 +216,20 @@ module MapWithIndifferentAccess
       true
     end
 
-    # When a block argument is given, calls the block once for each of the
-    # target's entries, passing the entry's key and the externalization of
-    # its value as a parameters, and then returns the target object.
+    # When a block argument is given, calls the block once for
+    # each of the target's entries, passing the entry's key and
+    # externalized value as parameters, and then returns the
+    # target object.
     #
-    # When no block argument is given, returns an enumerator.
+    # When no block argument is given, returns an `Enumerator`.
     #
-    # @return [MapWithIndifferentAccess::Map]
+    # @overload each
+    #   @yieldparam key
+    #   @yieldparam value
+    #   @return [MapWithIndifferentAccess::Map]
+    #
+    # @overload each
+    #   @return [Enumerator]
     def each
       return enum_for(:each ) unless block_given?
 
@@ -239,7 +246,7 @@ module MapWithIndifferentAccess
     # target's keys, passing the key as a parameter, and then returns the
     # target object.
     #
-    # When no block argument is given, returns an enumerator.
+    # When no block argument is given, returns an `Enumerator`.
     #
     # @return [MapWithIndifferentAccess::Map]
     def each_key
@@ -254,7 +261,7 @@ module MapWithIndifferentAccess
     # target's entries, passing externalization the entry value as a parameter,
     # and then returns the target.
     #
-    # When no block argument is given, returns an enumerator.
+    # When no block argument is given, returns an `Enumerator`.
     #
     # @return [MapWithIndifferentAccess::Map]
     def each_value
@@ -267,8 +274,28 @@ module MapWithIndifferentAccess
       self
     end
 
-    #FIXME: Need to define #values .
+    # Returns a {List} containing the entry values from the target {Map}.
+    #
+    # @return [List]
+    def values
+      List.new( inner_map.values )
+    end
 
+    # Delete the externalization of the value associated with the
+    # conformation of the given `key` or default value.
+    #
+    # @overload delete(key)
+    #   Returns the externalization of the value returned from
+    #   the {#inner_map} `Hash` on deletion.
+    #
+    # @overload delete(key)
+    #   @yieldparam key
+    #
+    #   Returns the externalization of the value returned by the
+    #   given block for the given `key`.
+    #
+    # @see #conform_key
+    # @see Values#externalize
     def delete(key)
       key = conform_key( key )
       value = if block_given?
@@ -279,6 +306,21 @@ module MapWithIndifferentAccess
       Values >> value
     end
 
+    # Returns a new {Map} consisting of entries for which the
+    # block returns `false`, given the entry's key and
+    # externalized value.
+    #
+    # If no block is given, then an `Enumerator` is returned
+    # instead.
+    #
+    # @overload reject
+    #   @yieldparam key
+    #   @return [Map]
+    #
+    # @overload reject
+    #   @return [Enumerator]
+    #
+    # @see Values#externalize
     def reject
       return enum_for(:reject ) unless block_given?
 
@@ -287,6 +329,18 @@ module MapWithIndifferentAccess
       }
     end
 
+    # Equivalent to {#delete_if}, but returns `nil` if no changes
+    # were made.
+    #
+    # @overload reject!
+    #   @yieldparam key
+    #   @yieldparam value
+    #   @return [Map, nil]
+    #
+    # @overload reject!
+    #   @return [Enumerator]
+    #
+    # @see #delete_if
     def reject!
       return enum_for(:reject!) unless block_given?
 
@@ -300,6 +354,21 @@ module MapWithIndifferentAccess
       has_rejections ? self : nil
     end
 
+    # Deletes every entry for which the block evaluates to
+    # `true` given the entry's key and externalized value.
+    #
+    # If no block is given, then an `Enumerator` is returned
+    # instead.
+    #
+    # @overload delete_if
+    #   @yieldparam key
+    #   @yieldparam value
+    #   @return [Map]
+    #
+    # @overload delete_if
+    #   @return [Enumerator]
+    #
+    # @see Values#externalize
     def delete_if
       return enum_for(:delete_if ) unless block_given?
 
@@ -311,6 +380,21 @@ module MapWithIndifferentAccess
       self
     end
 
+    # Returns a new {Map} consisting of entries for which the
+    # block returns `true`, given the entry's key and
+    # externalized value.
+    #
+    # If no block is given, then an `Enumerator` is returned
+    # instead.
+    #
+    # @overload select
+    #   @yieldparam key
+    #   @return [Map]
+    #
+    # @overload select
+    #   @return [Enumerator]
+    #
+    # @see Values#externalize
     def select
       return enum_for(:select ) unless block_given?
 
@@ -319,6 +403,18 @@ module MapWithIndifferentAccess
       }
     end
 
+    # Equivalent to {#keep_if}, but returns `nil` if no changes
+    # were made.
+    #
+    # @overload select!
+    #   @yieldparam key
+    #   @yieldparam value
+    #   @return [Map, nil]
+    #
+    # @overload select!
+    #   @return [Enumerator]
+    #
+    # @see #keep_if
     def select!
       return enum_for(:select!) unless block_given?
 
@@ -332,6 +428,21 @@ module MapWithIndifferentAccess
       has_rejections ? self : nil
     end
 
+    # Deletes every entry for which the block evaluates to
+    # `false`, given the entry's key and externalized value.
+    #
+    # If no block is given, then an `Enumerator` is returned
+    # instead.
+    #
+    # @overload keep_if
+    #   @yieldparam key
+    #   @yieldparam value
+    #   @return [Map]
+    #
+    # @overload keep_if
+    #   @return [Enumerator]
+    #
+    # @see Values#externalize
     def keep_if
       return enum_for(:keep_if ) unless block_given?
 
@@ -343,12 +454,27 @@ module MapWithIndifferentAccess
       self
     end
 
+    # Replace the contents of the target's {#inner_map} `Hash`
+    # with the deconstruction of the given `Hash`-like object.
+    #
+    # @return [Map]
+    #
+    # @see .try_deconstruct
     def replace(other)
       other_d = self.class.try_deconstruct( other ) || other
       inner_map.replace other_d
       return self
     end
 
+    # Searches through the map, comparing the conformation of
+    # `obj` with each entry's key using `==`. Returns a 2-element
+    # array containing the key and externalized value from the
+    # matching element or returns or `nil` if no match is found.
+    #
+    # @return [Array, nil]
+    #
+    # @see #rassoc
+    # @see #conform_key
     def assoc(obj)
       obj = conform_key( obj )
       entry = inner_map.assoc( obj )
@@ -359,11 +485,27 @@ module MapWithIndifferentAccess
       entry
     end
 
+    # Returns `true` if the internalization of `value` is present
+    # for some key in the target.
+    #
+    # @return [Boolean]
+    #
+    # @see Values#internalize
     def has_value?(value)
       value = Values >> value
       each_value.any? { |v| v == value }
     end
 
+    # Searches through the map, comparing the externalization of
+    # `value` with the externalized value of each entry using
+    # `==.` Returns a 2-element array containing the key and
+    # externalized value from the matching element or returns or
+    # `nil` if no match is found.
+    #
+    # @return [Array, nil]
+    #
+    # @see #assoc
+    # @see Values#externalize
     def rassoc(value)
       value = Values >> value
       entry = inner_map.detect { |(k, v)|

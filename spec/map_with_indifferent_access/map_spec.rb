@@ -429,7 +429,7 @@ module MapWithIndifferentAccess
       end
 
       shared_examples "deletes/retains entries" do |subj_method, delete_on, retain_on|
-        it "passes the key and externalized-value of each entry the given block and deletes those for which the block returns #{delete_on}" do
+        it "passes the key and externalized-value of each entry to the given block and deletes those for which the block returns #{delete_on}" do
           subject.send(subj_method){ |key,value|
             delete_it = 
               String === key ||
@@ -528,7 +528,7 @@ module MapWithIndifferentAccess
       end
 
       shared_examples "selects/rejects entries" do |subj_method, select_on, reject_on|
-        it "passes the key and externalized-value of each entry the given block and returns a new map containing those for which the block returns #{select_on}" do
+        it "passes the key and externalized-value of each entry to the given block and returns a new map containing those for which the block returns #{select_on}" do
           result = subject.send(subj_method){ |key,value|
             reject_it = 
               String === key ||
@@ -654,6 +654,24 @@ module MapWithIndifferentAccess
         expect{ enum.next }.to raise_exception( StopIteration )
       end
     end
+
+    describe '#values' do
+      before do
+        subject[ 1     ] = 1
+        subject['two'  ] = { a: 1 }
+        subject[:three ] = [ 9 ]
+      end
+
+      it "returns a List of entry values from the Map" do
+        actual_list = subject.values
+        expect( actual_list.inner_array ).to eq( [
+          1,
+          { a: 1 },
+          [ 9 ]
+        ] )
+      end
+    end
+
 
     describe '#clear' do
       before do
