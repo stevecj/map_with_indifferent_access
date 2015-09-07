@@ -177,7 +177,7 @@ module MapWithIndifferentAccess
     end
 
     # Returns `true` if the conformation of `key` is present in
-    # the target {#Map}.
+    # the target {Map}.
     #
     # @return [Boolean]
     def key?(key)

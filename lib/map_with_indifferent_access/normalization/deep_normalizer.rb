@@ -5,7 +5,7 @@ module MapWithIndifferentAccess
       attr_reader :strategy
 
       # Initializes a new DeepNormalizer with a given object that
-      # extends [KeyCoercion::Strategy].
+      # extends {KeyStrategy}.
       def initialize(strategy)
         @strategy = strategy
       end
@@ -18,8 +18,8 @@ module MapWithIndifferentAccess
       #
       # During this process, any hash entry values or array
       # items that are instances of
-      # [Map] or [List] are replaced with `Hash` or `Array`
-      # deconstructions respectively. If a [Map] or [List] is
+      # {Map} or {List} are replaced with `Hash` or `Array`
+      # deconstructions respectively. If a {Map} or {List} is
       # given, then the same type of object is returned.
       #
       # If a `Hash` or an object that resonds to `#to_hash` and
@@ -29,14 +29,14 @@ module MapWithIndifferentAccess
       #
       # If an `Array` or an object that resonds to `#to_ary` is
       # given, then an `Array` is returned. The same applies to
-      # each `Hash`/`Map` entry value or `Array`/`List` item that
+      # each `Hash`/{Map} entry value or `Array`/{List} item that
       # is traversed.
       #
       # If any keys, `Hash` entry values, or `Array` items are
       # replaced, then a new object is returned that includes
       # those replacements.  Otherwise, the given object is
       # returned. In either case, the contents of `obj` are not
-      # modified
+      # modified.
       def call(obj)
         if WrapsCollection === obj
           coerced_inner_col = recursively_coerce( obj )

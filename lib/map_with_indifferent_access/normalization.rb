@@ -2,33 +2,45 @@ require "map_with_indifferent_access/normalization/deep_normalizer"
 
 module MapWithIndifferentAccess
   module Normalization
-    extend self
+    class << self
+      # Deeply normalizes `Hash`-like and `Array`-like hash entry
+      # values and array items, preserving all of the existing key
+      # values (`String`, `Symbol`, or otherwise) from the inner
+      # collections.
+      #
+      # @see DeepNormalizer#call
+      def deeply_normalize(obj)
+        deep_basic_normalizer.call( obj )
+      end
 
-    # Deeply normalizes [Hash]-like and [Array]-like hash entry
-    # values and array items, preserving all of the existing key
-    # values from the inner collections ([String], [Symbol], or
-    # otherwise).  See
-    # [MapWithIndifferentAccess::Normalization::DeepNormalizer#call]
-    # for more details.
-    def deeply_normalize(obj)
-      deep_basic_normalizer.call( obj )
+      # Deeply coerces keys to `Symbol` type.
+      #
+      # @see DeepNormalizer#call
+      def deeply_symbolize_keys(obj)
+        deep_key_symbolizer.call( obj )
+      end
+
+      # Deeply coerces keys to `String` type.
+      #
+      # @see DeepNormalizer#call
+      def deeply_stringify_keys(obj)
+        deep_key_stringifier.call( obj )
+      end
+
+      private
+
+      def deep_basic_normalizer
+        @deep_basic_normalizer ||= DeepNormalizer.new( NullKeyStrategy )
+      end
+
+      def deep_key_symbolizer
+        @deep_key_symbolizer ||= DeepNormalizer.new( SymbolizationKeyStrategy )
+      end
+
+      def deep_key_stringifier
+        @deep_key_stringifier ||= DeepNormalizer.new( StringificationKeyStrategy )
+      end
     end
-
-    # Deeply coerces keys to [Symbol] type. See
-    # [MapWithIndifferentAccess::Normalization::DeepNormalizer#call]
-    # for more details.
-    def deeply_symbolize_keys(obj)
-      deep_key_symbolizer.call( obj )
-    end
-
-    # Deeply coerces keys to [String] type. See
-    # [MapWithIndifferentAccess::Normalization::DeepNormalizer#call]
-    # for more details.
-    def deeply_stringify_keys(obj)
-      deep_key_stringifier.call( obj )
-    end
-
-    private
 
     module KeyStrategy
       def self.needs_coercion?(key)
@@ -38,10 +50,6 @@ module MapWithIndifferentAccess
       def self.coerce(key)
         raise NotImplementedError, "Including-module responsibility"
       end
-    end
-
-    def deep_basic_normalizer
-      @deep_basic_normalizer ||= DeepNormalizer.new( NullKeyStrategy )
     end
 
     module NullKeyStrategy
@@ -56,10 +64,6 @@ module MapWithIndifferentAccess
       end
     end
 
-    def deep_key_symbolizer
-      @deep_key_symbolizer ||= DeepNormalizer.new( SymbolizationKeyStrategy )
-    end
-
     module SymbolizationKeyStrategy
       extend Normalization::KeyStrategy
 
@@ -70,10 +74,6 @@ module MapWithIndifferentAccess
       def self.coerce(key)
         key.to_s.to_sym
       end
-    end
-
-    def deep_key_stringifier
-      @deep_key_stringifier ||= DeepNormalizer.new( StringificationKeyStrategy )
     end
 
     module StringificationKeyStrategy
