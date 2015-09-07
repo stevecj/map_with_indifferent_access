@@ -15,13 +15,13 @@ module MapWithIndifferentAccess
     # @!method length
     #   The number of entries in the collection.
     #
-    #   @return [fixnum]
+    #   @return [Fixnum]
     #   @see #size
 
     # @!method size
     #   The number of entries in the collection.
     #
-    #   @return [fixnum]
+    #   @return [Fixnum]
     #   @see #length
 
     # @!method empty?
@@ -80,7 +80,7 @@ module MapWithIndifferentAccess
     #   {#inner_collection} content will have the same hash code
     #   (and will match using {#eql?}).
     #
-    #   @return [fixnum]
+    #   @return [Fixnum]
 
     def_delegators(
       :inner_collection,

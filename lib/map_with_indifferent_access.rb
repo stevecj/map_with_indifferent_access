@@ -11,8 +11,7 @@ module MapWithIndifferentAccess
     extend Forwardable
 
     # @!method new
-    #   Creates and returns a new instance of
-    #   {Map}.
+    #   Creates and returns a new instance of {Map}.
     #
     #   @return [Map]
     #   @see Map#initialize
