@@ -72,7 +72,7 @@ module MapWithIndifferentAccess
     #
     # @return the given value or array.
     #
-    # @see Values#internalize
+    # @see Values.internalize
     # @see #push
     # @see #unshift
     #
@@ -122,7 +122,7 @@ module MapWithIndifferentAccess
     #
     #   Externalizes the result before returning it.
     #
-    #   @see Values#externalize
+    #   @see Values.externalize
     #
     #   @overload [](index)
     #     @param index [Fixnum]
@@ -207,7 +207,7 @@ module MapWithIndifferentAccess
     # @return [List]
     # @see #<<
     # @see #pop
-    # @see Values#internalize
+    # @see Values.internalize
     def push(*values)
       values.map!{ |v| Values << v }
       inner_array.push *values
@@ -224,7 +224,7 @@ module MapWithIndifferentAccess
     #
     # @return [List]
     # @see #shift
-    # @see Values#internalize
+    # @see Values.internalize
     def unshift(*values)
       values.map!{ |v| Values << v }
       inner_array.unshift *values
@@ -244,7 +244,7 @@ module MapWithIndifferentAccess
     # the list.
     #
     # @return [List]
-    # @see Values#internalize
+    # @see Values.internalize
     def insert(index, *values)
       values.map!{ |v| Values << v }
       inner_array.insert(index, *values)
@@ -269,7 +269,7 @@ module MapWithIndifferentAccess
     #
     # Returns the externalization of the retrieved value.
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see MapWithIndifferentAccess::Values.externalize
     #
     # @overload fetch(index)
     #   Tries to retrieve the element at position `index`, but
@@ -306,7 +306,7 @@ module MapWithIndifferentAccess
     #
     # See {#unshift} for the opposite effect.
     #
-    # @see Values#externalize
+    # @see Values.externalize
     #
     # @overload shift()
     #   Removes the first element and returns it, shifting all
@@ -342,7 +342,7 @@ module MapWithIndifferentAccess
     #
     # See {#push} for the opposite effect.
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see MapWithIndifferentAccess::Values.externalize
     #
     # @overload pop()
     #   Removes the last element and returns it. Returns nil if
@@ -378,7 +378,7 @@ module MapWithIndifferentAccess
     # @return [Object, nil]
     #
     # @see #slice
-    # @see Values#externalize
+    # @see Values.externalize
     def delete_at(index)
       inner_result = inner_array.delete_at( index )
       Values >> inner_result
@@ -390,7 +390,7 @@ module MapWithIndifferentAccess
     # Returns the externalization of the last deleted item if
     # applicable.
     #
-    # @see Values#externalize
+    # @see Values.externalize
     #
     # @overload delete(obj)
     #   Returns `nil` if no matching items are found.
@@ -462,7 +462,7 @@ module MapWithIndifferentAccess
     #
     # @return [Boolean]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def ==(other)
       same_class = self.class === other
 
@@ -480,7 +480,7 @@ module MapWithIndifferentAccess
     # {#inner_array}, passing the externalization of the item to
     # the block.
     #
-    # @see MapWithIndifferentAccess::Values#externalize
+    # @see MapWithIndifferentAccess::Values.externalize
     #
     # @overload each
     #   @yieldparam item

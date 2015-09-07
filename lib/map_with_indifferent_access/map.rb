@@ -131,7 +131,7 @@ module MapWithIndifferentAccess
     # Returns the given `value`.
     #
     # @see #conform_key
-    # @see MapWithIndifferentAccess::Values#internalize
+    # @see Values.internalize
     def[]=(key, value)
       key = conform_key( key )
       intern_value = Values << value
@@ -150,7 +150,7 @@ module MapWithIndifferentAccess
     # for the given `key` (normally `nil`).
     #
     # @see #conform_key
-    # @see Values#externalize
+    # @see Values.externalize
     def[](key)
       key = conform_key( key )
       value = inner_map[ key ]
@@ -201,7 +201,7 @@ module MapWithIndifferentAccess
     #
     # @return [Object, nil]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def key(value)
       entry = rassoc( value )
       entry ? entry.first : nil
@@ -320,7 +320,7 @@ module MapWithIndifferentAccess
     #   given block for the given `key`.
     #
     # @see #conform_key
-    # @see Values#externalize
+    # @see Values.externalize
     def delete(key)
       key = conform_key( key )
       value = if block_given?
@@ -345,7 +345,7 @@ module MapWithIndifferentAccess
     # @overload reject
     #   @return [Enumerator]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def reject
       return enum_for(:reject ) unless block_given?
 
@@ -393,7 +393,7 @@ module MapWithIndifferentAccess
     # @overload delete_if
     #   @return [Enumerator]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def delete_if
       return enum_for(:delete_if ) unless block_given?
 
@@ -419,7 +419,7 @@ module MapWithIndifferentAccess
     # @overload select
     #   @return [Enumerator]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def select
       return enum_for(:select ) unless block_given?
 
@@ -467,7 +467,7 @@ module MapWithIndifferentAccess
     # @overload keep_if
     #   @return [Enumerator]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def keep_if
       return enum_for(:keep_if ) unless block_given?
 
@@ -515,7 +515,7 @@ module MapWithIndifferentAccess
     #
     # @return [Boolean]
     #
-    # @see Values#internalize
+    # @see Values.internalize
     def has_value?(value)
       value = Values >> value
       each_value.any? { |v| v == value }
@@ -530,7 +530,7 @@ module MapWithIndifferentAccess
     # @return [Array, nil]
     #
     # @see #assoc
-    # @see Values#externalize
+    # @see Values.externalize
     def rassoc(value)
       value = Values >> value
       entry = inner_map.detect { |(k, v)|
@@ -577,8 +577,8 @@ module MapWithIndifferentAccess
     # @return [Map]
     #
     # @see #merge!
-    # @see Values#externalize
-    # @see Values#internalize
+    # @see Values.externalize
+    # @see Values.internalize
     def merge(other)
       if block_given?
         dup.merge!( other ){ |*args| yield *args }
@@ -618,8 +618,8 @@ module MapWithIndifferentAccess
     # @return [Map]
     #
     # @see #merge
-    # @see Values#externalize
-    # @see Values#internalize
+    # @see Values.externalize
+    # @see Values.internalize
     def merge!(other)
       other.each_pair do |(key, value)|
         key = conform_key( key )
@@ -645,7 +645,7 @@ module MapWithIndifferentAccess
     #
     # @return [Array,Object]
     #
-    # @see Values#externalize
+    # @see Values.externalize
     def shift
       if inner_map.empty?
         Values >> inner_map.shift
