@@ -20,6 +20,13 @@ module MapWithIndifferentAccess
       end
     end
 
+    # Try to convert `obj`, which might be a {Map} into a `Hash`.
+    #
+    # @return [Hash]
+    #   converted object if `obj` is convertible.
+    #
+    # @return [nil]
+    #   if `obj` cannot be converted for any reason.
     def self.try_deconstruct(obj)
       if self === obj
         obj.inner_map
