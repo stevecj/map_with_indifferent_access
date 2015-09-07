@@ -895,7 +895,7 @@ module MapWithIndifferentAccess
     end
 
     describe '#shift' do
-      it "returns the externalization of the inner-map hash's default externalized for an empty map" do
+      it "returns the externalization of the inner-map hash's default for an empty map" do
         # Yes, this does seem like WAT!? but is analogous to the
         # documented and actual behavior of Hash#shift, so we're
         # being consistent with that WAT.

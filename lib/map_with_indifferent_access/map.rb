@@ -176,6 +176,10 @@ module MapWithIndifferentAccess
       Values >> value
     end
 
+    # Returns `true` if the conformation of `key` is present in
+    # the target {#Map}.
+    #
+    # @return [Boolean]
     def key?(key)
       case key
       when String
@@ -191,16 +195,37 @@ module MapWithIndifferentAccess
     alias include? key?
     alias member?  key?
 
+    # Returns the key for an entry, the externalization of which
+    # is equal to the externalization of `value`. Returns `nil`
+    # if no match is found.
+    #
+    # @return [Object, nil]
+    #
+    # @see Values#externalize
     def key(value)
       entry = rassoc( value )
       entry ? entry.first : nil
     end
 
+    # Returns the default value, the value that would be returned
+    # by `<target>[key]` if the conformation of `key` did not exist
+    # in the target.
+    #
+    # @see #conform_key
     def default(key = nil)
       inner_default = inner_map.default( key )
       Values >> inner_default
     end
 
+    # Returns `true` if the entries in `other` (a {Map}, `Hash`,
+    # or other `Hash`-like object) are equal in numer and
+    # equivalent to the entries in the target {Map}.
+    #
+    # Entries are equivalent if their keys are equivalent with
+    # `String`/`Symbolic` indifference and their externalized
+    # values are equal using `==`.
+    #
+    # @return [Boolean]
     def ==(other)
       return true if equal?( other )
       other = self.class.try_convert( other )
@@ -520,6 +545,40 @@ module MapWithIndifferentAccess
       end
     end
 
+    # Returns a new {Map} containing the contents of `other` (a
+    # {Map}, `Hash`, or other `Hash`-like object) and of the
+    # target {Map}.
+    #
+    # Each entry in `other` with key that is equivalent to a key
+    # in the target (with `String`/`Symbol` indifference) is
+    # treated as a collision.
+    #
+    # @overload merge(other)
+    #   Each collision produces an entry with its key from the
+    #   entry in target and its value from the entry in
+    #   `other`.
+    #
+    # @overload merge(other)
+    #   @yieldparam key
+    #     The key from the target-side colliding entry.
+    #
+    #   @yieldparam oldval
+    #     The externalization of value from the target-side
+    #     colliding entry.
+    #
+    #   @yieldparam newval
+    #     The externalization of value from the `other`-side
+    #     colliding entry.
+    #
+    #   Each collision produces an entry with its key from the
+    #   target-side entry and its value from the internalization
+    #   of the block call result.
+    #
+    # @return [Map]
+    #
+    # @see #merge!
+    # @see Values#externalize
+    # @see Values#internalize
     def merge(other)
       if block_given?
         dup.merge!( other ){ |*args| yield *args }
@@ -528,6 +587,39 @@ module MapWithIndifferentAccess
       end
     end
 
+    # Adds the contents of `other` (a {Map}, `Hash`, or other
+    # `Hash`-like object) to the target {Map}.
+    #
+    # Each entry in `other` with key that is equivalent to a key
+    # in the target (with `String`/`Symbol` indifference) is
+    # treated as a collision.
+    #
+    # @overload merge!(other)
+    #   Each collision produces an entry with its key from the
+    #   entry in target and its value from the entry in
+    #   `other`.
+    #
+    # @overload merge!(other)
+    #   @yieldparam key
+    #     The key from the target-side colliding entry.
+    #
+    #   @yieldparam oldval
+    #     The externalization of value from the target-side
+    #     colliding entry.
+    #
+    #   @yieldparam newval
+    #     The externalization of value from the `other`-side
+    #     colliding entry.
+    #
+    #   Each collision produces an entry with its key from the
+    #   target-side entry and its value from the internalization
+    #   of the block call result.
+    #
+    # @return [Map]
+    #
+    # @see #merge
+    # @see Values#externalize
+    # @see Values#internalize
     def merge!(other)
       other.each_pair do |(key, value)|
         key = conform_key( key )
@@ -542,6 +634,18 @@ module MapWithIndifferentAccess
 
     alias update merge!
 
+    # Removes an entry from the target {Map} and returns a 2-item
+    # `Array` _`[ <key>, <externalized value> ]`_ or the
+    # externalization of the {Map}'s default value if it is
+    # empty.
+    #
+    # Yes, the behavior when the behavior for an empty {Map} with
+    # a non-`nil` default is weird and troublesome, but it is
+    # parallel to the similarly weird behavior of `Hash#shift`.
+    #
+    # @return [Array,Object]
+    #
+    # @see Values#externalize
     def shift
       if inner_map.empty?
         Values >> inner_map.shift
@@ -554,6 +658,11 @@ module MapWithIndifferentAccess
       end
     end
 
+    # Returns a new {Map} with an {#inner_map} `Hash` created by
+    # using the the target's {#inner_map}'s values as keys and
+    # keys as values.
+    #
+    # @return [Map]
     def invert
       self.class.new( inner_map.invert )
     end
