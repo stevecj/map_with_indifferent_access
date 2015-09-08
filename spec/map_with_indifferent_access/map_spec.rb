@@ -307,10 +307,104 @@ module MapWithIndifferentAccess
       expect( subject.key?(:a ) ).to eq( true  )
     end
 
+    it "sets the default value of the inner-map Hash to the internalization of the value passed to #default=" do
+      subject.default = Map.new('a' => 'A')
+      expect( inner_map.default ).to eq( {'a' => 'A'} )
+      expect( inner_map.default ).to be_kind_of(Hash)
+    end
+
     it "returns fron #default, the default value for the case where the conformation of the given key does not match an entry" do
       inner_map.default_proc = ->(hash, key) { key ? "#{key.inspect} in #{hash.inspect}" : [ key, hash ] }
       expect( subject.default(:a )        ).to eq(":a in {}")
       expect( subject.default.inner_array ).to eq( [ nil, {} ] )
+    end
+
+    it "using #default_proc=, sets the #inner_map Hash's default proc to a procedure that wraps the given block, passes in the target map and forwarded key, and returns the internalization of the wrapped-block's result" do
+      subject.default_proc = ->(map, key){
+        map[key] = Map.new('the_key' => "~#{key}~")
+      }
+      expect( subject['no-match'] ).to eq(
+        Map.new('the_key' => '~no-match~')
+      )
+      expect( inner_map ).to eq( {
+        'no-match' => {'the_key' => '~no-match~'}
+      } )
+    end
+
+    describe '#default_proc' do
+      context "when neither the Map nor its #inner_map Hash has a previously assigned default proc" do
+        it "returns nil" do
+          expect( subject.default_proc ).to eq( nil )
+        end
+      end
+
+      context "when the Map has a previously defined default proc, but the #inner_map Hash does not have one" do
+        before do
+          # Since this gem and specs need to be compatible with Ruby 1.9 and
+          # there's no way to clear a Hash's default proc in Ruby 1.9, stub
+          # the Hash's #default_proc= method to prevent that from actually
+          # assigning anything.
+          allow( inner_map ).to receive(:default_proc=)
+
+          subject.default_proc = ->(*){ }
+        end
+
+        it "returns nil" do
+          expect( subject.default_proc ).to eq( nil )
+        end
+      end
+
+      context "when a default proc has been assigned to the Map, and the #inner_map Hash's default proc has not been subsequently changed" do
+        before do
+          subject.default_proc = map_default_proc
+        end
+
+        let(:map_default_proc ){ ->(*){ } }
+
+        it "returns the proc that was previously assigned to the map" do
+          expect( subject.default_proc ).to equal( map_default_proc )
+        end
+      end
+
+      context "when the #inner_map Hash has a default proc and none has been assigned to the Map" do
+        before do
+          inner_map.default_proc = ->(hash,key) {
+            expect( hash ).to be_kind_of( Hash )
+            hash[key] = {'the_key' => "~#{key}~"}
+          }
+        end
+
+        it "returns a wrapper around the #inner_map Hash's default_proc that translates Map and key arguments to Hash and key arguments, and externalizes the block result" do
+          map_proc_result = subject.default_proc.call( subject, 'keyval')
+          expect( map_proc_result ).to eq(
+            Map.new('the_key' => '~keyval~')
+          )
+          expect( inner_map ).to eq( {
+            'keyval' => {'the_key' => '~keyval~'}
+          } )
+        end
+      end
+
+      context "when a default proc has been assigned to the Map, and the #inner_map Hash's default proc has been subsequently changed" do
+        before do
+          subject.default_proc = ->(*){ }
+
+          inner_map.default_proc = ->(hash,key) {
+            expect( hash ).to be_kind_of( Hash )
+            hash[key] = {'the_key' => "~#{key}~"}
+          }
+        end
+
+        it "returns a wrapper around the #inner_map Hash's default_proc that translates Map and key arguments to Hash and key arguments, and externalizes the block result" do
+          map_proc_result = subject.default_proc.call( subject, 'keyval')
+          expect( map_proc_result ).to eq(
+            Map.new('the_key' => '~keyval~')
+          )
+          expect( inner_map ).to eq( {
+            'keyval' => {'the_key' => '~keyval~'}
+          } )
+        end
+      end
     end
 
     describe '#==' do

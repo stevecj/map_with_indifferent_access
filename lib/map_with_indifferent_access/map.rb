@@ -42,9 +42,6 @@ module MapWithIndifferentAccess
     attr_reader :inner_map
     alias inner_collection inner_map
 
-    # @!method default=(other)
-    #   Sets the default value in the target's {#inner_map} `Hash`.
-
     # @!method keys
     #  Returns a new `Array` populated with the keys from this
     #  {Map}.
@@ -66,7 +63,6 @@ module MapWithIndifferentAccess
 
     def_delegators(
       :inner_map,
-      :default=,
       :keys,
       :rehash,
     )
@@ -228,6 +224,13 @@ module MapWithIndifferentAccess
       entry ? entry.first : nil
     end
 
+    # Sets the default value returned from the target's
+    # {#inner_map} `Hash` for a key that does not exist to
+    # be the internlization of `obj`.
+    def default=(obj)
+      inner_map.default = Values << obj
+    end
+
     # Returns the default value, the value that would be returned
     # by `<target>[key]` if the conformation of `key` did not exist
     # in the target.
@@ -236,6 +239,56 @@ module MapWithIndifferentAccess
     def default(key = nil)
       inner_default = inner_map.default( key )
       Values >> inner_default
+    end
+
+    # Sets the {#inner_map} `Hash`'s default proc to a wrapper
+    # around `proc_obj` that passes the target {Map} and the key
+    # as parameters and returns the internalization of the
+    # wrapped proc's block.
+    #
+    # When running in Ruby 2.x or newer, the default proc can
+    # also be cleared by passing `nil` for `proc_obj`.
+    #
+    # @param proc_obj [Proc, nil]
+    # @see Hash#default_proc=
+    def default_proc=(proc_obj)
+      inner_proc = ->(_, key){
+        Values << proc_obj.call( self, key )
+      }
+      inner_map.default_proc = inner_proc
+      self._default_proc = proc_obj
+      self._inner_proc_for_default_proc = inner_proc
+      proc_obj
+    end
+
+    # If the target {Map}'s {#inner_map} `Hash` does not have a
+    # default proc assigned, then this returns `nil`.
+    #
+    # If `Proc` has been previously assigned to the target {Map}
+    # using {#default_proc=} and is is still applicable, then
+    # that `Proc` is returned.
+    #
+    # If no `Proc` was assigned to the target {Map} or that
+    # assignment is no longer applicable, but the {#inner_map}
+    # `Hash` has a default proc, then a wrapper around that
+    # `Proc` is returned that accepts a `Map` or `Hash`-like
+    # object and a key, passing the `Map`-deconstruction of the
+    # `Map`/`Hash` and the unmodified key value to the underlying
+    # `Proc`, finally returning the externalization of the value
+    # returned from the call to the underlying `Proc`.
+    #
+    # @return (Proc, nil)
+    def default_proc
+      return nil unless inner_map.default_proc
+      unless inner_map.default_proc.equal?( _inner_proc_for_default_proc )
+        self._default_proc = nil
+      end
+      return _default_proc if _default_proc
+      _default_proc = ->(map,key){
+        hash = self.class.try_deconstruct( map )
+        value = inner_map.default_proc.call( hash, key )
+        Values >> value
+      }
     end
 
     # Returns `true` if the entries in `other` (a {Map}, `Hash`,
@@ -689,6 +742,10 @@ module MapWithIndifferentAccess
     end
 
     private
+
+    attr_accessor \
+      :_default_proc,
+      :_inner_proc_for_default_proc
 
     def expect_arity(arity, *args)
       unless arity === args.length
