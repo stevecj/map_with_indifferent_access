@@ -117,6 +117,27 @@ module MapWithIndifferentAccess
       end
     end
 
+    # @!method any?
+    #   Iterates over entries in the target {Map}, passing a
+    #   _`[ key, externalized_value ]`_ `Array` to the block
+    #   for each of those, and returns `true` when the block
+    #   returns `true` for any entry.
+    #
+    #   @return [Boolean]
+    #
+    #   @overload any?
+    #     @yieldparam [Array<(Object, Object)>] pair
+    #       `[ key, externalized_value ]`
+    #
+    #   @overload any?
+    #     Due to the behavior of `Enumerable::any?` when no block
+    #     is given, this is effectively synonymous with
+    #     `!target_map.empty?`.
+    #
+    #   @see #each
+    #   @see Enumerable::any?
+
+
     # Creates an entry or replaces the value of an existing entry
     # in the target's {#inner_map} `Hash`.
     #
