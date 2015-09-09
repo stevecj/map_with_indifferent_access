@@ -41,7 +41,7 @@ then wrapped in another `MapWithIndifferentAccess::Map` during retrieval.
 Writing values into the original `Hash` affects the content eventually seen in
 the returned `Map` as one would expect.
 
-Code:
+code:
 
     h = HashWithIndifferentAccess.new
     foo = ( h[:foo] ||= {} )
@@ -64,15 +64,41 @@ Output:
     "BAR"
 
 ### Difference 3
-When a `Hash` is added to an `Array` that is the value of an entry in a
-`HashWithIndifferentAccess`, that `Hash` is automatically copied into a
-`HashWithIndifferentAccess` that is independent of the original `Hash`.
+When an `Array` containing one or more `Hash` items is stored as a value in
+a `HashWithIndifferentAccess`, the `Hash` items in the array are replaced
+with new `HashWithIndifferentAccess` copies that are independent of the
+original hashes.
 
-When a `Hash` is added to an `Array` that is the value of an entry in a
-`MapWithIndifferentAccess::Map`, the `Hash` is directly stored and then
-wrapped in another `MapWithIndifferentAccess::Map` during retrieval.
-Writing values into the original `Hash` affects the content eventually seen in
-the returned `Map` as one would expect.
+code:
+
+    a = [ foo = {} ]
+    h = HashWithIndifferentAccess.new
+    h[:a] = a
+    foo[:bar] = 'BAR'
+    puts h[:a].first[:bar].inspect
+
+Output:
+
+    nil
+
+When an `Array` containing one or more `Hash` items is stored as a value in
+a `MapWithIndifferentAccess::Map`, the given array is placed directly into
+the underlying wrapped hash.  The `Array` is wrapped in a
+`MapWithIndifferentAccess::List` during subsequent retrieval, and the hash
+item that it contains is wrapped in another `MapWithIndifferentAccess::Map`
+on retrieval from the list.
+
+code:
+
+    a = [ foo = {} ]
+    h = MapWithIndifferentAccess.new
+    h[:a] = a
+    foo[:bar] = 'BAR'
+    puts h[:a].first[:bar].inspect
+
+Output:
+
+    "BAR"
 
 
 ## Conformed Keys
@@ -92,29 +118,19 @@ the result of that stringification.
 ## Value Internalization and Externalization
 
 An internal nested structure of `Hash`es and `Array`s is seen externally as a
-nested structure of `Map`s and `List`s.  Assigning a `Map` or `Lists as a
-value or item in other `Map` or `List` results in  corresponding `Hash` or
-`Array` being placed into the encapsulated collection.  Retrieving an entry
-value or item that is internally stored as a `Hash` or `Array` from a `Map` or
-`List` results in a `Map` or `List` that encapsulates the underlying
-entry/item value.
+nested structure of `Map`s and `List`s.  Assigning a `Map` or `List` as a
+value or item in other `Map` or `List` results in a corresponding `Hash` or
+`Array` being placed into the encapsulated (`Hash` or `Array`) collection.
+Retrieving an entry value or item that is internally stored as a `Hash` or
+`Array` from a `Map` or `List` results in a `Map` or `List` that encapsulates
+the underlying entry/item value.
 
-To be more specific...
+Converting a value from a `Map` to a `Hash` or from a `List` to an `Array`
+during storage into an encapsulated collection is known as "internalization".
 
-When a `Map` _(B)_ that encapsulates a `Hash` is written as a value into
-another `Map` _(A)_, and the value is read from the `Hash` encapsulated by
-`Map` _A_, the result is the `Hash` that is encapsulated by `Map` _B_.  We say
-that the value was "internalized" during storage.  A `List` is similarly
-internalized as the `Array` that it encapsulates.
-
-When a `Hash` _(B)_ is the value of an entry in another `Hash` _(A)_, and the
-value is read from a `Map` that encapsulates `Hash` _A_, the result is a new
-`Map` that encapsulates `Hash` _B_.  We say that the value was "externalized"
-during retrieval.  An `Array` value is similarly externalized as a `List` that
-encapsulates the underlying `Array`.
-
-Values are also internalized during storage as items in a `List` and
-externalized during retrieval from `List` items.
+Converting a value from a `Hash` to a `Map` or from an `Array` to a list
+during retrieval from an encapsulated collection is known as
+"externalization".
 
 
 ## Installation
@@ -135,7 +151,26 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To build a new empty `MapWithIndifferentAccess::Map`, ...
+
+    map = MapWithIndifferentAccess.new
+
+... or ...
+
+    map = MapWithIndifferentAccess::Map.new
+
+To build a new `MapWithIndifferentAccess::Map` around an existing `Hash`, ...
+
+    map = MapWithIndifferentAccess.new(some_existing_hash)
+
+... or ...
+
+    map = MapWithIndifferentAccess::Map.new(some_existing_hash)
+
+To retrieve the encapsulated `Hash` from a `MapWithIndifferentAccess::Map`,
+...
+
+    hash = map.inner_map
 
 ## Development
 
