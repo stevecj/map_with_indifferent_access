@@ -384,6 +384,86 @@ module MapWithIndifferentAccess
       Values >> inner_result
     end
 
+    # @!method &(other)
+    #   @param other [List, Array, Object]
+    #   @return [List]
+    #
+    #   Set Intersection.  Returns a new {Liat} containing
+    #   elements common to the target {List} and `other` (a
+    #   `List` or other `Array`-like object), excluding any
+    #   duplicate items.  The order is preserved from the
+    #   original list.
+    #
+    #   It compares elements using their `#hash` and `#eql?`
+    #   methods for efficiency.
+    #
+    #   Note that this does not recongnize items of `Map` type as
+    #   equal just because they are equal by `#==`, which can be
+    #   the case when they have equivalent keys that differ by
+    #   `String`/`Symbol` type. You might therefore wish to call
+    #   {#&} for lists that have first had their keys
+    #   deeply-stringified or deeply-symbolized.
+
+    # @!method |(other)
+    #   @param other [List, Array, Object]
+    #   @return [List]
+    #
+    #   Set Union.  Returns a new {List} by joining the target
+    #   `List` with `other` (a `List` or other `Array`-like
+    #   object), excluding any duplicates and preserving the
+    #   order from the original `List`.
+    #
+    #   It compares elements using their `#hash` and `#eql?`
+    #   methods for efficiency.
+    #
+    #   Note that this does not recongnize items of `Map` type as
+    #   equal just because they are equal by `#==`, which can be
+    #   the case when they have equivalent keys that differ by
+    #   `String`/`Symbol` type. You might therefore wish to call
+    #   {#|} for lists that have first had their keys
+    #   deeply-stringified or deeply-symbolized.
+
+    # @!method +(other)
+    #   @param other [List, Array, Object]
+    #   @return [List]
+    #
+    #   Concatenation.  Returns a new {List} built by
+    #   concatenating `other` (a `List` or other `Array`-like
+    #   object) to the target `List`.
+    #
+    #   @see concat
+
+    # @!method -(other)
+    #   @param other [List, Array, Object]
+    #   @return [List]
+    #
+    #   Difference.  Returns a new {List} that is a copy of the
+    #   original, removing any items that also appear in
+    #   `other` (a `List` or other `Array`-like object).  The
+    #   order is preserved from the original `List`.
+    #
+    #   It compares elements using their `#hash` and `#eql?`
+    #   methods for efficiency.
+    #
+    #   Note that this does not recongnize items of `Map` type as
+    #   equal just because they are equal by `#==`, which can be
+    #   the case when they have equivalent keys that differ by
+    #   `String`/`Symbol` type. You might therefore wish to call
+    #   {#-} for lists that have first had their keys
+    #   deeply-stringified or deeply-symbolized.
+
+    %w( & | + - ).each do |method_name|
+      class_eval <<-EOS, __FILE__, __LINE__ + 1
+
+        def #{method_name}(other)
+          other = self.class.try_deconstruct( other )
+          inner_result = inner_array.#{method_name}(other)
+          List.new( inner_result )
+        end
+
+      EOS
+    end
+
     # Deletes all items from self, the externalizations of which
     # are equal to the externalization of `obj`.
     #

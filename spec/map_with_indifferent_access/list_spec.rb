@@ -352,6 +352,62 @@ module MapWithIndifferentAccess
       end
     end
 
+    describe "Binary operators f(list, list) -> list" do
+      before do
+        inner_array.replace [ 1, 2, 3, 4 ]
+      end
+      let(:other_array ){ [ 3, 4, 5 ] }
+      let(:other_list ){ List.new( other_array ) }
+
+      describe '#&' do
+        it "returns a List containing the intersection with a given array" do
+          actual_result = subject & other_array
+          expect( actual_result.inner_array ).to eq( [ 3, 4 ] )
+        end
+
+        it "returns a List containing the intersection with a given other List" do
+          actual_result = subject & other_list
+          expect( actual_result.inner_array ).to eq( [ 3, 4 ] )
+        end
+      end
+
+      describe '#|' do
+        it "returns a List containing the union with a given array" do
+          actual_result = subject | other_array
+          expect( actual_result.inner_array ).to eq( [ 1, 2, 3, 4, 5 ] )
+        end
+
+        it "returns a List containing the union with a given other List" do
+          actual_result = subject | other_list
+          expect( actual_result.inner_array ).to eq( [ 1, 2, 3, 4, 5 ] )
+        end
+      end
+
+      describe '#+' do
+        it "returns a List containing the concatenation with a given array" do
+          actual_result = subject + other_array
+          expect( actual_result.inner_array ).to eq( [ 1, 2, 3, 4, 3, 4, 5 ] )
+        end
+
+        it "returns a List containing the concatenation with a given other List" do
+          actual_result = subject + other_list
+          expect( actual_result.inner_array ).to eq( [ 1, 2, 3, 4, 3, 4, 5 ] )
+        end
+      end
+
+      describe '#-' do
+        it "returns a List containing the difference from a given array" do
+          actual_result = subject - other_array
+          expect( actual_result.inner_array ).to eq( [ 1, 2 ] )
+        end
+
+        it "returns a List containing the difference from a given other List" do
+          actual_result = subject - other_list
+          expect( actual_result.inner_array ).to eq( [ 1, 2 ] )
+        end
+      end
+    end
+
     it_behaves_like "a collection wrapper"
 
     describe '#tainted?' do
