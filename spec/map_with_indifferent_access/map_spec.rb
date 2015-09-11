@@ -172,6 +172,22 @@ module MapWithIndifferentAccess
       end
     end
 
+    describe '#values_at' do
+      before do
+        inner_map[ 1 ] = 'one'
+        inner_map['a'] = 'A'
+        inner_map[:b ] = 'B'
+        inner_map[:x ] =  {}
+        inner_map[:y ] =  []
+      end
+
+      it "returns a List of values of entries with matching keys" do
+        actual_result = subject.values_at(1, :a, 'x')
+        expected_inner_result = ['one', 'A', {} ]
+        expect( actual_result.inner_array ).to eq( expected_inner_result )
+      end
+    end
+
     it_behaves_like "a collection wrapper"
 
     describe '#dup' do
@@ -1026,6 +1042,38 @@ module MapWithIndifferentAccess
       inversion = subject.invert
 
       expect( inversion.inner_map ).to eq( expected_invs_inner_map )
+    end
+
+    describe "#flatten" do
+      before do
+        inner_map.merge! \
+          a: 1,
+          b: [
+            22, 23,
+            [ 241, 242 ]
+          ]
+      end
+
+      it "flattens by 1 level into a List, given no arguments" do
+        expected_inner_result = [
+          :a, 1, :b,
+          [
+            22, 23,
+            [ 241, 242 ]
+          ]
+        ]
+        actual_result = subject.flatten
+        expect( actual_result.inner_array ).to eq( expected_inner_result )
+      end
+
+      it "flattens into a List to the specified recursion level" do
+        expected_inner_result = [
+          :a, 1, :b, 22, 23,
+          [ 241, 242 ]
+        ]
+        actual_result = subject.flatten( 2 )
+        expect( actual_result.inner_array ).to eq( expected_inner_result )
+      end
     end
 
   end

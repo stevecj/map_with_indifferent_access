@@ -41,6 +41,7 @@ module MapWithIndifferentAccess
     # The encapsuated `Hash` object.
     attr_reader :inner_map
     alias inner_collection inner_map
+    alias to_h inner_map
 
     # @!method keys
     #  Returns a new `Array` populated with the keys from this
@@ -191,6 +192,16 @@ module MapWithIndifferentAccess
       end
 
       Values >> value
+    end
+
+    # Return a {List} containing the values of entries matching
+    # the given keys.
+    #
+    # @return [List]
+    def values_at(*keys)
+      keys = keys.map{ |k| conform_key( k ) }
+      inner_result = inner_map.values_at( *keys )
+      List.new( inner_result )
     end
 
     # Returns `true` if the conformation of `key` is present in
@@ -595,6 +606,8 @@ module MapWithIndifferentAccess
       each_value.any? { |v| v == value }
     end
 
+    alias value? has_value?
+
     # Searches through the map, comparing the externalization of
     # `value` with the externalized value of each entry using
     # `==.` Returns a 2-element array containing the key and
@@ -739,6 +752,51 @@ module MapWithIndifferentAccess
     # @return [Map]
     def invert
       self.class.new( inner_map.invert )
+    end
+
+    # Makes the target's {#inner_map} `Hash` compare its keys by
+    # their identities, i.e. it will consider exact same objects
+    # as same keys.
+    #
+    # Not particularly useful for a {Map}, but included for
+    # conformance with the `Hash` API.
+    #
+    # @return [Map]
+    def compare_by_identity
+      inner_map.compare_by_identity
+      self
+    end
+
+    # @!method compare_by_identity?
+    #   Returns true if the target's {#inner_map} `Hash` will
+    #   compare its keys by their identities.
+    #
+    #   Not particularly useful for a {Map}, but included for
+    #   conformance with the `Hash` API.
+    #
+    #   @return [Boolean]
+    #
+    #   @see #compare_by_identity
+    def_delegator :inner_map, :compare_by_identity?
+
+    # Returns a new {List} containing one-dimensional flattening
+    # of the target {Map}.  That is, for every key or value that
+    # is an `Array` in the {#inner_map} `Hash`, extract its
+    # elements into the new {List}.
+    #
+    # Unlike `Array#flatten` or {List#flatten}, this method does
+    # not flatten recursively by default. The optional level
+    # argument determines the level of recursion to flatten.
+    #
+    # @return [List]
+    #
+    # @overload flatten
+    #
+    # @overload flatten(level)
+    #   @param level [Fixnum]
+    #
+    def flatten(*args)
+      List.new( inner_map.flatten(*args) )
     end
 
     private
