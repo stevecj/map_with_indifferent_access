@@ -795,7 +795,7 @@ module MapWithIndifferentAccess
       end
     end
 
-    it "is enumerable over items" do
+    it "is enumerable over externalized items" do
       subject <<
         1 <<
         { a: 2 } <<
@@ -811,6 +811,53 @@ module MapWithIndifferentAccess
       ] )
 
       expect( subject.entries ).to eq( items )
+    end
+
+    describe '#assoc' do
+      before do
+        inner_array.replace [
+          [11, 12, 13],
+          'q',
+          [ [ 311, 312 ], 32, 33 ],
+          [ 41, 42, 43 ]
+        ]
+      end
+
+      it "returns the first List-type externalized item with the its first item equal to the given value by #==" do
+        actual_result_a = subject.assoc( List.new( [ 311, 312 ] ) )
+        expect( actual_result_a.inner_array ).to eq( [ [ 311, 312 ], 32, 33 ] )
+
+        actual_result_b = subject.assoc( [ 311, 312 ] )
+        expect( actual_result_b.inner_array ).to eq( [ [ 311, 312 ], 32, 33 ] )
+      end
+
+      it "returns nil when no matching List is found" do
+        # The 'q' item in the list is not an Array/List, so can't be matched.
+        expect( subject.assoc('q') ).to eq( nil )
+      end
+    end
+
+    describe '#rassoc' do
+      before do
+        inner_array.replace [
+          [11, 12],
+          'q',
+          [ 31, [321, 322] ],
+          [ 41, 42 ]
+        ]
+      end
+
+      it "returns the first List-type externalized item with the its 2nd item equal to the given value by #==" do
+        actual_result_a = subject.rassoc( List.new( [ 321, 322 ] ) )
+        expect( actual_result_a.inner_array ).to eq( [ 31, [ 321, 322 ] ] )
+
+        actual_result_b = subject.rassoc( [ 321, 322 ] )
+        expect( actual_result_b.inner_array ).to eq( [ 31, [ 321, 322 ] ] )
+      end
+
+      it "returns nil when no matching List is found" do
+        expect( subject.rassoc('q') ).to eq( nil )
+      end
     end
 
   end

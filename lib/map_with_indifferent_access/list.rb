@@ -643,6 +643,46 @@ module MapWithIndifferentAccess
       end
     end
 
+    # Searches through elements of the target `List` that are
+    # also externally represented as `List`s, comparing the
+    # first item in each of those with `value` using {#==}.
+    #
+    # Returns the first item from the target that matches (is
+    # the first associated `List`) or nil of no match is found.
+    #
+    # @return [List, nil]
+    #
+    # @see Array#assoc
+    # @see #rassoc
+    def assoc(value)
+      result = nil
+      each do |item|
+        next unless List === item && item.length >= 1
+        result = item if item.first == value
+      end
+      result
+    end
+
+    # Searches through elements of the target `List` that are
+    # also externally represented as `List`s, comparing the
+    # second item in each of those with `value` using {#==}.
+    #
+    # Returns the first item from the target that matches (is
+    # the first associated `List`) or nil of no match is found.
+    #
+    # @return [List, nil]
+    #
+    # @see Array#rassoc
+    # @see #assoc
+    def rassoc(value)
+      result = nil
+      each do |item|
+        next unless List === item && item.length >= 2
+        result = item if item[1] == value
+      end
+      result
+    end
+
     protected
 
     def rel_order(other_list)
