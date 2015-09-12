@@ -629,7 +629,7 @@ module MapWithIndifferentAccess
           [ {'b' => 3 } ]
       end
 
-      it "returns false of a non-array object" do
+      it "returns false for a non-array object" do
         expect( subject == 'abc' ).to eq( false )
       end
 
@@ -706,6 +706,92 @@ module MapWithIndifferentAccess
       it "returns true, given an List with an inner array that is #eql? to its own" do
         other = subject.dup
         expect( subject.eql?( other ) ).to eq( true )
+      end
+    end
+
+    describe '#<=>' do
+      before do
+        inner_array.replace [
+          1,
+          { 'two' => 22 },
+          [ 3, 33 ]
+        ]
+      end
+
+      it "returns nil for a non-Array-like object" do
+        expect( subject <=> 1 ).to eq( nil )
+      end
+
+      it "returns nil for a List or Array with a non-equivalent Hash entry" do
+        equiv_array = [
+          1,
+          { :two => 2222 },
+          [ 3, 33 ]
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( nil )
+        expect( subject <=> equiv_array ).to eq( nil )
+      end
+
+      it "returns 0 for an equivalent List or Array" do
+        equiv_array = [
+          1,
+          { :two => 22 },
+          [ 3, 33 ]
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( 0 )
+        expect( subject <=> equiv_array ).to eq( 0 )
+      end
+
+      it "returns 1 for a lesser-valued List or Array of the same length" do
+        equiv_array = [
+          1,
+          { :two => 22 },
+          [ 3, -33 ]
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( 1 )
+        expect( subject <=> equiv_array ).to eq( 1 )
+      end
+
+      it "returns -1 for a list with equivalent items, plus additional items" do
+        equiv_array = [
+          1,
+          { :two => 22 },
+          [ 3, 33 ],
+          nil
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( -1 )
+        expect( subject <=> equiv_array ).to eq( -1 )
+      end
+
+      it "returns 1 for a list with equivalent initial items, but fewer items" do
+        equiv_array = [
+          1,
+          { :two => 22 },
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( 1 )
+        expect( subject <=> equiv_array ).to eq( 1 )
+      end
+
+      it "returns -1 for a greater-valued List or Array" do
+        equiv_array = [
+          1,
+          { :two => 22 },
+          [ 3, 3333 ]
+        ]
+        equiv_list = List.new(equiv_array)
+
+        expect( subject <=> equiv_list  ).to eq( -1 )
+        expect( subject <=> equiv_array ).to eq( -1 )
       end
     end
 

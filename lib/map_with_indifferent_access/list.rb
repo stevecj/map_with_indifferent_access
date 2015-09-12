@@ -591,6 +591,39 @@ module MapWithIndifferentAccess
       zip( other ).all? { |(v,other_v)| v == Values >> other_v }
     end
 
+    # @param [List, Array, Object]
+    # @return [1, 0, -1, nil]
+    #
+    # Comparison.  Returns an integer (-1, 0, or +1) if this
+    # `List` is less than, equal to, or greater than `other`, and
+    # `other` is a `List` or other `Array`-like object that can
+    # be coerced to a `List`.
+    #
+    # Each externaized item in the target `List` is compared to
+    # the corresponding externalized item in `other` (using the
+    # `<=>` operator).  As soon as a comparison is non zero (i.e.
+    # the two corresponding elements are not equal), that result
+    # is returned for the whole array comparison.
+    #
+    # If all the elements are equal, then the result is based on
+    # a comparison of the list lengths.  Thus, two `List`s are
+    # "equal" according to {#<=>} if, and only if, they have the
+    # same length and the value of each element is equal to the
+    # value of the corresponding element in the other list.
+    #
+    # `nil` is returned if `other` is not a `List` or `Array`like
+    # object or if the comparison of two elements returns `nil`.
+    #
+    # @see Array#<=>
+    def <=>(other)
+      return nil unless \
+        List === other || (
+          other.respond_to?(:to_ary ) && other.respond_to?(:length )
+        )
+      other = Values >> other
+      rel_order( other )
+    end
+
     # Calls the given block once for each item in the target's
     # {#inner_array}, passing the externalization of the item to
     # the block.
@@ -608,6 +641,25 @@ module MapWithIndifferentAccess
         item = Values >> item
         yield item
       end
+    end
+
+    protected
+
+    def rel_order(other_list)
+      length_rel = length <=> other_list.length
+      return other_list.reverse_rel_order(self) if length_rel == 1
+
+      rel = 0
+      zip other_list do |a,b|
+        rel = a <=> b
+        break unless rel == 0
+      end
+      rel == 0 ? length_rel : rel
+    end
+
+    def reverse_rel_order(other_list)
+      rel = rel_order(other_list)
+      rel.nil? ? nil : -rel
     end
 
   end
