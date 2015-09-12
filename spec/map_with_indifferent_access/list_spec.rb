@@ -352,7 +352,9 @@ module MapWithIndifferentAccess
       end
     end
 
-    describe "Binary operators f(list, list) -> list" do
+    it_behaves_like "a collection wrapper"
+
+    describe "Binary operators fn(list, list) -> list" do
       before do
         inner_array.replace [ 1, 2, 3, 4 ]
       end
@@ -408,7 +410,21 @@ module MapWithIndifferentAccess
       end
     end
 
-    it_behaves_like "a collection wrapper"
+    describe '#*' do
+      before do
+        inner_array.replace [ 1, 'ABC' ]
+      end
+
+      it "joins strings when given a string argument" do
+        expect( subject * '/' ).to eq( '1/ABC' )
+      end
+
+      it "returns a new List with the number of repetitions given in a numeric argument" do
+        actual_result = subject * 3
+        expect( actual_result.inner_array ).
+          to eq( [ 1, 'ABC', 1, 'ABC', 1, 'ABC' ] )
+      end
+    end
 
     describe '#tainted?' do
       it "returns false when its inner-array is not tainted" do

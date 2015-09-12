@@ -464,6 +464,41 @@ module MapWithIndifferentAccess
       EOS
     end
 
+    # @!method join(separator=$,)
+    #   @param separator [String]
+    #   @return [String]
+    #
+    #   Returns a string consisting of `String`-converted item
+    #   values from the target `List` separated by the
+    #   `separator` string.  If no `separator` or `nil` is given,
+    #   uses the value of `$,` as the separator.  Treats a `nil`
+    #   `$,` value as a blank string.
+    #
+    #   The items are not externalized before being converted to
+    #   `String`s, so `my_map.join` is exactly equivalent to
+    #   `my_map.inner_array.join`.
+    #
+    #   @see Array#join
+    def_delegator :inner_array, :join
+
+    # Repetition.
+    #
+    # @overload *(n_copies)
+    #   @return [Map]
+    #
+    #   Returns a new `List` built by concatenating `n_copies`
+    #   copies of itself together.
+    #
+    # @overload *(separator)
+    #   @return [String]
+    #
+    #   Equivalent to `target_list.join(separator)`.
+    def *(n_copies_or_separator)
+      result = inner_array * n_copies_or_separator
+      result = List.new( result ) if Array === result
+      result
+    end
+
     # Deletes all items from self, the externalizations of which
     # are equal to the externalization of `obj`.
     #
