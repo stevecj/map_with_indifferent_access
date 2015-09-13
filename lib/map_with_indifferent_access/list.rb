@@ -683,6 +683,22 @@ module MapWithIndifferentAccess
       result
     end
 
+    # Works identically to `Array#bsearch` except that
+    # externalized values are passed to the block, and the
+    # externalized result is returned.
+    #
+    # @overload bsearch
+    #   @yieldparam x
+    #   @return [Object, nil]
+    #
+    # @overload bsearch
+    #   @return [Enumerator]
+    def bsearch
+      return enum_for(:bsearch) unless block_given?
+      inner_result = inner_array.bsearch{ |x| yield Values >> x }
+      Values >> inner_result
+    end
+
     protected
 
     def rel_order(other_list)

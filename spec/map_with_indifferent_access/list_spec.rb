@@ -860,6 +860,28 @@ module MapWithIndifferentAccess
       end
     end
 
+    describe '#bsearch' do
+      before do
+        [
+          [ 1, 2 ], [ 3, 4 ], [ 5, 6 ], [ 7, 8 ]
+        ].each do |(m,n)|
+          inner_array << {'num' => m } << { num: n }
+        end
+      end
+
+      it "passes externalizations of items to the block, and returns the lowest-indexed item for which the block returns true" do
+        # If we're in Ruby 1.9, then there is no Array#bsearch,
+        # so use a good-enough substitute for that to demonstrate
+        # that List#bsearch should work as designed if we were in
+        # Ruby 2.x or newer.
+        if RUBY_VERSION.split('.').first.to_i < 2
+          class << inner_array ; alias bsearch detect ; end
+        end
+        actual_result = subject.bsearch{ |item| item['num'] >= 3 }
+        expect( actual_result.inner_map ).to eq( {'num' => 3 } )
+      end
+    end
+
   end
 
 end
