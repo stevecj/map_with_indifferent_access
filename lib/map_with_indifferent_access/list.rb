@@ -694,7 +694,7 @@ module MapWithIndifferentAccess
     # @overload bsearch
     #   @return [Enumerator]
     def bsearch
-      return enum_for(:bsearch) unless block_given?
+      return to_enum(:bsearch) unless block_given?
       inner_result = inner_array.bsearch{ |x| yield Values >> x }
       Values >> inner_result
     end
@@ -703,7 +703,7 @@ module MapWithIndifferentAccess
       class_eval <<-EOS, __FILE__, __LINE__ + 1
 
         def #{method_name}
-          return enum_for( :#{method_name} ) unless block_given?
+          return to_enum( :#{method_name} ) unless block_given?
 
           inner_array.#{method_name}{ |item|
             item = Values >> item

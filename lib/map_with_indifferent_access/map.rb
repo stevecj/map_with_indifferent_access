@@ -341,7 +341,7 @@ module MapWithIndifferentAccess
     # @overload each
     #   @return [Enumerator]
     def each
-      return enum_for(:each ) unless block_given?
+      return to_enum(:each ) unless block_given?
 
       each_key do |key|
         value = fetch( key )
@@ -360,7 +360,7 @@ module MapWithIndifferentAccess
     #
     # @return [MapWithIndifferentAccess::Map]
     def each_key
-      return enum_for(:each_key ) unless block_given?
+      return to_enum(:each_key ) unless block_given?
       inner_map.each_key do |key|
         yield key
       end
@@ -375,7 +375,7 @@ module MapWithIndifferentAccess
     #
     # @return [MapWithIndifferentAccess::Map]
     def each_value
-      return enum_for(:each_value) unless block_given?
+      return to_enum(:each_value) unless block_given?
 
       inner_map.each_value do |value|
         value = Values >> value
@@ -432,7 +432,7 @@ module MapWithIndifferentAccess
     #
     # @see Values.externalize
     def reject
-      return enum_for(:reject ) unless block_given?
+      return to_enum(:reject ) unless block_given?
 
       dup.delete_if{ |key, value|
         yield( key, value )
@@ -452,7 +452,7 @@ module MapWithIndifferentAccess
     #
     # @see #delete_if
     def reject!
-      return enum_for(:reject!) unless block_given?
+      return to_enum(:reject!) unless block_given?
 
       has_rejections = false
       delete_if{ |key, value|
@@ -480,7 +480,7 @@ module MapWithIndifferentAccess
     #
     # @see Values.externalize
     def delete_if
-      return enum_for(:delete_if ) unless block_given?
+      return to_enum(:delete_if ) unless block_given?
 
       inner_map.delete_if do |key, value|
         value = Values >> value
@@ -506,7 +506,7 @@ module MapWithIndifferentAccess
     #
     # @see Values.externalize
     def select
-      return enum_for(:select ) unless block_given?
+      return to_enum(:select ) unless block_given?
 
       dup.keep_if{ |key, value|
         yield( key, value )
@@ -526,7 +526,7 @@ module MapWithIndifferentAccess
     #
     # @see #keep_if
     def select!
-      return enum_for(:select!) unless block_given?
+      return to_enum(:select!) unless block_given?
 
       has_rejections = false
       keep_if{ |key, value|
@@ -554,7 +554,7 @@ module MapWithIndifferentAccess
     #
     # @see Values.externalize
     def keep_if
-      return enum_for(:keep_if ) unless block_given?
+      return to_enum(:keep_if ) unless block_given?
 
       inner_map.keep_if do |key, value|
         value = Values >> value
