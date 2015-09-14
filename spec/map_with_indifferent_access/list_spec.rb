@@ -935,6 +935,53 @@ module MapWithIndifferentAccess
       it_behaves_like "in-place mapper/collector", 'map!'
     end
 
+    describe '#combination' do
+      before do
+        inner_array.replace [ 1, 2, 3 ]
+      end
+
+      it "passes each combination of 'n' elements in the form of a List to the given block" do
+        actual_combos = []
+        subject.combination 2 do |combo|
+          actual_combos << combo
+        end
+        expect( actual_combos.map(&:inner_array) ).to match_array( [
+          [ 1, 2 ],
+          [ 1, 3 ],
+          [ 2, 3 ]
+        ] )
+      end
+
+      it "returns the target List when given a block" do
+        actual_result = subject.combination(2) do ; end
+        expect( actual_result ).to equal( subject )
+      end
+
+      it "returns an enumerator when no block is given" do
+        enum = subject.combination( 2 )
+
+        intermediate_inner_results = []
+        intermediate_inner_results << enum.next
+        intermediate_inner_results << enum.next
+        intermediate_inner_results << enum.next
+
+        expect( intermediate_inner_results ).to match_array( [
+          [ 1, 2 ],
+          [ 1, 3 ],
+          [ 2, 3 ]
+        ] )
+
+        final_result = nil
+        begin
+          enum.next
+        rescue StopIteration => e
+          final_result = e.result
+        end
+
+        expect( final_result ).to eq( subject )
+      end
+    end
+
   end
 
 end

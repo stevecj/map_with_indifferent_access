@@ -716,6 +716,32 @@ module MapWithIndifferentAccess
       EOS
     end
 
+    # Yields every combination of length n of elements from the
+    # target `List` in the form of a `List` and then returns the
+    # target `List` itself.
+    #
+    # Makes no guarantees about the order in which the
+    # combinations are yielded.
+    #
+    # If no block is given, an `Enumerator` is returned instead.
+    #
+    # @overload combination(n)
+    #   @param n [Fixnum]
+    #   @yieldparam combination [List]
+    #   @return [List]
+    #
+    # @overload combination(n)
+    #   @param n [Fixnum]
+    #   @return [Enumerator]
+    def combination(n)
+      return to_enum( :combination, n ) unless block_given?
+
+      inner_array.combination n do |inner_combos|
+        yield List.new( inner_combos )
+      end
+      self
+    end
+
     protected
 
     def rel_order(other_list)
