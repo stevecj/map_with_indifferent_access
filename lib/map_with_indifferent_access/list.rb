@@ -699,6 +699,23 @@ module MapWithIndifferentAccess
       Values >> inner_result
     end
 
+    %w(collect! map!).each do |method_name|
+      class_eval <<-EOS, __FILE__, __LINE__ + 1
+
+        def #{method_name}
+          return enum_for( :#{method_name} ) unless block_given?
+
+          inner_array.#{method_name}{ |item|
+            item = Values >> item
+            mapped_outer = yield( item )
+            Values << mapped_outer
+          }
+          self
+        end
+
+      EOS
+    end
+
     protected
 
     def rel_order(other_list)

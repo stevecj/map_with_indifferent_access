@@ -882,6 +882,59 @@ module MapWithIndifferentAccess
       end
     end
 
+    describe "in-place, per-item replacement" do
+      before do
+        inner_array.replace original_inner_items
+      end
+
+      let(:original_inner_items ){ [
+        {'a' => 1 }, {'a' => 2 }
+      ] }
+
+      shared_examples "in-place mapper/collector" do |method_name|
+
+        describe "#" << method_name do
+          it "passes externalized items to the block, and replaces internal items with internalized call results" do
+            subject.send( method_name ){ |item|
+              item.merge( a: item[:a] + 1 )
+            }
+            expect( inner_array ).to eq( [ {'a' => 2 }, {'a' => 3 } ] )
+            expect( original_inner_items ).to eq( [ {'a' => 1 }, {'a' => 2 } ] )
+          end
+
+          it "returns the target List when given a block" do
+            actual_result = subject.send( method_name){ |item| 'foo' }
+            expect( actual_result ).to equal( subject )
+          end
+
+          it "returns an enumerator when no block is given" do
+            enum = subject.send( method_name )
+
+            expect( enum.next.inner_map ).to eq( {'a' => 1 } )
+            enum.feed Map.new('b' => 11 )
+
+            expect( enum.next.inner_map ).to eq( {'a' => 2 } )
+            final_result = enum.feed Map.new('b' => 22 )
+
+            final_result = nil
+            begin
+              enum.next
+            rescue StopIteration => e
+              final_result = e.result
+            end
+
+            expect( final_result.inner_array ).to eq(
+              [ {'b' => 11 }, {'b' => 22 } ]
+            )
+          end
+        end
+
+      end
+
+      it_behaves_like "in-place mapper/collector", 'collect!'
+      it_behaves_like "in-place mapper/collector", 'map!'
+    end
+
   end
 
 end
