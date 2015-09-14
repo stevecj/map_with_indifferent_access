@@ -298,42 +298,34 @@ module MapWithIndifferentAccess
       Values >> item
     end
 
-    # Removes and returns the first element or first `n` elements
-    # of the array, shifting all of the other elements downward.
+    # @!method shift(*maybe_n)
+    #   Removes and returns the first element or first `n`
+    #   elements of the array, shifting all of the other elements
+    #   downward.
     #
-    # Returns the externalization of the removed element or array
-    # of elements
+    #   Returns the externalization of the removed element or
+    #   array of elements
     #
-    # See {#unshift} for the opposite effect.
+    #   See {#unshift} for the opposite effect.
     #
-    # @see Values.externalize
+    #   @see #unshift
+    #   @see #pop
     #
-    # @overload shift()
-    #   Removes the first element and returns it, shifting all
-    #   other elements down by one. Returns nil if the array is
-    #   empty.
+    #   @overload shift()
+    #     Removes the first element and returns it, shifting all
+    #     other elements down by one. Returns nil if the array is
+    #     empty.
     #
-    #   @return [Object, nil]
+    #     @return [Object, nil]
     #
-    # @overload shift(n)
-    #   Returns a {List} of the first `n` elements (or less) just
-    #   like `array.slice!(0, n)` does, but also removing those
-    #   elements from the target.
+    #   @overload shift(n)
+    #     Returns a {List} of the first `n` elements (or less) just
+    #     like `array.slice!(0, n)` does, but also removing those
+    #     elements from the target.
     #
-    #   @return [List]
-    def shift(*maybe_n)
-      arg_count = maybe_n.length
-      unless (0..1) === arg_count
-        raise ArgumentError, "wrong number of arguments (#{arg_count} for 0..1)"
-      end
-      if maybe_n.empty?
-        Values >> inner_array.shift
-      else
-        inner_result = inner_array.shift( *maybe_n )
-        List.new( inner_result )
-      end
-    end
+    #     @return [List]
 
+    # @!method pop(*maybe_n)
     # Removes and returns the last element or last `n` elements
     # of the array.
     #
@@ -342,7 +334,8 @@ module MapWithIndifferentAccess
     #
     # See {#push} for the opposite effect.
     #
-    # @see MapWithIndifferentAccess::Values.externalize
+    # @see #push
+    # @see #shift
     #
     # @overload pop()
     #   Removes the last element and returns it. Returns nil if
@@ -357,17 +350,25 @@ module MapWithIndifferentAccess
     #
     #   @param n [Fixnum]
     #   @return [MapWithIndifferentAccess::List]
-    def pop(*maybe_n)
-      arg_count = maybe_n.length
-      unless (0..1) === arg_count
-        raise ArgumentError, "wrong number of arguments (#{arg_count} for 0..1)"
-      end
-      if maybe_n.empty?
-        Values >> inner_array.pop
-      else
-        inner_result = inner_array.pop( *maybe_n )
-        List.new( inner_result )
-      end
+    #
+
+    %w(shift pop).each do |method_name|
+      class_eval <<-EOS, __FILE__, __LINE__ + 1
+
+        def #{method_name}(*maybe_n)
+          arg_count = maybe_n.length
+          unless (0..1) === arg_count
+            raise ArgumentError, "wrong number of arguments (\#{arg_count} for 0..1)"
+          end
+          if maybe_n.empty?
+            Values >> inner_array.#{method_name}
+          else
+            inner_result = inner_array.#{method_name}( *maybe_n )
+            List.new( inner_result )
+          end
+        end
+
+      EOS
     end
 
     # Deletes the element at the specified `index`, returning the
