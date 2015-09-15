@@ -743,6 +743,30 @@ module MapWithIndifferentAccess
       self
     end
 
+    # Removes `nil` elements from the target `List`.
+    #
+    # Returns `nil` if no changes were made.  Otherwise returns
+    # the `List`.
+    #
+    # @return [List, nil]
+    #
+    # @see #compact
+    def compact!
+      inner_array.compact! && self
+    end
+
+    # Returns a copy of the target `List` with all `nil` items
+    # removed.
+    #
+    # @return [List]
+    #
+    # @see #compact!
+    def compact
+      result = dup
+      result.compact!
+      result
+    end
+
     protected
 
     def rel_order(other_list)
@@ -762,6 +786,18 @@ module MapWithIndifferentAccess
       rel.nil? ? nil : -rel
     end
 
+    private
+
+    #TODO: Test coverage for dup & clone. Factor out dup w/ Map.
+    def initialize_dup(orig)
+      super
+      @inner_array = inner_array.dup
+    end
+
+    def initialize_clone(orig)
+      super
+      @inner_array = inner_array.clone
+    end
   end
 
 end

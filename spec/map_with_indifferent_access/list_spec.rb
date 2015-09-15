@@ -984,4 +984,51 @@ module MapWithIndifferentAccess
 
   end
 
+  describe '#compact!' do
+    context "when the target List intialliy contains nil items" do
+      subject{
+        List.new( [ 1, nil, 2, nil ] )
+      }
+
+      it "deletes nil items from the list" do
+        subject.compact!
+        expect( subject.inner_array ).to eq( [ 1, 2 ] )
+      end
+
+      it "returns the target List" do
+        expect( subject.compact! ).to equal( subject )
+      end
+    end
+
+    it "returns nil when the target List initially contains no nil items" do
+      list = List.new( [ 1, 2, 3 ] )
+      expect( list.compact! ).to eq( nil )
+    end
+  end
+
+  describe '#compact' do
+    context "when the target List intialliy contains nil items" do
+      subject{
+        List.new( [ 1, nil, 2, nil ] )
+      }
+
+      it "returns a new copy of the List with nil items omitted" do
+        actual_result = subject.compact
+        expect( actual_result.inner_array ).to eq( [ 1, 2 ] )
+      end
+
+      it "does not modify the contents of the target List" do
+        subject.compact
+        expect( subject.inner_array ).to eq( [ 1, nil, 2, nil ] )
+      end
+    end
+
+    it "returns a new copy of the target List when the target List initially contains no nil items" do
+      list = List.new( [ 1, 2, 3 ] )
+      actual_result = list.compact
+      expect( actual_result ).to eq( list )
+      expect( actual_result ).not_to equal( list )
+    end
+  end
+
 end
