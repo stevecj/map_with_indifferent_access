@@ -38,10 +38,20 @@ module MapWithIndifferentAccess
       end
     end
 
-    # The encapsuated `Hash` object.
-    attr_reader :inner_map
-    alias inner_collection inner_map
-    alias to_h inner_map
+    # @!attribute inner_array
+    #   @return [Array]
+    #
+    #   Alias for {#inner_collection}.  The encapsulated `Hash`
+    #   instance.
+    alias inner_map inner_collection
+
+    # @!method to_h
+    #
+    #   Alias for {#inner_collection}.  Returns the
+    #   encapsulated `Hash` instance.
+
+    # Use class_eval to hide the aliasing from Yard doc.
+    class_eval 'alias to_h inner_collection', __FILE__, __LINE__
 
     # @!method keys
     #  Returns a new `Array` populated with the keys from this
@@ -85,7 +95,7 @@ module MapWithIndifferentAccess
       use_basis = basis.inner_map if self.class === basis
       use_basis = Hash.try_convert( use_basis )
       raise ArgumentError, "Could not convert #{basis.inspect} into a Hash" unless use_basis
-      @inner_map = use_basis
+      @inner_collection = use_basis
     end
 
     # Returns the `given_key` object if it is a key in the target's
@@ -809,16 +819,6 @@ module MapWithIndifferentAccess
       unless arity === args.length
         raise ArgumentError, "wrong number of arguments (#{args.length} for #{arity})"
       end
-    end
-
-    def initialize_dup(orig)
-      super
-      @inner_map = inner_map.dup
-    end
-
-    def initialize_clone(orig)
-      super
-      @inner_map = inner_map.clone
     end
   end
 

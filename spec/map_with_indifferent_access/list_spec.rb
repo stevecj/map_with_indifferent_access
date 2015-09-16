@@ -352,7 +352,13 @@ module MapWithIndifferentAccess
       end
     end
 
-    it_behaves_like "a collection wrapper"
+    it_behaves_like "a collection wrapper" do
+      let( :inner_collection ) { inner_array }
+      
+      before do
+        inner_array.replace( [ 1 ] )
+      end
+    end
 
     describe "Binary operators fn(list, list) -> list" do
       before do

@@ -188,30 +188,9 @@ module MapWithIndifferentAccess
       end
     end
 
-    it_behaves_like "a collection wrapper"
-
-    describe '#dup' do
-      context "with an unfrozen inner-map hash" do
-        let(:inner_map ) { { abc: 123 } }
-
-        it "returns a new map with an unfrozen duplicate of the original's unfrozen inner-map hash" do
-          result = subject.dup
-          expect( result ).not_to equal( subject )
-          expect( result.inner_map ).to eq( inner_map )
-          expect( result.inner_map ).not_to equal( inner_map )
-          expect( result.inner_map ).not_to be_frozen
-        end
-
-        it "returns a new map with an unfrozen duplicate of the original's frozen inner-map hash" do
-          inner_map.freeze
-
-          result = subject.dup
-          expect( result ).not_to equal( subject )
-          expect( result.inner_map ).to eq( inner_map )
-          expect( result.inner_map ).not_to equal( inner_map )
-          expect( result.inner_map ).not_to be_frozen
-        end
-      end
+    it_behaves_like "a collection wrapper" do
+      let( :inner_map ) { { abc: 123 } }
+      let( :inner_collection ) { inner_map }
     end
 
     describe '#clone' do

@@ -39,9 +39,20 @@ module MapWithIndifferentAccess
       end
     end
 
-    # The encapsuated `::Array` object.
-    attr_reader :inner_array
-    alias inner_collection inner_array
+    # @!attribute inner_array
+    #   @return [Array]
+    #
+    #   Alias for {#inner_collection}.  The encapsulated `Array`
+    #   instance.
+    alias inner_array inner_collection
+
+    # @!method to_a
+    #
+    #   Alias for {#inner_collection}.  Returns the
+    #   encapsulated `Array` instance.
+
+    # Use class_eval to hide the aliasing from Yard doc.
+    class_eval 'alias to_a inner_collection', __FILE__, __LINE__
 
     # Initializes a new instance of {List} that encapsulates a
     # new empty `Array` or the `Array` coerced from the given
@@ -60,7 +71,7 @@ module MapWithIndifferentAccess
       use_basis = basis.inner_array if self.class === basis
       use_basis = ::Array.try_convert( use_basis )
       raise ArgumentError, "Could not convert #{basis.inspect} into an ::Array" unless use_basis
-      @inner_array = use_basis
+      @inner_collection = use_basis
     end
 
     # Element Assignment — Sets the element at index, or replaces
@@ -784,19 +795,6 @@ module MapWithIndifferentAccess
     def reverse_rel_order(other_list)
       rel = rel_order(other_list)
       rel.nil? ? nil : -rel
-    end
-
-    private
-
-    #TODO: Test coverage for dup & clone. Factor out dup w/ Map.
-    def initialize_dup(orig)
-      super
-      @inner_array = inner_array.dup
-    end
-
-    def initialize_clone(orig)
-      super
-      @inner_array = inner_array.clone
     end
   end
 

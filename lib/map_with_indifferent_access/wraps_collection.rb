@@ -6,11 +6,8 @@ module MapWithIndifferentAccess
     extend Forwardable
     include Enumerable
 
-    # @!attribute [r] inner_collection
     # The encapsulated collection object.
-    def inner_collection
-      raise NotImplementedError, "Including-class responsibility"
-    end
+    attr_reader :inner_collection
 
     # @!method length
     #   The number of entries in the collection.
@@ -137,6 +134,18 @@ module MapWithIndifferentAccess
     def eql?(other)
       self.class == other.class &&
         self.inner_collection.eql?( other.inner_collection )
+    end
+
+    private
+
+    def initialize_dup(orig)
+      super
+      @inner_collection = inner_collection.dup
+    end
+
+    def initialize_clone(orig)
+      super
+      @inner_collection = inner_collection.clone
     end
   end
 

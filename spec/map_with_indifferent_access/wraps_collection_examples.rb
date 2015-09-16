@@ -103,6 +103,50 @@ module MapWithIndifferentAccess
         expect( subject._frozen? ).to eq( true )
       end
     end
+
+    describe '#dup' do
+      context "with an unfrozen inner collection" do
+        it "returns a new wrapper class instance with an unfrozen duplicate of the original's unfrozen inner collection" do
+          result = subject.dup
+          expect( result ).not_to equal( subject )
+          expect( result.inner_collection ).to eq( inner_collection )
+          expect( result.inner_collection ).not_to equal( inner_collection )
+          expect( result.inner_collection ).not_to be_frozen
+        end
+
+        it "returns a new wrapper class instance with an unfrozen duplicate of the original's frozen inner collection" do
+          inner_collection.freeze
+
+          result = subject.dup
+          expect( result ).not_to equal( subject )
+          expect( result.inner_collection ).to eq( inner_collection )
+          expect( result.inner_collection ).not_to equal( inner_collection )
+          expect( result.inner_collection ).not_to be_frozen
+        end
+      end
+    end
+
+    describe '#clone' do
+      context "with an unfrozen inner collection" do
+        it "returns a new map with an unfrozen duplicate of the original's unfrozen inner-map hash" do
+          result = subject.clone
+          expect( result ).not_to equal( subject )
+          expect( result.inner_collection ).to eq( inner_collection )
+          expect( result.inner_collection ).not_to equal( inner_collection )
+          expect( result.inner_collection ).not_to be_frozen
+        end
+
+        it "returns a new map with a frozen duplicate of the original's frozen inner-map hash" do
+          inner_collection.freeze
+
+          result = subject.clone
+          expect( result ).not_to equal( subject )
+          expect( result.inner_collection ).to eq( inner_collection )
+          expect( result.inner_collection ).not_to equal( inner_collection )
+          expect( result.inner_collection ).to be_frozen
+        end
+      end
+    end
   end
 
 end
