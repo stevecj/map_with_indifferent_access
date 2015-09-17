@@ -548,18 +548,30 @@ module MapWithIndifferentAccess
     # Items are considered equal if their `#hash` values are
     # equal and comparison using `#eql?` returns `true`.
     #
-    # Note that this does not recongnize items of [Map] type as
-    # equal just because they are equal by `#==`, which can be
-    # the case when they have equivalent keys that differ by
-    # [String]/[Symbol] type. You might therefore wish to call
-    # {#uniq} on an instance that has first had its keys
-    # deeply-stringified or deeply-symbolized.
+    # If a block is given, then externalized items are passed to
+    # the block, and the return values from the block will be
+    # used for dupliacte-check comparison.
+    #
+    # Note that items externally represented as `Map`s that are
+    # equal according to {Map#==} will not necessarily be
+    # identified as duplicates since they can still differ
+    # according to {Map#eql} if their encapsulated `Hash`
+    # objects are unequal due to key `String`/`Symbol` type
+    # differences.  You might therefore want to ensure that the
+    # target `List` has been deeply stringified or symbolized
+    # before calling {#uniq!} on it.
     #
     # @return [List]
     #
     # @see #uniq!
     def uniq
-      dup.uniq!
+      result = dup
+      if block_given?
+        result.uniq!{ |item| yield( item ) }
+      else
+        result.uniq!
+      end
+      result
     end
 
     # Deletes duplicate items from the target's {#inner_array},
@@ -567,19 +579,36 @@ module MapWithIndifferentAccess
     # equal if their `#hash` values are equal and comparison
     # using `#eql?` returns `true`.
     #
-    # Note that this does not recongnize items of [Map] type as
-    # equal just because they are equal by `#==`, which can be
-    # the case when they have equivalent keys that differ by
-    # [String]/[Symbol] type. You might therefore wish to call
-    # {#uniq} on an instance that has first had its keys
-    # deeply-stringified or deeply-symbolized.
+    # Returns the target `List` if any duplicates were found and
+    # removed.  Otherwise, returns `nil`.
     #
-    # @return [List]
+    # If a block is given, then externalized items are passed to
+    # the block, and the return values from the block will be
+    # used for dupliacte-check comparison.
+    #
+    # Note that items externally represented as `Map`s that are
+    # equal according to {Map#==} will not necessarily be
+    # identified as duplicates since they can still differ
+    # according to {Map#eql} if their encapsulated `Hash`
+    # objects are unequal due to key `String`/`Symbol` type
+    # differences.  You might therefore want to ensure that the
+    # target `List` has been deeply stringified or symbolized
+    # before calling {#uniq} on it.
+    #
+    # @return [List, nil]
     #
     # @see #uniq
     def uniq!
-      inner_array.uniq!
-      self
+      inner_result = 
+        if block_given?
+          inner_array.uniq!{ |item|
+            yield( Values >> item )
+          }
+        else
+          inner_array.uniq!
+        end
+
+      inner_result && self
     end
 
     # Equality. The target is equal to the given `Array`-like

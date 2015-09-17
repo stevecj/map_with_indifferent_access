@@ -7,52 +7,52 @@ module MapWithIndifferentAccess
     let( :inner_array ) { subject.inner_array }
     let( :inner_collection ) { inner_array }
 
-    it "can be constructed as a wrapper around an existing array" do
-      inner_a = []
-      array = described_class.new( inner_a )
-      expect( array.inner_array ).to equal( inner_a )
+    it "can be constructed as a wrapper around an existing Array" do
+      inner_array = []
+      list = described_class.new( inner_array )
+      expect( list.inner_array ).to equal( inner_array )
     end
 
-    it "can be constructed as a wrapper asound an implicitly-created array" do
-      array = described_class.new
-      expect( array.inner_array ).to be_kind_of( Array )
+    it "can be constructed as a wrapper asound an implicitly-created new Array" do
+      list = described_class.new
+      expect( list.inner_array ).to be_kind_of( Array )
     end
 
-    it "can be constructed as a new wrapper around a the inner array of an existing wrapped array" do
-      inner_a = []
-      original_array = described_class.new( inner_a )
-      array = described_class.new( original_array )
-      expect( array ).not_to equal( original_array )
-      expect( array.inner_array ).to equal( inner_a )
+    it "can be constructed as a new wrapper around a the inner-array of an existing wrapped Array" do
+      inner_array = []
+      original_list = described_class.new( inner_array )
+      list = described_class.new( original_list )
+      expect( list ).not_to equal( original_list )
+      expect( list.inner_array ).to equal( inner_array )
     end
 
-    it "cannot be constructed by passing an un-array-like argument to ::new" do
+    it "cannot be constructed by passing an un-Array-like argument to ::new" do
       expect{
         described_class.new( 1 )
       }.to raise_exception( ArgumentError )
     end
 
-    it "deconstructs a wrapped-array instance to its inner array" do
+    it "deconstructs a wrapped Array instance to its inner array" do
       result = described_class.try_deconstruct( subject )
       expect( result ).to equal( subject.inner_array )
     end
 
-    it "deconstructs an ::Array to itself" do
+    it "deconstructs an Array to itself" do
       array = []
       result = described_class.try_deconstruct( array )
       expect( result ).to equal( array )
     end
 
-    it "deconstructs an object other than an array or wrapped array to `nil`" do
+    it "deconstructs an object other than an Array or List to `nil`" do
       expect( described_class.try_deconstruct( 10   ) ).to eq( nil )
       expect( described_class.try_deconstruct( true ) ).to eq( nil )
       expect( described_class.try_deconstruct('xy'  ) ).to eq( nil )
       expect( described_class.try_deconstruct( {}   ) ).to eq( nil )
     end
 
-    it "can be converted from an instance of its class, returning the given array" do
-      array = described_class::try_convert( subject )
-      expect( array ).to equal( subject )
+    it "can be converted from an instance of its class, returning the given object" do
+      list = described_class::try_convert( subject )
+      expect( list ).to equal( subject )
     end
 
     it "cannot be converted from an un-array-like object" do
@@ -64,10 +64,10 @@ module MapWithIndifferentAccess
     it "can be converted from an array, wrapping the given array" do
       given_array = []
 
-      array = described_class::try_convert( given_array )
+      list = described_class::try_convert( given_array )
 
-      expect( array ).to be_kind_of( described_class)
-      expect( array.inner_array ).to equal( given_array )
+      expect( list ).to be_kind_of( described_class)
+      expect( list.inner_array ).to equal( given_array )
     end
 
     describe '#[]=' do
@@ -353,8 +353,6 @@ module MapWithIndifferentAccess
     end
 
     it_behaves_like "a collection wrapper" do
-      let( :inner_collection ) { inner_array }
-      
       before do
         inner_array.replace( [ 1 ] )
       end
@@ -571,54 +569,102 @@ module MapWithIndifferentAccess
     end
 
     context "de-duplication of elements" do
-      before do
-        inner_array.replace build_initial_content
-      end
+      let(:initial_content_with_dups ) { [
+        1,
+        {'a' => 1 },
+        {'a' => 1 },
+        {:a  => 1 },
+        1,
+        {:b => 2 },
+        Map.new(:b => 2 ),
+        Map.new(:b => 2 ),
+      ] }
 
-      def build_initial_content
-        [
-          1,
-          {'a' => 1 },
-          {'a' => 1 },
-          {:a  => 1 },
-          1,
-          {:b => 2 },
-          Map.new(:b => 2 ),
-          Map.new(:b => 2 ),
-        ]
-      end
+      let(:initial_content_no_dups ) {
+        [ 1, 2 ]
+      }
 
       describe '#uniq' do
-        it "returns a new instance with inner array containing unique entries from the target compared using #hash and #eql?" do
-          actual_result = subject.uniq
-          expected_result = [
-            1,
-            {'a' => 1 },
-            {:a  => 1 },
-            {:b => 2 },
-            Map.new(:b => 2 ),
-          ]
-          expect( actual_result.inner_array ).to eq( expected_result )
+        context "when the target List contains duplicate items" do
+          before do
+            inner_array.replace initial_content_with_dups
+          end
+
+          it "returns a new instance with inner array containing unique entries from the target compared using #hash and #eql?" do
+            actual_result = subject.uniq
+            expected_result = [
+              1,
+              {'a' => 1 },
+              {:a  => 1 },
+              {:b => 2 },
+              Map.new(:b => 2 ),
+            ]
+            expect( actual_result.inner_array ).to eq( expected_result )
+          end
+
+          it "passes externalized items to the block and compares returned objects to identify dups when given a block" do
+            actual_result = subject.uniq{ |item|
+              Fixnum === item ?
+                item :
+                item.inner_map.values.first
+            }
+            expected_result = [
+              1,
+              {:b => 2 },
+            ]
+            expect( actual_result.inner_array ).to eq( expected_result )
+          end
         end
       end
 
       describe '#uniq!' do
-        it "removes duplicate entries from the list" do
-          subject.uniq!
 
-          expected_result = [
-            1,
-            {'a' => 1 },
-            {:a  => 1 },
-            {:b => 2 },
-            Map.new(:b => 2 ),
-          ]
-          expect( subject.inner_array ).to eq( expected_result )
+        context "when the target List contains duplicate items" do
+          before do
+            inner_array.replace initial_content_with_dups
+          end
+
+          it "removes duplicate entries from the list" do
+            subject.uniq!
+
+            expected_result = [
+              1,
+              {'a' => 1 },
+              {:a  => 1 },
+              {:b => 2 },
+              Map.new(:b => 2 ),
+            ]
+            expect( subject.inner_array ).to eq( expected_result )
+          end
+
+          it "passes externalized items to the block and compares returned objects to identify dups when given a block" do
+            actual_result = subject.uniq!{ |item|
+              Fixnum === item ?
+                item :
+                item.inner_map.values.first
+            }
+            expected_result = [
+              1,
+              {:b => 2 },
+            ]
+            expect( subject.inner_array ).to eq( expected_result )
+          end
+
+          it "returns the target List" do
+            expect( subject.uniq! ).to equal( subject )
+          end
         end
 
-        it "returns the target List" do
-          expect( subject.uniq! ).to equal( subject )
+        context "when the target List does not contain any duplicate items" do
+          before do
+            inner_array.replace initial_content_no_dups
+          end
+
+          it "returns nil" do
+            expect( subject.uniq! ).to eq( nil )
+          end
         end
+
       end
     end
 
