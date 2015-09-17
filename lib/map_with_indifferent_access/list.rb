@@ -741,6 +741,21 @@ module MapWithIndifferentAccess
       Values >> inner_result
     end
 
+    # @!method collect!
+    #   Invokes the given block once for each externalized item
+    #   from the target `List`, replacing the element with the
+    #   internalization of the value returned by the block.
+    #
+    #   If no block is given, returns an `Enumerator` instead.
+    #
+    #   @yieldparam extern_item
+    #   @return [List, Enumerable]
+    #
+    #   @see Enumerable#collect
+    #
+    #   @overload collect!
+    #   @overload map!
+
     %w(collect! map!).each do |method_name|
       class_eval <<-EOS, __FILE__, __LINE__ + 1
 
