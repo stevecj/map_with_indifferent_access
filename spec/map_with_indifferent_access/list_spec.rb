@@ -244,6 +244,34 @@ module MapWithIndifferentAccess
       end
     end
 
+    describe "#concat" do
+      before do
+        inner_array.replace [ 1, 2 ]
+      end
+
+      it "concatenates entries from another list" do
+        other = List.new
+        other.inner_array.replace [3, [41, 42]]
+        subject.concat other
+        expect(subject.inner_array).to eq(
+          [ 1, 2, 3, [41, 42] ]
+        )
+      end
+
+      it "concatenates entries from an array" do
+        other = [3, [41, 42]]
+        subject.concat other
+        expect(subject.inner_array).to eq(
+          [ 1, 2, 3, [41, 42] ]
+        )
+      end
+
+      it "returns the target list" do
+        result = subject.concat( [1] )
+        expect( result ).to equal( subject )
+      end
+    end
+
     describe "#values_at" do
       before do
         inner_array.replace [ 1, 2, 3, 4 ]

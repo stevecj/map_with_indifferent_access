@@ -262,6 +262,19 @@ module MapWithIndifferentAccess
       self
     end
 
+    # Appends elements of `other` (a `List` or other
+    # `Array`-like object) to the target `List`.
+    #
+    # @param other [List, Array, Object]
+    # @return [List] The target list.
+    #
+    # @see #+
+    def concat(other)
+      other = self.class.try_deconstruct(other) || other
+      inner_array.concat other
+      self
+    end
+
     # Returns a {List} containing the elements in self
     # corresponding to the given selector(s).
     #
@@ -400,7 +413,7 @@ module MapWithIndifferentAccess
     #   @param other [List, Array, Object]
     #   @return [List]
     #
-    #   Set Intersection.  Returns a new {Liat} containing
+    #   Set Intersection.  Returns a new {List} containing
     #   elements common to the target {List} and `other` (a
     #   `List` or other `Array`-like object), excluding any
     #   duplicate items.  The order is preserved from the
@@ -443,7 +456,7 @@ module MapWithIndifferentAccess
     #   concatenating `other` (a `List` or other `Array`-like
     #   object) to the target `List`.
     #
-    #   @see concat
+    #   @see #concat
 
     # @!method -(other)
     #   @param other [List, Array, Object]
@@ -468,7 +481,7 @@ module MapWithIndifferentAccess
       class_eval <<-EOS, __FILE__, __LINE__ + 1
 
         def #{method_name}(other)
-          other = self.class.try_deconstruct( other )
+          other = self.class.try_deconstruct( other ) || other
           inner_result = inner_array.#{method_name}(other)
           List.new( inner_result )
         end
